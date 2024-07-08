@@ -98,7 +98,7 @@ class AttributionTask(Task):
                 num_participants = num_participants,
                 attributed_correctly=true_or_false, 
                 past_context=past_context)
-            response = self.generate_query(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
 
             # format 
             json_response = self.parse_llm_query(response)
@@ -116,8 +116,8 @@ class AttributionTask(Task):
         self.tags = context.tags
 
     def generate_reference(self, responses: list[Config], num_action_groups: int):
-        queries = [r.context for r in responses]
-        self.query = "\n".join([q for q in queries])
+        contexts = [r.context for r in responses]
+        self.rag_context = "\n".join([c for c in contexts])
 
         # reference and responses  
         subset_action_items = random.sample(responses, num_action_groups)
@@ -127,4 +127,4 @@ class AttributionTask(Task):
 
         action_items = ["\n".join(a for a in r.action_items) for r in subset_action_items]
         random.shuffle(action_items)
-        self.response = "\n".join([a_item for a_item in action_items])
+        self.llm_response = "\n".join([a_item for a_item in action_items])

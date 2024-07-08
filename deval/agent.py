@@ -43,8 +43,9 @@ class HumanAgent:
     def store_challenge(self) -> str:
         "Store relevant information needed to generate the synapse for miners"
         self.tasks_challenge = self.task.name
-        self.context_input = self.task.query
-        self.response = self.task.response
+        self.rag_context = self.task.rag_context
+        self.llm_response = self.task.llm_response
+        self.query = None if self.task.query == "" else self.task.query
         self.reference = self.task.reference
     
 

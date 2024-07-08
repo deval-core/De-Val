@@ -68,7 +68,7 @@ async def run_step(
     axons = [self.metagraph.axons[uid] for uid in uids]
 
     # Prepare the tasks
-    eval_synapse = EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response)
+    eval_synapse = EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, llm_response = agent.llm_response)
     dendrite_call_task = execute_dendrite_call(self.dendrite(axons=axons, synapse=eval_synapse, timeout=timeout))
     responses = await dendrite_call_task    
             

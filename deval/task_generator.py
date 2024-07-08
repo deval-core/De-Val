@@ -2,7 +2,8 @@ from deval.tasks import (
     Task,
     HallucinationTask,
     CompletenessTask,
-    AttributionTask
+    AttributionTask,
+    RelevancyTask
 )
 from deval.tools import (
     WikiDataset,
@@ -13,7 +14,7 @@ from deval.tasks import TasksEnum
 
 
 def create_task(llm_pipeline, task_name: TasksEnum) -> Task:
-    wiki_based_tasks = []
+    wiki_based_tasks = [TasksEnum.RELEVANCY]
     generic_text_tasks = [TasksEnum.HALLUCINATION, TasksEnum.COMPLETENESS]
     attribution_text_tasks = [TasksEnum.ATTRIBUTION]
     
@@ -43,6 +44,12 @@ def create_task(llm_pipeline, task_name: TasksEnum) -> Task:
             llm_pipeline=llm_pipeline, 
             context=dataset.next(),
         )
+    
+    elif task_name == TasksEnum.RELEVANCY:
+        task = RelevancyTask(
+            llm_pipeline=llm_pipeline, 
+            context=dataset.next(),
+        )
 
     else:
         raise ValueError(f"Task {task_name} not supported. Please choose a valid task")
@@ -59,7 +66,7 @@ if __name__ == "__main__":
         mock=False,
     )  
 
-    task_name = TasksEnum.ATTRIBUTION
+    task_name = TasksEnum.RELEVANCY
 
     task = create_task(llm_pipeline, task_name)
     print(task)

@@ -189,22 +189,22 @@ if __name__ == "__main__":
     )  
 
     # get task 
-    task_name = TasksEnum.HALLUCINATION
+    task_name = TasksEnum.RELEVANCY
     task = create_task(llm_pipeline, task_name)
     agent = HumanAgent(task=task)
 
     # prep fake response
     responses = [
-        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 0.5),
-        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 1.0),
-        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 0.1)
+        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.5),
+        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 1.0),
+        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.0)
     ]
 
     uids = torch.tensor([1, 2, 3])
     response_event = DendriteResponseEvent(responses, uids, timeout = 10)
 
     # reward compute
-    active_tasks = [TasksEnum.ATTRIBUTION, TasksEnum.COMPLETENESS, TasksEnum.HALLUCINATION]
+    active_tasks = [TasksEnum.ATTRIBUTION, TasksEnum.COMPLETENESS, TasksEnum.HALLUCINATION, TasksEnum.RELEVANCY]
     reward_pipeline = RewardPipeline(
         selected_tasks=active_tasks, device="cpu"
     )

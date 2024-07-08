@@ -102,7 +102,8 @@ class HallucinationTask(Task):
                 hallucination_or_not=true_or_false, 
                 difficulty_rating=context.difficulty, 
                 past_context=past_context)
-            response = self.generate_query(llm_pipeline, query_prompt, system_prompt)
+
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
 
             # format 
             json_response = self.parse_llm_query(response)
@@ -120,8 +121,8 @@ class HallucinationTask(Task):
 
     def generate_reference(self, responses: list[Config], num_claims: int):
         # context input 
-        queries = [r.context for r in responses]
-        self.query = "\n".join([q for q in queries])
+        contexts = [r.context for r in responses]
+        self.rag_context = "\n".join([c for c in contexts])
 
         # reference and responses  
         subset_claims = random.sample(responses, num_claims)
@@ -130,4 +131,4 @@ class HallucinationTask(Task):
 
         claims = [r.claim for r in subset_claims]
         random.shuffle(claims)
-        self.response = "\n".join([c for c in claims])
+        self.llm_response = "\n".join([c for c in claims])

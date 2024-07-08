@@ -35,7 +35,7 @@ class EvalSynapse(bt.Synapse):
     meaning value assignments to the instance fields are checked against their defined types for correctness.
 
     Attributes:
-        task (TaskEnum): The requested task to be completed by the miner. This field is both mandatory and immutable.
+        tasks (TaskEnum): The requested task to be completed by the miner. This field is both mandatory and immutable.
         context_input (str): A simulated context in the evaluation scenario. This field is both mandatory and immutable.
         response (str): A simulated response in the evaluation scenario. This field is both mandatory and immutable.
         completion (float): A float that captures completion of the evaluation. This field is mutable.
@@ -107,16 +107,23 @@ class EvalSynapse(bt.Synapse):
         allow_mutation=False,
     )
 
-    context_input: str = pydantic.Field(
+    rag_context: str = pydantic.Field(
         ...,
-        title="Context",
+        title="Rag Context",
         description="Provided RAG context for responses in the EvalSynapse scenario. Immutable.",
         allow_mutation=False,
     )
 
-    response: str = pydantic.Field(
+    query: str | None = pydantic.Field(
         ...,
-        title="Response",
+        title="Query",
+        description="A user generated query in the EvalSynapse scenario. Immutable.",
+        allow_mutation=False,
+    )
+
+    llm_response: str = pydantic.Field(
+        ...,
+        title="LLM Response",
         description="LLM Responses generated from RAG context in the EvalSynapse scenario. Immutable.",
         allow_mutation=False,
     )
@@ -128,7 +135,7 @@ class EvalSynapse(bt.Synapse):
     )
 
     required_hash_fields: List[str] = pydantic.Field(
-        ["task", "context_input", "response"],
+        ["tasks", "rag_context", "llm_response"],
         title="Required Hash Fields",
         description="A list of required fields for the hash.",
         allow_mutation=False,

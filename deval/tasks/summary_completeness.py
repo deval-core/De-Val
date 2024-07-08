@@ -86,7 +86,7 @@ class CompletenessTask(Task):
                 subtopic=context.subtopic, 
                 context_type=context.context_type,
                 past_context=past_context)
-            response = self.generate_query(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
 
             # format 
             json_response = self.parse_llm_query(response)
@@ -103,12 +103,12 @@ class CompletenessTask(Task):
 
     def generate_reference(self, responses: list[Config], num_summaries: int):
         # context input 
-        queries = [r.context for r in responses]
-        self.query = "\n".join([q for q in queries])
+        contexts = [r.context for r in responses]
+        self.context = "\n".join([c for c in contexts])
 
         # reference and responses  
         subset_summaries = random.sample(responses, num_summaries)
         self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]
-        self.response = " ".join([c for c in summaries])
+        self.llm_response = " ".join([c for c in summaries])

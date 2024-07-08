@@ -13,6 +13,7 @@ class TasksEnum(Enum):
     HALLUCINATION = "hallucination"
     COMPLETENESS = "summary completeness"
     ATTRIBUTION = "attribution"
+    RELEVANCY = "relevancy"
     UNKNOWN = "unknown"
 
 
@@ -22,14 +23,15 @@ class Task(ABC):
     name: str
     desc: str
     goal: str
-    query: str
     topic: str
     subtopic: str
     tags: List[str]
     context: dict
-    response: str
+    rag_context: str
+    llm_response: str
     reference: float
     reward_definition: List[dict]
+    query: str = ""
     penalty_definition: List[dict] = None
     reward_threshold: float = 0.0
     complete: bool = False
@@ -37,7 +39,7 @@ class Task(ABC):
     clean_reference = False
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, query={self.query!r}, reference={self.reference!r}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.responses!r}, reference={self.reference!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r})"
 
     def __repr__(self):
         return str(self)
@@ -74,11 +76,11 @@ class Task(ABC):
             prompt=prompt
         )
 
-    def generate_query(self, pipeline: BasePipeline, prompt, system_prompt) -> str:
+    def generate_input(self, pipeline: BasePipeline, prompt, system_prompt) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
         bt.logging.info("🤖 Generating query...")
-        self.query = self.generate(
+        input = self.generate(
             system=system_prompt, 
             prompt=prompt,
             pipeline=pipeline,
@@ -86,7 +88,7 @@ class Task(ABC):
         )
 
         self.query_time = time.time() - t0
-        return self.query
+        return input
 
     def parse_llm_query(self, query) -> dict:
         json_query = json.loads(query)

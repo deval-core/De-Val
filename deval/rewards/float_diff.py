@@ -1,7 +1,6 @@
 import time
 import torch
 from typing import List
-from sympy.parsing.sympy_parser import parse_expr
 from deval.rewards import BaseRewardModel, BatchRewardOutput, RewardModelTypeEnum
 
 # TODO: Improve to normalize scores between 0 and 1 or at least ensure consistency across runs

@@ -1,6 +1,7 @@
 import torch
 import bittensor as bt
 from typing import List
+import math
 
 class DendriteResponseEvent:
     def __init__(
@@ -16,8 +17,7 @@ class DendriteResponseEvent:
             self.completions.append(synapse.completion)
             self.status_messages.append(synapse.dendrite.status_message)
 
-            #TODO: completion is a float - implement better check
-            if len(synapse.completion) == 0 and synapse.dendrite.status_code == 200:
+            if math.isnan(synapse.completion) and synapse.dendrite.status_code == 200:
                 synapse.dendrite.status_code = 204
 
             self.status_codes.append(synapse.dendrite.status_code)

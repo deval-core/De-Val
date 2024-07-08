@@ -64,12 +64,14 @@ class HallucinationTask(Task):
     desc = "Estimates the number of hallucination in a response given a RAG context"
     goal = "to identify the correct number of hallucinations"
 
-    max_paragraphs = 10
+    max_paragraphs = 4
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
     ]
-    penalty_definition = []
+    penalty_definition = [
+         dict(name="dist_penalty", weight=0.5),
+    ]
 
     def __init__(self, llm_pipeline, context):
         self.context = context
@@ -124,8 +126,8 @@ class HallucinationTask(Task):
         # reference and responses  
         subset_claims = random.sample(responses, num_claims)
         num_true = len([claim for claim in subset_claims if claim.true_or_false == True])
-        self.reference = round(num_true / len(subset_claims), 2) 
+        self.reference = round(num_true / (len(subset_claims) + 1e-10), 2) 
 
         claims = [r.claim for r in subset_claims]
         random.shuffle(claims)
-        self.responses = "\n".join([c for c in claims])
+        self.response = "\n".join([c for c in claims])

@@ -68,7 +68,7 @@ async def run_step(
     axons = [self.metagraph.axons[uid] for uid in uids]
 
     # Prepare the tasks
-    eval_synapse = EvalSynapse(tasks = agent.tasks_challenge, context_input = agent.context_input, response = agent.response)
+    eval_synapse = EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response)
     dendrite_call_task = execute_dendrite_call(self.dendrite(axons=axons, synapse=eval_synapse, timeout=timeout))
     responses = await dendrite_call_task    
             
@@ -131,7 +131,7 @@ async def forward(self):
     # Create random agent with task, topic, profile...
     bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
     agent = HumanAgent(
-        task=task, llm_pipeline=self.llm_pipeline
+        task=task
     )
 
     rounds = 0

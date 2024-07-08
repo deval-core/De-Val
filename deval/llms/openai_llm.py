@@ -43,7 +43,7 @@ class OpenAIPipeline(BasePipeline):
         # Compose sampling params
         temperature = model_kwargs.get("temperature", 0.2)
         top_p = model_kwargs.get("top_p", 0.95)
-        max_tokens = model_kwargs.get("max_tokens", 256)
+        max_tokens = model_kwargs.get("max_tokens", 500)
         format = model_kwargs.get("format", "json_object")
 
 
@@ -73,7 +73,7 @@ class OpenAILLM(BaseLLM):
         self,
         llm_pipeline: BasePipeline,
         system_prompt,
-        max_new_tokens=256,
+        max_new_tokens=500,
         temperature=0.7,
         top_p=0.95,
         format="json_object"

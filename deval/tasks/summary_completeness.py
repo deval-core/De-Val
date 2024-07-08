@@ -8,7 +8,7 @@ from pydantic import BaseModel
 # Used to obtain the set of contexts and claims 
 COMPLETENESS_SYSTEM_PROMPT = """\
 You are an expert at creating real-world business scenarios.  Your goal is to generate the input context that a business would use in a RAG setting. 
-The context that you create should be greater than 5 sentences and the following claim should be no more than 3 sentences.
+The context that you create should be greater than 5 sentences and the following summary should be no more than 3 sentences.
 """
 
 COMPLETENESS_PROMPT_TEMPLATE = """\
@@ -58,7 +58,9 @@ class CompletenessTask(Task):
     reward_definition = [
         dict(name="float_diff", weight=1.0),
     ]
-    penalty_definition = []
+    penalty_definition = [
+        dict(name="dist_penalty", weight=0.5),
+    ]
 
     def __init__(self, llm_pipeline, context):
         self.context = context
@@ -106,7 +108,7 @@ class CompletenessTask(Task):
 
         # reference and responses  
         subset_summaries = random.sample(responses, num_summaries)
-        self.reference = round(num_summaries / len(responses), 2) 
+        self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]
-        self.responses = " ".join([c for c in summaries])
+        self.response = " ".join([c for c in summaries])

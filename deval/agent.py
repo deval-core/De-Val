@@ -17,10 +17,9 @@
 import bittensor as bt
 from deval.tasks import Task
 #from deval.cleaners.cleaner import CleanerPipeline
-from pydantic import BaseModel
 
 
-class HumanAgent(BaseModel):
+class HumanAgent:
     "Agent that impersonates a human user and makes queries based on its goal."
 
     @property
@@ -45,7 +44,8 @@ class HumanAgent(BaseModel):
         "Store relevant information needed to generate the synapse for miners"
         self.tasks_challenge = self.task.name
         self.context_input = self.task.query
-        self.response = self.task.reference
+        self.response = self.task.response
+        self.reference = self.task.reference
     
 
     def __state_dict__(self, full=False):

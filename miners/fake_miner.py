@@ -61,11 +61,11 @@ class FakeMiner(Miner):
         the miner's intended operation. This method demonstrates a basic transformation of input data.
         """
         try:
-            tasks = synapse.tasks
+            task = synapse.tasks[0]
             context_input = synapse.context_input
             response = synapse.response
 
-            bt.logging.info(f"Tasks include: {tasks}")
+            bt.logging.info(f"Tasks include: {task}")
             bt.logging.info(f"Context input: {context_input}")
             bt.logging.info(f"response: {response}")
             synapse.completion = .5

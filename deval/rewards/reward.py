@@ -58,7 +58,7 @@ class RewardResult:
             reward_type=RewardModelTypeEnum.WEIGHTED_REWARD,
         )
         self.penalty_events = self.reward_responses(
-            reference=agent.challenge,
+            reference=agent.reference,
             models=self.task_penalties,
             reward_type=RewardModelTypeEnum.PENALTY,
         )
@@ -171,3 +171,48 @@ class BaseRewardModel(ABC):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name})"
+
+
+
+if __name__ == "__main__":
+    from deval.llms import OpenAIPipeline
+    from deval.tasks import TasksEnum
+    from deval.task_generator import create_task
+    from deval.agent import HumanAgent
+    from deval.protocol import EvalSynapse
+    from deval.dendrite import DendriteResponseEvent
+    from deval.rewards.pipeline import RewardPipeline
+
+    llm_pipeline = OpenAIPipeline(
+        model_id="gpt-3.5-turbo-0125",
+        mock=False,
+    )  
+
+    # get task 
+    task_name = TasksEnum.HALLUCINATION
+    task = create_task(llm_pipeline, task_name)
+    agent = HumanAgent(task=task)
+
+    # prep fake response
+    responses = [
+        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 0.5),
+        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 1.0),
+        EvalSynapse(tasks = [agent.tasks_challenge], context_input = agent.context_input, response = agent.response, completion = 0.1)
+    ]
+
+    uids = torch.tensor([1, 2, 3])
+    response_event = DendriteResponseEvent(responses, uids, timeout = 10)
+
+    # reward compute
+    active_tasks = [TasksEnum.ATTRIBUTION, TasksEnum.COMPLETENESS, TasksEnum.HALLUCINATION]
+    reward_pipeline = RewardPipeline(
+        selected_tasks=active_tasks, device="cpu"
+    )
+    rewards = RewardResult(
+        reward_pipeline,
+        agent=agent,
+        response_event=response_event,
+        device="cpu",
+    )
+
+    print(rewards)

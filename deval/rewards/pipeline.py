@@ -4,10 +4,12 @@ from deval.tasks import TASKS
 from deval.rewards import (
     BaseRewardModel,
     FloatDiffModel,
+    DistPenaltyRewardModel
 )
 
 REWARD_MODELS = {
     "float_diff": FloatDiffModel,
+    "dist_penalty": DistPenaltyRewardModel
 }
 
 

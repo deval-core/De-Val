@@ -1,6 +1,6 @@
 import time
 import bittensor as bt
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import List, Union, Dict
@@ -12,6 +12,7 @@ from enum import Enum
 class TasksEnum(Enum):
     HALLUCINATION = "hallucination"
     COMPLETENESS = "summary completeness"
+    ATTRIBUTION = "attribution"
     UNKNOWN = "unknown"
 
 
@@ -26,11 +27,11 @@ class Task(ABC):
     subtopic: str
     tags: List[str]
     context: dict
-    response: float
+    response: str
+    reference: float
     reward_definition: List[dict]
     penalty_definition: List[dict] = None
     reward_threshold: float = 0.0
-    reference: Union[str, List[str]] = ""
     complete: bool = False
     cleaner = None
     clean_reference = False

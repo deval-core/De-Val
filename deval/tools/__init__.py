@@ -1,11 +1,13 @@
 from .datasets import (
     GenericDataset,
-    WikiDataset
+    WikiDataset,
+    AttributionDataset
 )
 from .selector import Selector
 
 DATASETS = {
     GenericDataset.name: GenericDataset, 
+    AttributionDataset.name: AttributionDataset
 }
  
 

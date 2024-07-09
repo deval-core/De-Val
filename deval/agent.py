@@ -52,8 +52,10 @@ class HumanAgent:
     def __state_dict__(self, full=False):
         return {
             "tasks": self.tasks_challenge,
-            "context_input": self.context_input,
-            "response": self.response,
+            "rag_context": self.rag_context,
+            "query": self.query,
+            "llm_response": self.llm_response,
+            "reference": self.reference,
             **self.task.__state_dict__(full=full),
         }
 

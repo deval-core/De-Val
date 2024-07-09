@@ -62,12 +62,12 @@ class FakeMiner(Miner):
         """
         try:
             task = synapse.tasks[0]
-            context_input = synapse.context_input
-            response = synapse.response
+            rag_context = synapse.rag_context
+            llm_response = synapse.llm_response
 
             bt.logging.info(f"Tasks include: {task}")
-            bt.logging.info(f"Context input: {context_input}")
-            bt.logging.info(f"response: {response}")
+            bt.logging.info(f"Context input: {rag_context}")
+            bt.logging.info(f"response: {llm_response}")
             synapse.completion = .5
 
             return synapse

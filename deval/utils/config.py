@@ -284,7 +284,7 @@ def add_validator_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="casperhansen/llama-3-70b-instruct-awq",
+        default="gpt-3.5-turbo-0125",
     )
 
     parser.add_argument(
@@ -307,14 +307,14 @@ def add_validator_args(cls, parser):
         "--neuron.timeout",
         type=float,
         help="The timeout for each forward call in seconds.",
-        default=15,
+        default=10,
     )
 
     parser.add_argument(
         "--neuron.max_tokens",
         type=int,
         help="The maximum number of tokens in generated responses.",
-        default=256,
+        default=512,
     )
 
     parser.add_argument(
@@ -328,7 +328,7 @@ def add_validator_args(cls, parser):
         "--neuron.sample_size",
         type=int,
         help="The number of miners to query in a single step.",
-        default=100,
+        default=50,
     )
 
     parser.add_argument(

@@ -129,7 +129,7 @@ class EvalSynapse(bt.Synapse):
     )
 
     completion: float = pydantic.Field(
-        ...,
+        -1.0,
         title="Completion",
         description="Scored fields for each task. This attribute is mutable and can be updated.",
     )

@@ -24,7 +24,7 @@ import deval
 from deval.protocol import EvalSynapse
 
 # import base miner class which takes care of most of the boilerplate
-from deval.base.eval_miner import BaseMinerNeuron
+from deval.base.miner import BaseMinerNeuron
 from datetime import datetime
 
 class Miner(BaseMinerNeuron):

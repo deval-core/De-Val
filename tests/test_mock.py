@@ -72,7 +72,7 @@ def test_mock_dendrite_timings(timeout, min_time, max_time, n):
         return await mock_dendrite(
             axons,
             synapse=EvalSynapse(
-                Task = TasksEnum.HALLUCINATION,
+                Task = TasksEnum.HALLUCINATION.value,
                 context_input = "",
                 response = ""
             ),

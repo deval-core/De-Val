@@ -50,7 +50,7 @@ class Config(BaseModel):
 
 @dataclass
 class RelevancyTask(Task):
-    name = TasksEnum.RELEVANCY
+    name = TasksEnum.RELEVANCY.value
     desc = "Estimates the relevancy of an answer to a user query based on a provided context"
     goal = "to identify whether an answer to a user query is relevant or not"
 

@@ -58,12 +58,12 @@ class Config(BaseModel):
 
 @dataclass
 class AttributionTask(Task):
-    name = TasksEnum.ATTRIBUTION
+    name = TasksEnum.ATTRIBUTION.value
     desc = "Estimates the number of correctly attributed action items in a response given a RAG context"
     goal = "to identify the correct number of attributions"
 
     max_particpants = 5
-    max_paragraphs = 5
+    max_paragraphs = 2
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

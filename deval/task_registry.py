@@ -1,13 +1,12 @@
 from .tasks import Task, HallucinationTask, CompletenessTask, AttributionTask, RelevancyTask
 from .tools import WikiDataset, GenericDataset, AttributionDataset
-from deval.tasks import TasksEnum
 
 from pydantic import BaseModel
 
 
 # TODO: switch completion as float with a list of these
 class TaskResult(BaseModel):
-    name: TasksEnum
+    name: str
     score: int
     reasoning: str | None
 

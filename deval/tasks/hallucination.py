@@ -60,11 +60,11 @@ class Config(BaseModel):
 
 @dataclass
 class HallucinationTask(Task):
-    name = TasksEnum.HALLUCINATION
+    name = TasksEnum.HALLUCINATION.value
     desc = "Estimates the number of hallucination in a response given a RAG context"
     goal = "to identify the correct number of hallucinations"
 
-    max_paragraphs = 4
+    max_paragraphs = 2
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

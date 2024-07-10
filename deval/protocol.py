@@ -100,7 +100,7 @@ class EvalSynapse(bt.Synapse):
         """
         return self
 
-    tasks: list[TasksEnum] = pydantic.Field(
+    tasks: list[str] = pydantic.Field(
         ...,
         title="Tasks",
         description="A list of tasks in the EvalSynapse scenario. Immuatable.",

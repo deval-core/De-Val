@@ -30,7 +30,7 @@ async def mock_dendrite_call(delay=1, **kwargs):
     time.sleep(delay)
 
     mock_synapse = EvalSynapse(
-                Task = TasksEnum.HALLUCINATION,
+                Task = TasksEnum.HALLUCINATION.value,
                 context_input = "",
                 response = ""
             )

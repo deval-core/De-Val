@@ -13,10 +13,10 @@ from deval.tools import (
 from deval.tasks import TasksEnum
 
 
-def create_task(llm_pipeline, task_name: TasksEnum) -> Task:
-    wiki_based_tasks = [TasksEnum.RELEVANCY]
-    generic_text_tasks = [TasksEnum.HALLUCINATION, TasksEnum.COMPLETENESS]
-    attribution_text_tasks = [TasksEnum.ATTRIBUTION]
+def create_task(llm_pipeline, task_name: str) -> Task:
+    wiki_based_tasks = [TasksEnum.RELEVANCY.value]
+    generic_text_tasks = [TasksEnum.HALLUCINATION.value, TasksEnum.COMPLETENESS.value]
+    attribution_text_tasks = [TasksEnum.ATTRIBUTION.value]
     
     if task_name in wiki_based_tasks:
         dataset = WikiDataset()
@@ -27,25 +27,25 @@ def create_task(llm_pipeline, task_name: TasksEnum) -> Task:
     elif task_name in attribution_text_tasks:
         dataset = AttributionDataset()
     
-    if task_name == TasksEnum.HALLUCINATION:
+    if task_name == TasksEnum.HALLUCINATION.value:
         task = HallucinationTask(
             llm_pipeline=llm_pipeline, 
             context=dataset.next(),
         )
 
-    elif task_name == TasksEnum.COMPLETENESS:
+    elif task_name == TasksEnum.COMPLETENESS.value:
         task = CompletenessTask(
             llm_pipeline=llm_pipeline, 
             context=dataset.next(),
         )
     
-    elif task_name == TasksEnum.ATTRIBUTION:
+    elif task_name == TasksEnum.ATTRIBUTION.value:
         task = AttributionTask(
             llm_pipeline=llm_pipeline, 
             context=dataset.next(),
         )
     
-    elif task_name == TasksEnum.RELEVANCY:
+    elif task_name == TasksEnum.RELEVANCY.value:
         task = RelevancyTask(
             llm_pipeline=llm_pipeline, 
             context=dataset.next(),
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         mock=False,
     )  
 
-    task_name = TasksEnum.RELEVANCY
+    task_name = TasksEnum.RELEVANCY.value
 
     task = create_task(llm_pipeline, task_name)
     print(task)

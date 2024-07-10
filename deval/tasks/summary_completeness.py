@@ -48,12 +48,12 @@ class Config(BaseModel):
 
 @dataclass
 class CompletenessTask(Task):
-    name = TasksEnum.COMPLETENESS
+    name = TasksEnum.COMPLETENESS.value
     desc = "Estimates the comprehensiveness of a summary"
     goal = "to identify how complete a provided summary is"
 
 
-    max_paragraphs = 10
+    max_paragraphs = 2
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

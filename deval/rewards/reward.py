@@ -189,7 +189,7 @@ if __name__ == "__main__":
     )  
 
     # get task 
-    task_name = TasksEnum.RELEVANCY
+    task_name = TasksEnum.RELEVANCY.value
     task = create_task(llm_pipeline, task_name)
     agent = HumanAgent(task=task)
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
     response_event = DendriteResponseEvent(responses, uids, timeout = 10)
 
     # reward compute
-    active_tasks = [TasksEnum.ATTRIBUTION, TasksEnum.COMPLETENESS, TasksEnum.HALLUCINATION, TasksEnum.RELEVANCY]
+    active_tasks = [TasksEnum.ATTRIBUTION.value, TasksEnum.COMPLETENESS.value, TasksEnum.HALLUCINATION.value, TasksEnum.RELEVANCY.value]
     reward_pipeline = RewardPipeline(
         selected_tasks=active_tasks, device="cpu"
     )

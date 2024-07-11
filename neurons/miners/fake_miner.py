@@ -61,6 +61,7 @@ class FakeMiner(Miner):
         the miner's intended operation. This method demonstrates a basic transformation of input data.
         """
         try:
+            bt.logging.info("initializing forward")
             task = synapse.tasks[0]
             rag_context = synapse.rag_context
             llm_response = synapse.llm_response

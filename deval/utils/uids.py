@@ -56,6 +56,7 @@ def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor
     candidate_uids = []
     coldkeys = set()
     ips = set()
+    print(f"Metagraph items: {self.metagraph.n.item()}")
     for uid in range(self.metagraph.n.item()):
         if uid == self.uid:
             continue

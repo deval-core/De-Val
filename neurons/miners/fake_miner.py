@@ -71,9 +71,9 @@ class FakeMiner(Miner):
             bt.logging.info(f"Tasks include: {task}")
             bt.logging.info(f"Context input: {rag_context}")
             bt.logging.info(f"response: {llm_response}")
-            synapse.completion = .5
+            synapse.completion = 0.5
 
-            print("returning synapse")
+            print("returning synapse", synapse)
 
             return synapse
             

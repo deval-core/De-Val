@@ -16,7 +16,7 @@ class FloatDiffModel(BaseRewardModel):
     def numeric_score(reference: float, pred: float) -> float:
         """Compute a score based on the difference between a reference and a prediction."""
 
-        if pred is None:
+        if pred is None or pred < 0 or pred > 1:
             return 0.0
 
         try:

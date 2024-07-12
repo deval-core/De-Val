@@ -18,7 +18,19 @@ class OrdinalRewardModel(BaseRewardModel):
             0.0,
         ]
 
-    def reward(self, reference: str, completions: List[float]) -> BatchRewardOutput:
+    def ordinal_score(self, reference: float, completion: float, classes: list[tuple]) -> float:
+        if completion < 0 or completion > 1:
+            return 0.0
+
+        if completion in classes:
+            reward = 1-abs(classes.index(reference) - classes.index(completion))/(len(classes)-1)
+        else:
+            reward = 0.0
+        
+        return reward
+
+
+    def reward(self, reference: float, completions: List[float]) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
@@ -26,10 +38,7 @@ class OrdinalRewardModel(BaseRewardModel):
         for completion in completions:
             t0 = time.time()
             
-            if completion in classes:
-                reward = 1-abs(classes.index(reference) - classes.index(completion))/(len(classes)-1)
-            else:
-                reward = 0 
+            reward = self.ordinal_score(reference, completion, classes)
             timings.append(time.time() - t0)
             rewards.append(reward)
 

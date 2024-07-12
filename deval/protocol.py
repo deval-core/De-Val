@@ -19,7 +19,6 @@ import pydantic
 import bittensor as bt
 
 from typing import List
-from deval.tasks import TasksEnum
 
 
 
@@ -114,8 +113,8 @@ class EvalSynapse(bt.Synapse):
         allow_mutation=False,
     )
 
-    query: str | None = pydantic.Field(
-        ...,
+    query: str = pydantic.Field(
+        "",
         title="Query",
         description="A user generated query in the EvalSynapse scenario. Immutable.",
         allow_mutation=False,

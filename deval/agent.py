@@ -45,7 +45,7 @@ class HumanAgent:
         self.tasks_challenge = self.task.name
         self.rag_context = self.task.rag_context
         self.llm_response = self.task.llm_response
-        self.query = None if self.task.query == "" else self.task.query
+        self.query = self.task.query
         self.reference = self.task.reference
     
 

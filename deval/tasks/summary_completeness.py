@@ -68,9 +68,7 @@ class CompletenessTask(Task):
 
 
         num_pagraphs = random.randint(1, self.max_paragraphs)
-        print(f"Number of paragraphs: {num_pagraphs}")
         num_summaries = random.randint(1, num_pagraphs)
-        print(f"Number of summaries {num_summaries}")
         system_prompt = COMPLETENESS_SYSTEM_PROMPT
 
         resp_tmp = None

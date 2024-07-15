@@ -103,7 +103,6 @@ class AttributionTask(Task):
             # format 
             json_response = self.parse_llm_query(response)
             json_response['true_or_false'] = true_or_false
-            print(json_response)
             resp_tmp = Config(**json_response)
             responses.append(resp_tmp)
             

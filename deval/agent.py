@@ -38,6 +38,7 @@ class HumanAgent:
 
         self.task = task
         self.store_challenge()
+        self.top_response = -1.0
 
    
     def store_challenge(self) -> str:
@@ -45,7 +46,7 @@ class HumanAgent:
         self.tasks_challenge = self.task.name
         self.rag_context = self.task.rag_context
         self.llm_response = self.task.llm_response
-        self.query = None if self.task.query == "" else self.task.query
+        self.query = self.task.query
         self.reference = self.task.reference
     
 
@@ -68,7 +69,7 @@ class HumanAgent:
     ):
         if top_reward > self.task.reward_threshold:
             self.task.complete = True
-            self.messages.append({"content": top_response, "role": "user"})
+            self.top_response = top_response
 
             bt.logging.info("Agent finished its goal")
             return

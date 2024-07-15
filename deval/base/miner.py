@@ -214,4 +214,5 @@ class BaseMinerNeuron(BaseNeuron):
             This method is not meant to be called directly but is invoked internally when a request
             is received, and it subsequently calls the `forward` method of the subclass.
         """
+        print(f"synapse: {synapse}")
         return self.forward(synapse=synapse)

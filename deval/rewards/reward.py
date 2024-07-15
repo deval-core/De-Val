@@ -189,7 +189,7 @@ if __name__ == "__main__":
     )  
 
     # get task 
-    task_name = TasksEnum.RELEVANCY.value
+    task_name = TasksEnum.COMPLETENESS.value
     task = create_task(llm_pipeline, task_name)
     agent = HumanAgent(task=task)
 

@@ -60,25 +60,21 @@ class FakeMiner(Miner):
         The 'forward' function is a placeholder and should be overridden with logic that is appropriate for
         the miner's intended operation. This method demonstrates a basic transformation of input data.
         """
-        print("made it to the forward")
         try:
-            bt.logging.info("initializing forward")
             task = synapse.tasks[0]
             rag_context = synapse.rag_context
             llm_response = synapse.llm_response
-            print("parsed forward")
 
             bt.logging.info(f"Tasks include: {task}")
             bt.logging.info(f"Context input: {rag_context}")
             bt.logging.info(f"response: {llm_response}")
             synapse.completion = 0.5
 
-            print("returning synapse", synapse)
+            bt.logging.info("returning synapse", synapse)
 
             return synapse
             
         except Exception as e:
-            print("error in forward")
             bt.logging.error(f"Error in forward: {e}")
             synapse.completion = 0.0
             return synapse

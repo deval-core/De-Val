@@ -79,11 +79,8 @@ class HallucinationTask(Task):
 
 
         num_pagraphs = random.randint(1, self.max_paragraphs)
-        print(f"Number of paragraphs: {num_pagraphs}")
         num_claims = random.randint(1, num_pagraphs)
-        print(f"Number of claims {num_claims}")
         probability_true = random.random()
-        print(f"prob true: {probability_true}")
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
 
         resp_tmp = None
@@ -108,7 +105,6 @@ class HallucinationTask(Task):
             # format 
             json_response = self.parse_llm_query(response)
             json_response['true_or_false'] = true_or_false
-            print(json_response)
             resp_tmp = Config(**json_response)
             responses.append(resp_tmp)
             

@@ -22,7 +22,6 @@ class DistPenaltyRewardModel(BaseRewardModel):
         if completion < 0 or completion > 1:
             return 1.0
         try:
-            print(f"Completion: {completion}, reference: {reference}")
             diff = abs(reference - completion)
             cat = [cat for cat in classes if diff >= cat[0] and diff < cat[1]][0]
             reward = (classes.index(cat)/(len(classes)-1)) 

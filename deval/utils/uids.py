@@ -21,27 +21,22 @@ def check_uid_availability(
     Returns:
         bool: True if uid is available, False otherwise
     """
-    print(f"checking UID: {uid}")
     # Filter non serving axons.
     if not metagraph.axons[uid].is_serving:
-        print("not serving")
         bt.logging.debug(f"uid: {uid} is not serving")
         return False
 
     # Filter validator permit > 1024 stake.
     if metagraph.validator_permit[uid] and metagraph.S[uid] > vpermit_tao_limit:
-        print("stake filter")
         bt.logging.debug(
             f"uid: {uid} has vpermit and stake ({metagraph.S[uid]}) > {vpermit_tao_limit}"
         )
         return False
 
     if coldkeys and metagraph.axons[uid].coldkey in coldkeys:
-        print("coldkey")
         return False
 
     if ips and metagraph.axons[uid].ip in ips:
-        print("ips")
         return False
 
     # Available otherwise.
@@ -61,10 +56,7 @@ def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor
     candidate_uids = []
     coldkeys = set()
     ips = set()
-    print(f"Metagraph items: {self.metagraph.n.item()}")
-    print(f"validator uid: {self.uid}")
     for uid in range(self.metagraph.n.item()):
-        print(uid)
         if uid == self.uid:
             continue
 
@@ -75,7 +67,6 @@ def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor
             coldkeys,
             ips,
         )
-        print(f"availability: {uid_is_available}")
         if not uid_is_available:
             continue
 
@@ -89,7 +80,6 @@ def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor
             candidate_uids.append(uid)
 
     # Check if candidate_uids contain enough for querying, if not grab all avaliable uids
-    print(f"candidate uids {candidate_uids}")
     if 0 < len(candidate_uids) < k:
         bt.logging.warning(
             f"Requested {k} uids but only {len(candidate_uids)} were available. To disable this warning reduce the sample size (--neuron.sample_size)"

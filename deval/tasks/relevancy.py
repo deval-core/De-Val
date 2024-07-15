@@ -78,7 +78,6 @@ class RelevancyTask(Task):
         json_response = self.parse_llm_query(response)
         json_response['context'] = context.content
         json_response['relevant_or_not'] = relevant_or_not
-        print(json_response)
         response = Config(**json_response)
         
 

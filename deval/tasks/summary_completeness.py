@@ -53,7 +53,7 @@ class CompletenessTask(Task):
     goal = "to identify how complete a provided summary is"
 
 
-    max_paragraphs = 2
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -88,7 +88,6 @@ class CompletenessTask(Task):
 
             # format 
             json_response = self.parse_llm_query(response)
-            print(json_response)
             resp_tmp = Config(**json_response)
             responses.append(resp_tmp)
             

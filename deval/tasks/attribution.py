@@ -63,7 +63,7 @@ class AttributionTask(Task):
     goal = "to identify the correct number of attributions"
 
     max_particpants = 5
-    max_paragraphs = 2
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

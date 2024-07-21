@@ -161,7 +161,7 @@ def add_miner_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="gpt-3.5-turbo-1106",
+        default="gpt-4o-mini",
     )
 
     parser.add_argument(
@@ -284,7 +284,7 @@ def add_validator_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="gpt-3.5-turbo-0125",
+        default="gpt-4o-mini",
     )
 
     parser.add_argument(

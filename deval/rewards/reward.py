@@ -184,7 +184,7 @@ if __name__ == "__main__":
     from deval.rewards.pipeline import RewardPipeline
 
     llm_pipeline = OpenAIPipeline(
-        model_id="gpt-3.5-turbo-0125",
+        model_id="gpt-4o-mini",
         mock=False,
     )  
 

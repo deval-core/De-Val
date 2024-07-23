@@ -63,7 +63,7 @@ class AttributionTask(Task):
     goal = "to identify the correct number of attributions"
 
     max_particpants = 5
-    max_paragraphs = 2
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -116,7 +116,7 @@ class AttributionTask(Task):
 
     def generate_reference(self, responses: list[Config], num_action_groups: int):
         contexts = [r.context for r in responses]
-        self.rag_context = "\n".join([c for c in contexts])
+        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
 
         # reference and responses  
         subset_action_items = random.sample(responses, num_action_groups)
@@ -124,6 +124,6 @@ class AttributionTask(Task):
         total = sum([len(a_item.action_items) for a_item in subset_action_items])
         self.reference = round(num_true / (total + 1e-10), 2) 
 
-        action_items = ["\n".join(a for a in r.action_items) for r in subset_action_items]
+        action_items = [random.choice(self.joiners).join(a for a in r.action_items) for r in subset_action_items]
         random.shuffle(action_items)
-        self.llm_response = "\n".join([a_item for a_item in action_items])
+        self.llm_response = random.choice(self.joiners).join([a_item for a_item in action_items])

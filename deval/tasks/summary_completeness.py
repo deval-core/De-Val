@@ -53,7 +53,7 @@ class CompletenessTask(Task):
     goal = "to identify how complete a provided summary is"
 
 
-    max_paragraphs = 2
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -88,7 +88,6 @@ class CompletenessTask(Task):
 
             # format 
             json_response = self.parse_llm_query(response)
-            print(json_response)
             resp_tmp = Config(**json_response)
             responses.append(resp_tmp)
             
@@ -102,11 +101,11 @@ class CompletenessTask(Task):
     def generate_reference(self, responses: list[Config], num_summaries: int):
         # context input 
         contexts = [r.context for r in responses]
-        self.rag_context = "\n".join([c for c in contexts])
+        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
 
         # reference and responses  
         subset_summaries = random.sample(responses, num_summaries)
         self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]
-        self.llm_response = " ".join([c for c in summaries])
+        self.llm_response = random.choice(self.joiners).join([c for c in summaries])

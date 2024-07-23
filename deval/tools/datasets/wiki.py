@@ -176,6 +176,7 @@ class WikiDataset(Dataset):
         self,
         name: str,
         selector: Selector = None,
+        full_page: bool = True,
         include: List = None,
         exclude: List = None,
         **kwargs,
@@ -206,15 +207,23 @@ class WikiDataset(Dataset):
             valid_header=lambda x: x not in exclude and (not include or x in include),
             valid_content=lambda x: len(x.split()) >= self.min_length_words,
         )
-        if not sections:
-            return None
+        
+        if full_page:
+            content = "\n".join(["\n".join(section) for section in sections.values()])
+            section_length = len(content.split())
+            topic = "All Sections"
+            section_title = None
+        else:
+            if not sections:
+                return None
+            key = header, section_title = selector(list(sections.keys()))
+            content = "\n".join(sections[key])
+            section_length = len(content.split())
+            topic = header or section_title
 
-        key = header, section_title = selector(list(sections.keys()))
-        content = "\n".join(sections[key])
-        section_length = len(content.split())
         context = {
             "title": name,  # title of wiki article
-            "topic": header or section_title,  # title of wiki section
+            "topic": topic,  # title of wiki section
             "subtopic": section_title,
             "content": content,
             "internal_links": list(filter(lambda x: x not in exclude, page.sections)),

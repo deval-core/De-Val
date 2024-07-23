@@ -121,7 +121,7 @@ class OpenAILLM(BaseLLM):
 if __name__ == "__main__":
     # Example usage
     llm_pipeline = OpenAIPipeline(
-        model_id="gpt-3.5-turbo-0125",  mock=False
+        model_id="gpt-4o-mini",  mock=False
     )
     llm = OpenAILLM(llm_pipeline, system_prompt="You are a helpful AI assistant")
 

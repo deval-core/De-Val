@@ -64,7 +64,7 @@ class HallucinationTask(Task):
     desc = "Estimates the number of hallucination in a response given a RAG context"
     goal = "to identify the correct number of hallucinations"
 
-    max_paragraphs = 2
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -118,7 +118,7 @@ class HallucinationTask(Task):
     def generate_reference(self, responses: list[Config], num_claims: int):
         # context input 
         contexts = [r.context for r in responses]
-        self.rag_context = "\n".join([c for c in contexts])
+        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
 
         # reference and responses  
         subset_claims = random.sample(responses, num_claims)
@@ -127,4 +127,4 @@ class HallucinationTask(Task):
 
         claims = [r.claim for r in subset_claims]
         random.shuffle(claims)
-        self.llm_response = "\n".join([c for c in claims])
+        self.llm_response = random.choice(self.joiners).join([c for c in claims])

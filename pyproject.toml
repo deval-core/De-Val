@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "DeVal"
+name = "deval"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
@@ -20,6 +20,7 @@ wikipedia = "1.4.0"
 wikipedia-sections = "2.0.0"
 bittensor = "7.2.0"
 openai = "^1.35.7"
+pandas = "^2.2.2"
 
 
 [build-system]

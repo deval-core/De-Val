@@ -37,6 +37,7 @@ class Task(ABC):
     complete: bool = False
     cleaner = None
     clean_reference = False
+    joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
 
     def __str__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r})"

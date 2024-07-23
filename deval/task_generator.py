@@ -62,11 +62,11 @@ if __name__ == "__main__":
     from deval.llms import OpenAIPipeline
 
     llm_pipeline = OpenAIPipeline(
-        model_id="gpt-3.5-turbo-0125",
+        model_id="gpt-4o-mini",
         mock=False,
     )  
 
-    task_name = TasksEnum.RELEVANCY.value
+    task_name = TasksEnum.ATTRIBUTION.value
 
     task = create_task(llm_pipeline, task_name)
     print(task)

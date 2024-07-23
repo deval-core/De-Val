@@ -19,7 +19,7 @@ def extractTaskToRow(task):
 
 
 llm_pipeline = OpenAIPipeline(
-    model_id="gpt-3.5-turbo-0125",
+    model_id="gpt-4o-mini",
     mock=False,
 )  
 rows = []

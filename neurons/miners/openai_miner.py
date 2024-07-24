@@ -91,7 +91,7 @@ class OpenAIMiner(Miner):
     def parse_response(self, response: str) -> float:
         print("response: ", response)
         float_regex = "((0\.\d+?|1\.0+?|0|1|\.\d+))"
-        match = re.search(f"score: {float_regex}", response.lower())
+        match = re.search(f"response: {float_regex}", response.lower())
         print("match", match)
         if match:
             score = match.group(1)

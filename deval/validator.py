@@ -19,8 +19,8 @@ class Validator(BaseValidatorNeuron):
         self.load_state()
 
         _ = load_dotenv(find_dotenv())
-        API_KEY = os.getenv("OPENAI_API_KEY", None)
-        if API_KEY is None:
+        self.api_key = os.getenv("OPENAI_API_KEY", None)
+        if self.api_key is None:
             raise ValueError("Please add OPENAI_API_KEY to your environment")
 
         self.llm_pipeline = OpenAIPipeline(

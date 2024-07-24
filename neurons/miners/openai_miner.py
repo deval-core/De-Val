@@ -141,7 +141,9 @@ class OpenAIMiner(Miner):
                 max_tokens = self.max_tokens,
             )
             response = output.choices[0].message.content
-            synapse.completion = self.parse_response(response)
+            completion = self.parse_response(response)
+            print(f"completion: {completion}")
+            synapse.completion = completion
 
             synapse_latency = time.time() - t0
 

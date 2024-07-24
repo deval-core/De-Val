@@ -130,7 +130,7 @@ class OpenAIMiner(Miner):
             
 
             # generate our response and return
-            output = self.llm.chat.completions.create(
+            output = self.model.chat.completions.create(
                 model=self.model_id,
                 messages=messages,
                 temperature = self.temperature,

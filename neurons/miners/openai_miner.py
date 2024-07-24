@@ -89,10 +89,13 @@ class OpenAIMiner(Miner):
             raise ValueError(f"Unable to find the correct task: {task}")
 
     def parse_response(self, response: str) -> float:
+        print("response: ", response)
         float_regex = "((0\.\d+?|1\.0+?|0|1|\.\d+))"
         match = re.search(f"score: {float_regex}", response.lower())
+        print("match", match)
         if match:
             score = match.group(1)
+            print("score ", score)
             return float(score.strip()) if score != "" else -1.0
         else:
             bt.logging.debug("Unable to parse response")

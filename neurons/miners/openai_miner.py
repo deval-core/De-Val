@@ -137,7 +137,7 @@ class OpenAIMiner(Miner):
                 top_p = self.top_p,
                 max_tokens = self.max_tokens,
             )
-            response = output.choices[0].message
+            response = output.choices[0].message.content
             synapse.completion = self.parse_response(response)
 
             synapse_latency = time.time() - t0

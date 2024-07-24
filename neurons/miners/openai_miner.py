@@ -75,7 +75,7 @@ class OpenAIMiner(Miner):
         self.top_p = self.config.neuron.top_p or 0.95
         self.top_k = self.config.neuron.top_k or 0
 
-    def select_task_prompt(task: str) -> str:
+    def select_task_prompt(self, task: str) -> str:
         if task == TasksEnum.ATTRIBUTION.value:
             return ATTRIBUTION_PROMPT
         elif task == TasksEnum.COMPLETENESS.value:
@@ -88,7 +88,7 @@ class OpenAIMiner(Miner):
             bt.logging.error("Unable to identify the task")
             raise ValueError(f"Unable to find the correct task: {task}")
 
-    def parse_response(response: str) -> float:
+    def parse_response(self, response: str) -> float:
         float_regex = "((0\.\d+?|1\.0+?|0|1|\.\d+))"
         match = re.search(f"score: {float_regex}", response.lower())
         if match:

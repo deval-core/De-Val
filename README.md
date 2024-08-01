@@ -109,7 +109,7 @@ sudo apt update && sudo apt install python3-pip
 python3 -m pip install bittensor
 ```
 
-In order to ease management of the scripts and miners running, we recommend using `PM2` and the process manager. In order to istall `PM2`:
+In order to ease management of the scripts and miners running, we recommend using `PM2` and the process manager. In order to install `PM2`:
 ```
 sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
 ```

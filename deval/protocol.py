@@ -27,7 +27,7 @@ class EvalSynapse(bt.Synapse):
     """
     The EvalSynapse subclass of the Synapse class encapsulates the functionalities related to evaluation scenarios.
 
-    It specifies n fields - `roles`, `messages` and `completion` - that define the state of the EvalSynapse object.
+    It specifies n fields - `tasks`, `rag_context`, `query`, `llm_response` and `completion` - that define the state of the EvalSynapse object.
     
 
     The Config inner class specifies that assignment validation should occur on this class (validate_assignment = True),
@@ -35,8 +35,9 @@ class EvalSynapse(bt.Synapse):
 
     Attributes:
         tasks (TaskEnum): The requested task to be completed by the miner. This field is both mandatory and immutable.
-        context_input (str): A simulated context in the evaluation scenario. This field is both mandatory and immutable.
-        response (str): A simulated response in the evaluation scenario. This field is both mandatory and immutable.
+        rag_context (str): A simulated context in the evaluation scenario. This field is both mandatory and immutable.
+        query (str): A simulated user query in a QA system. This field is optional and immutable.
+        llm_response (str): A simulated response in the evaluation scenario. This field is both mandatory and immutable.
         completion (float): A float that captures completion of the evaluation. This field is mutable.
         required_hash_fields List[str]: A list of fields that are required for the hash.
 
@@ -47,35 +48,6 @@ class EvalSynapse(bt.Synapse):
     The `EvalSynapse` class also overrides the `deserialize` method, returning the
     instance itself when this method is invoked. Additionally, it provides a `Config`
     inner class that enforces the validation of assignments (`validate_assignment = True`).
-
-    Here is an example of how the `EvalSynapse` class can be used:
-
-    ```python
-    # Create a EvalSynapse instance
-    prompt = EvalSynapse(roles=["system", "user"], messages=["Hello", "Hi"])
-
-    # Print the roles and messages
-    print("Roles:", prompt.roles)
-    print("Messages:", prompt.messages)
-
-    # Update the completion
-    model_prompt =... # Use prompt.roles and prompt.messages to generate a prompt
-    for your LLM as a single string.
-    prompt.completion = model(model_prompt)
-
-    # Print the completion
-    print("Completion:", prompt.completion)
-    ```
-
-    This will output:
-    ```
-    Roles: ['system', 'user']
-    Messages: ['You are a helpful assistant.', 'Hi, what is the meaning of life?']
-    Completion: "The meaning of life is 42. Deal with it, human."
-    ```
-
-    This example demonstrates how to create an instance of the `EvalSynapse` class, access the
-    `roles` and `messages` fields, and update the `completion` field.
     """
 
     class Config:

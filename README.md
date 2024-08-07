@@ -26,13 +26,16 @@
 
 Welcome to De-Val, the pioneering decentralized evaluation subnet for large language models (LLMs). Built on the robust Bittensor network, De-Val offers unmatched objectivity and reliability in evaluating LLM outputs, tackling challenges such as hallucinations, misattributions, relevancy and summary completeness.
 
-Our unique approach leverages synthetic data for initial training and plans to transition to real data from small to medium-sized businesses (SMBs), ensuring continuous optimization and high standards of AI-generated content.
+Our unique approach leverages synthetic data for initial training with long-term plans to provide evaluation and monitoring capabilities for businesses looking to improve their own LLM based solutions through A/B testing or offline validation.Our primary focus is evaluation in the context of RAG based scenarios to help businesses answer questions such as:
+- How accurate is my LLM given the provided context?
+- How comprehensive are our abstractive summaries? Are we missing key details?
+- Can we correctly identify key users and match their names to relevant action items? 
 
 In our first iteration of the subnet, we will release evaluators focused on:
-- Hallucination Detection: Identifying and mitigating false or nonsensical outputs, including:
-- Misattribution Correction: Ensuring the accuracy of attributed information.
+- Hallucination Detection: Identifying false or nonsensical outputs within LLM summaries given a RAG context.
+- Misattribution Correction: Measuring participant attribution accuracy in LLM summaries from sales calls, meetings, general chat messages, etc.
 - Summary Completeness: Evaluating the thoroughness and reliability of generated summaries.
-- Relevancy: Binary prediction of whether a response is relevant or not.
+- Relevancy: Binary prediction of whether a response is relevant to a user's query or not.
 
 ## Key Features
 🔑 **Unbiased, Decentralized Evaluations**
@@ -79,12 +82,12 @@ In our first iteration of the subnet, we will release evaluators focused on:
 - [ ] Begin marketing for brand awareness and interest
 
 ### Phase 2: Expansion (Q4 2024)
+- [ ] Achieve competitive baseline evaluation accuracy
+- [ ] Launch outward-facing API
 - [ ] Introduce next level of evaluation metrics and validation processes
 - [ ] Collaborations and partnerships with synergistic companies and subnets
-- [ ] Launch front-end application
 - [ ] Build an open-source database for real-world data submissions
-- [ ] Achieve competitive baseline evaluation accuracy
-- [ ] Monetize evaluations through front-end
+- [ ] Monetize evaluations through API
 
 ### Phase 3: Refinement (Q1 2025)
 - [ ] Market and sales expansion

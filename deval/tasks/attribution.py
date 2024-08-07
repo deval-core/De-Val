@@ -14,7 +14,7 @@ The context that you create should be greater than 5 sentences and the following
 
 ATTRIBUTION_PROMPT_TEMPLATE = """\
 Your goal is to generate a context consisting of at least 5-10 sentences that mimics a business setting. Each context should be a conversation between two or more people. \
-Within this context, there should defined takeaways that would require action at a later date. For example, requesting that a team member schedule a follow-up meeting. \
+Within this context, there should be 1 to 2 defined takeaways that would require action at a later date. For example, requesting that a team member schedule a follow-up meeting. \
 These take aways should be defined as action items for follow up formatted as "person 1: schedule a follow-up meeting", where the action item is attributed to 'person 1' and stored in the json response. \
 The actions must be derived from the context.  
 

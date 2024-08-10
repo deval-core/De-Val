@@ -147,8 +147,7 @@ async def forward(self):
         )
         
         # Adds forward time to event and logs it to wandb
-        event['forward_time'] = time.time() - forward_start_time
-        print("PREPPING FOR LOG")        
+        event['forward_time'] = time.time() - forward_start_time      
         log_event(self, event)
         
         exclude_uids += event["uids"]

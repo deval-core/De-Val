@@ -53,7 +53,7 @@ class CompletenessTask(Task):
     goal = "to identify how complete a provided summary is"
 
 
-    max_paragraphs = 10
+    max_paragraphs = 3
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

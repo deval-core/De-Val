@@ -121,4 +121,5 @@ def log_event(self, event):
 
     print("now logging")
     # Log the event to wandb.
+    print(event)
     self.wandb.log(event)

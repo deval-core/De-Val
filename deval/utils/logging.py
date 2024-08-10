@@ -110,6 +110,7 @@ def log_event(self, event):
         logger.log(38, event)
 
     print("off")
+    print(self.config)
     if self.config.wandb.off:
         return
 

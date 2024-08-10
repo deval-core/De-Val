@@ -19,8 +19,8 @@ relevancy_task, relevancy_dataset = RelevancyTask.name, [WikiDataset.name]
 # task storage management
 TASK_REGISTRY = {
     hallucination_task: hallucination_dataset,
-    #completeness_task: completeness_dataset,
-    #attribution_task: attribution_dataset,
-    #relevancy_task: relevancy_dataset
+    completeness_task: completeness_dataset,
+    attribution_task: attribution_dataset,
+    relevancy_task: relevancy_dataset
 }
 

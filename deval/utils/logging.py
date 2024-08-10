@@ -111,8 +111,9 @@ def log_event(self, event):
 
     print("off")
     print(self.config)
-    if self.config.wandb.off:
-        return
+    print("wtf")
+    #if self.config.wandb.off:
+    #    return
 
     print("init")
     if not getattr(self, "wandb", None):

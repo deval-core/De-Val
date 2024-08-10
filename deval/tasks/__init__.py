@@ -7,7 +7,7 @@ from .task import Task, TasksEnum
 
 TASKS = {
     TasksEnum.HALLUCINATION.value: HallucinationTask,
-    #TasksEnum.COMPLETENESS.value: CompletenessTask,
-    #TasksEnum.ATTRIBUTION.value: AttributionTask,
-    #TasksEnum.RELEVANCY.value: RelevancyTask
+    TasksEnum.COMPLETENESS.value: CompletenessTask,
+    TasksEnum.ATTRIBUTION.value: AttributionTask,
+    TasksEnum.RELEVANCY.value: RelevancyTask
 }

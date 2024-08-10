@@ -24,17 +24,15 @@ from deval.mock import MockPipeline
 from openai import OpenAI 
 import os
 
-API_KEY = os.getenv("OPENAI_API_KEY", None)
-if API_KEY is None:
-    raise ValueError("Please add OPENAI_API_KEY to your environment")
 
 
 class OpenAIPipeline(BasePipeline):
-    def __init__(self, model_id: str, mock=False):
+    def __init__(self, model_id: str, mock=False, api_key = ""):
         super().__init__()
         self.model_id = model_id
-        self.llm = self.load_pipeline(model_id, mock)
+        self.llm = self.load_pipeline(model_id, mock, api_key)
         self.mock = mock
+        self.api_key = api_key
 
     def __call__(self, messages: List[Dict[str, str]], **model_kwargs: Dict) -> str:
         if self.mock:
@@ -58,12 +56,12 @@ class OpenAIPipeline(BasePipeline):
         response = output.choices[0].message
         return response.content
 
-    def load_pipeline(self,model_id: str, mock=False):
+    def load_pipeline(self,model_id: str, mock=False, api_key=""):
         """Loads the OpenAI GPT pipeline for the LLM, or a mock pipeline if mock=True"""
         if mock or model_id == "mock":
             return MockPipeline(model_id)
 
-        return OpenAI(api_key=API_KEY)
+        return OpenAI(api_key=api_key)
 
 
 

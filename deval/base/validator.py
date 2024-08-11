@@ -267,6 +267,7 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("uint_uids", uint_uids)
 
         # Set the weights on chain via our subtensor connection.
+        print(f"weights value: wallet: {self.wallet}, netuid: {self.config.netuid}, uids: {uint_uids}, weights: {uint_weights}")
         result = self.subtensor.set_weights(
             wallet=self.wallet,
             netuid=self.config.netuid,

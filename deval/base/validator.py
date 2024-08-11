@@ -240,8 +240,8 @@ class BaseValidatorNeuron(BaseNeuron):
         # Replace any NaN values with 0.
         raw_weights = torch.nn.functional.normalize(self.scores, p=1, dim=0)
 
-        print("raw_weights", raw_weights)
-        print("raw_weight_uids", self.metagraph.uids)
+        bt.logging.info("raw_weights", raw_weights)
+        bt.logging.info("raw_weight_uids", self.metagraph.uids)
         # Process the raw weights to final_weights via subtensor limitations.
         (
             processed_weight_uids,
@@ -253,8 +253,8 @@ class BaseValidatorNeuron(BaseNeuron):
             subtensor=self.subtensor,
             metagraph=self.metagraph,
         )
-        print("processed_weights", processed_weights)
-        print("processed_weight_uids", processed_weight_uids)
+        bt.logging.info("processed_weights", processed_weights)
+        bt.logging.info("processed_weight_uids", processed_weight_uids)
 
         # Convert to uint16 weights and uids.
         (
@@ -263,8 +263,8 @@ class BaseValidatorNeuron(BaseNeuron):
         ) = bt.utils.weight_utils.convert_weights_and_uids_for_emit(
             uids=processed_weight_uids, weights=processed_weights
         )
-        print("uint_weights", uint_weights)
-        print("uint_uids", uint_uids)
+        bt.logging.info("uint_weights", uint_weights)
+        bt.logging.info("uint_uids", uint_uids)
 
         # Set the weights on chain via our subtensor connection.
         result = self.subtensor.set_weights(

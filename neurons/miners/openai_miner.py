@@ -89,10 +89,8 @@ class OpenAIMiner(Miner):
             raise ValueError(f"Unable to find the correct task: {task}")
 
     def parse_response(self, response: str) -> float:
-        print("response: ", response)
         float_regex = "((0\.\d+?|1\.0+?|0|1|\.\d+))"
         match = re.search(f"response: {float_regex}", response.lower())
-        print("match", match)
         if match:
             score = match.group(1)
             print("score ", score)
@@ -142,7 +140,7 @@ class OpenAIMiner(Miner):
             )
             response = output.choices[0].message.content
             completion = self.parse_response(response)
-            print(f"completion: {completion}")
+            bt.logging.info(f"completion: {completion}")
             synapse.completion = completion
 
             synapse_latency = time.time() - t0

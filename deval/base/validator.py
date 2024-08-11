@@ -277,6 +277,7 @@ class BaseValidatorNeuron(BaseNeuron):
             wait_for_inclusion=False,
             version_key=self.spec_version,
         )
+        print(f"result: {result}")
         if result is True:
             print("success with weights")
             bt.logging.info("set_weights on chain successfully!")

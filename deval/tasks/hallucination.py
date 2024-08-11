@@ -64,7 +64,7 @@ class HallucinationTask(Task):
     desc = "Estimates the number of hallucination in a response given a RAG context"
     goal = "to identify the correct number of hallucinations"
 
-    max_paragraphs = 3
+    max_paragraphs = 10
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),

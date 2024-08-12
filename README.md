@@ -26,7 +26,7 @@
 
 Welcome to De-Val, the pioneering decentralized evaluation subnet for large language models (LLMs). Built on the robust Bittensor network, De-Val offers unmatched objectivity and reliability in evaluating LLM outputs, tackling challenges such as hallucinations, misattributions, relevancy and summary completeness.
 
-Our unique approach leverages synthetic data for initial training with long-term plans to provide evaluation and monitoring capabilities for businesses looking to improve their own LLM based solutions through A/B testing or offline validation.Our primary focus is evaluation in the context of RAG based scenarios to help businesses answer questions such as:
+Our unique approach leverages synthetic data for initial training with long-term plans to provide evaluation and monitoring capabilities for businesses looking to improve their own LLM based solutions through A/B testing or offline validation. Our primary focus is evaluation in the context of RAG based scenarios to help businesses answer questions such as:
 - How accurate is my LLM given the provided context?
 - How comprehensive are our abstractive summaries? Are we missing key details?
 - Can we correctly identify key users and match their names to relevant action items? 

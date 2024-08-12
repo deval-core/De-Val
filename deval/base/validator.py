@@ -267,8 +267,7 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("uint_uids", uint_uids)
 
         # Set the weights on chain via our subtensor connection.
-        print(f"weights value: wallet: {self.wallet}, netuid: {self.config.netuid}, uids: {uint_uids}, weights: {uint_weights}")
-        result = self.subtensor.set_weights(
+        result, reason = self.subtensor.set_weights(
             wallet=self.wallet,
             netuid=self.config.netuid,
             uids=uint_uids,
@@ -277,16 +276,11 @@ class BaseValidatorNeuron(BaseNeuron):
             wait_for_inclusion=False,
             version_key=self.spec_version,
         )
-        print(f"result: {result}")
-        try:
-            print(f"result indexed: {result[0]}")
-        except:
-            print("failed index")
         if result is True:
             print("success with weights")
             bt.logging.info("set_weights on chain successfully!")
         else:
-            bt.logging.error("set_weights failed")
+            bt.logging.error(f"set_weights failed: {reason}")
 
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""

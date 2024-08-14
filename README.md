@@ -217,7 +217,7 @@ Currently we are only available on testnet with NETUID:`202`
 
 [Discord](https://github.com/deval-core/De-Val)
 
-[WandB]() 
+[WandB](https://wandb.ai/deval-ai/subnet/overview) 
 
 [De-val official website](de-val.ai)
 

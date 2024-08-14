@@ -1,7 +1,10 @@
 <div align="center">
 
 # De-Val: The Ultimate Decentralized Evaluation Subnet for LLMs <!-- omit in toc -->
-[![De-Val](path/to/logo.png)](de-val.website)
+<a href="de-val.ai">
+  <img src="logos/de-val_logo.png" alt="De-Val" width="150"/>
+</a>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -78,7 +81,7 @@ In our first iteration of the subnet, we will release evaluators focused on:
 - [x] Launch on testnet
 - [x] Develop baseline evaluators
 - [x] Launch on Testnet
-- [ ] Launch website
+- [x] Launch website
 - [ ] Begin marketing for brand awareness and interest
 
 ### Phase 2: Expansion (Q4 2024)
@@ -102,6 +105,7 @@ In our first iteration of the subnet, we will release evaluators focused on:
 - Poetry
 - CPU only instance
 - OPENAI API key
+- WANDB API key - Optional - Validators only
 
 ### Bittensor Setup
 
@@ -125,22 +129,25 @@ Setting up your wallet can be found [here](https://docs.bittensor.com/getting-st
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-Once the above steps are completed log out of your intance and log back in to see `bittensor` and `poetry` installed.
+Once the above steps are completed log out of your instance and log back in to see `bittensor` and `poetry` installed.
 
 ### Validator Setup
 We attempted to make everything as easy to run as possible, that is why we went with `poetry` as the package and venv manager.
 
-to set up your validator you will need to follow these steps:
+To set up your validator you will need to follow these steps:
 ```
 git clone https://github.com/deval-core/De-Val.git
 cd De-Val
 
-# Adding your OPENAI API key to your .env file
-echo "OPENAI_API_KEY=<your_key_here>" > .env
+# Adding your OPENAI API and WANDB key to your .env file
+echo -e "OPENAI_API_KEY=<your_openai_key_here>\nWANDB_API_KEY=<your_wandb_key_here>" > .env
+
 
 # Install packages and dependencies using poetry.
 poetry install
 ```
+NOTE: While logging on WANDB is optional - we would highly encourage validators to do so.
+
 Once that is done, you can activate your venv with `poetry shell`.
 
 ```
@@ -150,6 +157,7 @@ Now that everyhing ready you are ready to launch your validator after registerin
 example command for registering a validator/miner:
 ```
 btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
+#testnet:202
 ```
 
 Running Validator:
@@ -195,7 +203,7 @@ btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.
 Running Miner:
 ```
 pm2 start neurons/miner.py --name de-val-miner -- \
-    --netuid XX
+    --netuid XX 
     --subtensor.network <finney/local/test>
     --wallet.name <your coldkey> # Must be created using the bittensor-cli
     --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
@@ -203,14 +211,15 @@ pm2 start neurons/miner.py --name de-val-miner -- \
     --logging.trace # For trace mode
     --axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine
 ```
+Currently we are only available on testnet with NETUID:`202`
 
 ## Community
 
-[Discord](link.com)
+[Discord](https://github.com/deval-core/De-Val)
 
-[X](Link.com)
+[WandB](https://wandb.ai/deval-ai/subnet/overview) 
 
-[De-val official website](xxxx)
+[De-val official website](de-val.ai)
 
 
 ## License

@@ -150,6 +150,7 @@ Now that everyhing ready you are ready to launch your validator after registerin
 example command for registering a validator/miner:
 ```
 btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
+#testnet:202
 ```
 
 Running Validator:
@@ -195,7 +196,7 @@ btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.
 Running Miner:
 ```
 pm2 start neurons/miner.py --name de-val-miner -- \
-    --netuid XX
+    --netuid XX #testnet: 202 
     --subtensor.network <finney/local/test>
     --wallet.name <your coldkey> # Must be created using the bittensor-cli
     --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
@@ -206,10 +207,11 @@ pm2 start neurons/miner.py --name de-val-miner -- \
 
 ## Community
 
-[Discord](link.com)
+[Discord](https://github.com/deval-core/De-Val)
 
 [X](Link.com)
 
+[WandB](xxxx) 
 [De-val official website](xxxx)
 
 

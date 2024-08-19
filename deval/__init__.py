@@ -35,16 +35,6 @@ from . import utils
 from . import forward
 from . import agent
 from . import dendrite
-from . import shared
 from . import validator
 
-from .tasks import TASKS
-from .task_registry import TASK_REGISTRY
-
-# Assert that all tasks have a dataset, and all tasks/datasets are in the TASKS and DATASETS dictionaries.
-registry_missing_task = set(TASKS.keys()) - set(TASK_REGISTRY.keys())
-registry_extra_task = set(TASK_REGISTRY.keys()) - set(TASKS.keys())
-assert (
-    not registry_missing_task
-), f"Missing tasks in TASK_REGISTRY: {registry_missing_task}"
-assert not registry_extra_task, f"Extra tasks in TASK_REGISTRY: {registry_extra_task}"
+from .task_generator import TASKS

@@ -300,7 +300,7 @@ def add_validator_args(cls, parser):
         type=float,
         nargs="+",
         help="The probability of sampling each task.",
-        default=[1.0 / len(TASKS)] * len(TASKS),
+        default=[v['run_probability'] for v in TASKS.values()],
     )
 
     parser.add_argument(

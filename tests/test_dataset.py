@@ -2,7 +2,7 @@ import pytest
 
 from .fixtures.dataset import DATASETS, CONTEXTS, CONTEXT_FIELDS
 from deval.tools.datasets import Dataset
-from deval.shared import Context
+from deval.tasks import Context
 
 
 @pytest.mark.parametrize("dataset", DATASETS)

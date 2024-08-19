@@ -5,7 +5,6 @@ import random
 
 @dataclass
 class Context:
-    # TODO: Pydantic model
     title: str
     topic: str
     subtopic: str

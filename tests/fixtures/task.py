@@ -8,7 +8,7 @@ from deval.tasks import (
     DateQuestionAnsweringTask,
     TranslationTask
 )
-from deval.shared import Context
+from deval.tasks import Context
 from .dataset import WIKI_CONTEXT, CODING_CONTEXT, MATH_CONTEXT, DATEQA_CONTEXT, MOCK_CONTEXT
 
 TASKS = [

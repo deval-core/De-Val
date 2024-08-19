@@ -35,7 +35,6 @@ from . import utils
 from . import forward
 from . import agent
 from . import dendrite
-from . import shared
 from . import validator
 
-from .tasks import TASKS
+from .task_generator import TASKS

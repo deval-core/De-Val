@@ -24,7 +24,7 @@ from typing import Dict
 import bittensor as bt
 
 from ..selector import Selector
-from deval.shared.context import Context
+from deval.tasks.context import Context
 from deval.utils.exceptions import MaxRetryError
 
 

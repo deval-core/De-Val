@@ -1,7 +1,5 @@
-from deval.tasks import (
-    Task,
-)
-from deval.tasks import TasksEnum, TASKS
+from deval.tasks import TasksEnum, Task, TASKS
+
 
 
 def create_task(llm_pipeline, task_name: str) -> Task:
@@ -24,10 +22,15 @@ def create_task(llm_pipeline, task_name: str) -> Task:
 
 if __name__ == "__main__":
     from deval.llms import OpenAIPipeline
+    from dotenv import load_dotenv, find_dotenv
+    import os
+
+    _ = load_dotenv(find_dotenv())
 
     llm_pipeline = OpenAIPipeline(
         model_id="gpt-4o-mini",
         mock=False,
+        api_key=os.environ.get("OPENAI_API_KEY")
     )  
 
     task_name = TasksEnum.ATTRIBUTION.value

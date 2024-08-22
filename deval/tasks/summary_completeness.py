@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
 import random
 from pydantic import BaseModel
+from json.decoder import JSONDecodeError
 
 
 # Used to obtain the set of contexts and claims 
@@ -53,7 +54,7 @@ class CompletenessTask(Task):
     goal = "to identify how complete a provided summary is"
 
 
-    max_paragraphs = 10
+    max_paragraphs = 20
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -87,9 +88,13 @@ class CompletenessTask(Task):
             response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
 
             # format 
-            json_response = self.parse_llm_query(response)
-            resp_tmp = Config(**json_response)
-            responses.append(resp_tmp)
+            try:
+                json_response = self.parse_llm_query(response)
+                resp_tmp = Config(**json_response)
+                responses.append(resp_tmp)
+            except JSONDecodeError as e:
+                bt.logging.debug(f"Experienced {e} in Attribution task")
+                continue
             
 
         self.generate_reference(responses, num_summaries)

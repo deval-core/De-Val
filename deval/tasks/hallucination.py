@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
 import random
 from pydantic import BaseModel
+from json.decoder import JSONDecodeError
 
 
 
@@ -64,7 +65,7 @@ class HallucinationTask(Task):
     desc = "Estimates the number of hallucination in a response given a RAG context"
     goal = "to identify the correct number of hallucinations"
 
-    max_paragraphs = 10
+    max_paragraphs = 20
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -103,10 +104,14 @@ class HallucinationTask(Task):
             response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
 
             # format 
-            json_response = self.parse_llm_query(response)
-            json_response['true_or_false'] = true_or_false
-            resp_tmp = Config(**json_response)
-            responses.append(resp_tmp)
+            try:
+                json_response = self.parse_llm_query(response)
+                json_response['true_or_false'] = true_or_false
+                resp_tmp = Config(**json_response)
+                responses.append(resp_tmp)
+            except JSONDecodeError as e:
+                bt.logging.debug(f"Experienced {e} in Hallucination task")
+                continue
             
 
         self.generate_reference(responses, num_claims)

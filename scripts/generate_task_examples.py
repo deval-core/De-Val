@@ -2,10 +2,14 @@ from deval.llms import OpenAIPipeline
 from deval.task_generator import create_task
 from deval.tasks import TasksEnum
 import pandas as pd
+from dotenv import load_dotenv, find_dotenv
+import os
+
+_ = load_dotenv(find_dotenv())
 
 # INIT Variables
-task_name = TasksEnum.COMPLETENESS.value
-num_to_generate = 10
+task_name = TasksEnum.ATTRIBUTION.value
+num_to_generate = 5
 data_path = "./exports"
 
 def extractTaskToRow(task):
@@ -21,6 +25,7 @@ def extractTaskToRow(task):
 llm_pipeline = OpenAIPipeline(
     model_id="gpt-4o-mini",
     mock=False,
+    api_key=os.environ.get("OPENAI_API_KEY")
 )  
 rows = []
 

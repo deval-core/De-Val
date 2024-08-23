@@ -121,7 +121,7 @@ class AttributionTask(Task):
 
     def generate_reference(self, responses: list[Config], num_action_groups: int):
         contexts = [r.context for r in responses]
-        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
+        self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
         subset_action_items = random.sample(responses, num_action_groups)
@@ -131,4 +131,4 @@ class AttributionTask(Task):
 
         action_items = [random.choice(self.joiners).join(a for a in r.action_items) for r in subset_action_items]
         random.shuffle(action_items)
-        self.llm_response = random.choice(self.joiners).join([a_item for a_item in action_items])
+        self.llm_response = "".join([a_item + random.choice(self.joiners) for a_item in action_items])

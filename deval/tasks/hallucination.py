@@ -123,7 +123,7 @@ class HallucinationTask(Task):
     def generate_reference(self, responses: list[Config], num_claims: int):
         # context input 
         contexts = [r.context for r in responses]
-        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
+        self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
         subset_claims = random.sample(responses, num_claims)
@@ -132,4 +132,4 @@ class HallucinationTask(Task):
 
         claims = [r.claim for r in subset_claims]
         random.shuffle(claims)
-        self.llm_response = random.choice(self.joiners).join([c for c in claims])
+        self.llm_response = "".join([c + random.choice(self.joiners) for c in claims])

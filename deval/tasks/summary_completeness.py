@@ -106,11 +106,11 @@ class CompletenessTask(Task):
     def generate_reference(self, responses: list[Config], num_summaries: int):
         # context input 
         contexts = [r.context for r in responses]
-        self.rag_context = random.choice(self.joiners).join([c for c in contexts])
+        self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
         subset_summaries = random.sample(responses, num_summaries)
         self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]
-        self.llm_response = random.choice(self.joiners).join([c for c in summaries])
+        self.llm_response = "".join([c + random.choice(self.joiners) for c in summaries])

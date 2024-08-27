@@ -82,7 +82,7 @@ In our first iteration of the subnet, we will release evaluators focused on:
 - [x] Develop baseline evaluators
 - [x] Launch on Testnet
 - [x] Launch website
-- [ ] Begin marketing for brand awareness and interest
+- [x] Begin marketing for brand awareness and interest
 
 ### Phase 2: Expansion (Q4 2024)
 - [ ] Achieve competitive baseline evaluation accuracy
@@ -163,7 +163,7 @@ btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.
 Running Validator:
 ```
 pm2 start neurons/validator.py --name de-val-validator -- \
-    --netuid XX
+    --netuid 15
     --subtensor.network <finney/local/test>
     --wallet.name <your coldkey> # Must be created using the bittensor-cli
     --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
@@ -197,13 +197,13 @@ poetry shell
 Now that everyhing ready you are ready to launch your validator after registering to the subnet.
 example command for registering a validator/miner:
 ```
-btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
+btcli s register --subtensor.network <local/test/finney> --netuid <15> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
 ```
 
 Running Miner:
 ```
 pm2 start neurons/miner.py --name de-val-miner -- \
-    --netuid XX 
+    --netuid 15 
     --subtensor.network <finney/local/test>
     --wallet.name <your coldkey> # Must be created using the bittensor-cli
     --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
@@ -211,11 +211,11 @@ pm2 start neurons/miner.py --name de-val-miner -- \
     --logging.trace # For trace mode
     --axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine
 ```
-Currently we are only available on testnet with NETUID:`202`
+Currently we are available on mainnet with NETUID: `15` and testnet with NETUID:`202`
 
 ## Community
 
-[Discord](https://github.com/deval-core/De-Val)
+[Discord](https://discord.com/channels/799672011265015819/1272557411948957697)
 
 [WandB](https://wandb.ai/deval-ai/subnet/overview) 
 

@@ -1,6 +1,6 @@
 import bittensor as bt
 from deval.forward import forward
-from deval.llms import OpenAIPipeline
+from deval.llms.openai_llm import OpenAILLM
 from deval.base.validator import BaseValidatorNeuron
 from deval.rewards import RewardPipeline
 from dotenv import load_dotenv, find_dotenv
@@ -18,16 +18,14 @@ class Validator(BaseValidatorNeuron):
         bt.logging.info("load_state()")
         self.load_state()
 
+        # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
-        api_key = os.getenv("OPENAI_API_KEY", None)
-        if api_key is None:
-            raise ValueError("Please add OPENAI_API_KEY to your environment")
-
-        self.llm_pipeline = OpenAIPipeline(
-            model_id=self.config.neuron.model_id,
-            mock=self.config.mock,
-            api_key=api_key
-        )        
+        
+        #self.llm_pipeline = OpenAIPipeline(
+        #    model_id=self.config.neuron.model_id,
+        #    mock=self.config.mock,
+        #    api_key=api_key
+        #)        
 
         if abs(1-sum(self.config.neuron.task_p)) > 0.001:
             raise ValueError("Task probabilities do not sum to 1.")

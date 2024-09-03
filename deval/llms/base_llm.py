@@ -1,47 +1,52 @@
-import bittensor as bt
 from abc import ABC, abstractmethod
-#from deval.cleaners.cleaner import CleanerPipeline
-from typing import Any, Dict, List
+
+from pydantic import BaseModel, Field
+from enum import Enum
 
 
-class BasePipeline(ABC):
-    @abstractmethod
-    def __call__(self, composed_prompt: str, **kwargs: dict) -> Any:
-        ...
+
+class LLMFormatType(Enum):
+    JSON="json_object"
+    TEXT="text"
+
+class LLMArgs(BaseModel):
+    max_new_tokens:int = 500
+    temperature: float = 0.7
+    top_p: float = 0.97
+    format:LLMFormatType
 
 
 class BaseLLM(ABC):
+
     def __init__(
         self,
-        llm_pipeline: BasePipeline,
+        model_id: str,
         system_prompt: str,
-        model_kwargs: dict,
+        model_kwargs: LLMArgs,
     ):
-        self.llm_pipeline = llm_pipeline
         self.system_prompt = system_prompt
-        self.model_kwargs = model_kwargs
+        self.model_kwargs = model_kwargs.dict()
+        self.model_id = model_id
         self.messages = []
-        self.times = []
+        self.times = [0]
 
+
+    @abstractmethod
     def query(
         self,
         prompt: str,
-        #role: str = "user",
-        #disregard_system_prompt: bool = False,
-        #cleaner: CleanerPipeline = None,
     ) -> str:
         ...
 
-    def forward(self, messages: List[Dict[str, str]]):
+
+    @abstractmethod
+    def forward(
+        self, 
+        messages: list[dict[str, str]]
+    ) -> str:
         ...
 
-    def clean_response(self, cleaner, response: str) -> str:
-        if cleaner is not None:
-            clean_response = cleaner.apply(generation=response)
-            if clean_response != response:
-                bt.logging.debug(
-                    f"Response cleaned, chars removed: {len(response) - len(clean_response)}..."
-                )
-
-            return clean_response
-        return response
+    @abstractmethod
+    def load(self, model_id: str):
+        ...
+    

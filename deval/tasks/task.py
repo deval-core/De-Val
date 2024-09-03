@@ -4,7 +4,8 @@ from abc import ABC
 from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import List, Union, Dict
-from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
+#from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
+from deval.llms.base_llm import BaseLLM
 #from deval.cleaners.cleaner import CleanerPipeline
 import json
 from enum import Enum
@@ -64,20 +65,16 @@ class Task(ABC):
         return state
  
     def generate(
-        self, system: str, prompt: str, pipeline: BasePipeline, clean=True
+        self, prompt: str, llm_pipeline: BaseLLM
     ) -> str:
         """Uses the llm to generate a response to a prompt"""
 
-        #cleaner = (
-        #    CleanerPipeline(cleaning_pipeline=self.cleaning_pipeline) if clean else None
-        #)
 
-        # TODO: find a better place to define temperature
-        return ValidatorLLM(pipeline, system_prompt=system, temperature=1).query(
+        return llm_pipeline.query(
             prompt=prompt
         )
 
-    def generate_input(self, pipeline: BasePipeline, prompt, system_prompt) -> str:
+    def generate_input(self, pipeline, prompt, system_prompt) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
         bt.logging.info("🤖 Generating query...")

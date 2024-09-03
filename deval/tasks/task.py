@@ -68,21 +68,17 @@ class Task(ABC):
         self, prompt: str, llm_pipeline: BaseLLM
     ) -> str:
         """Uses the llm to generate a response to a prompt"""
-
-
         return llm_pipeline.query(
             prompt=prompt
         )
 
-    def generate_input(self, pipeline, prompt, system_prompt) -> str:
+    def generate_input(self, llm_pipeline, prompt, system_prompt) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
         bt.logging.info("🤖 Generating query...")
         input = self.generate(
-            system=system_prompt, 
             prompt=prompt,
-            pipeline=pipeline,
-            clean=False,
+            llm_pipeline=llm_pipeline,
         )
 
         self.query_time = time.time() - t0

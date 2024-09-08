@@ -3,6 +3,7 @@ from deval.forward import forward
 from deval.llms.openai_llm import OpenAILLM
 from deval.base.validator import BaseValidatorNeuron
 from deval.rewards import RewardPipeline
+from deval.task_generator import TaskGenerator
 from dotenv import load_dotenv, find_dotenv
 import os
 
@@ -21,11 +22,8 @@ class Validator(BaseValidatorNeuron):
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
         
-        #self.llm_pipeline = OpenAIPipeline(
-        #    model_id=self.config.neuron.model_id,
-        #    mock=self.config.mock,
-        #    api_key=api_key
-        #)        
+        self.task_generator = TaskGenerator()
+
 
         if abs(1-sum(self.config.neuron.task_p)) > 0.001:
             raise ValueError("Task probabilities do not sum to 1.")

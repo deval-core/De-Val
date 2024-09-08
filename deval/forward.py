@@ -22,7 +22,7 @@ import numpy as np
 import bittensor as bt
 from deval.agent import HumanAgent
 from deval.dendrite import DendriteResponseEvent
-from deval.task_generator import create_task
+from deval.task_generator import TaskGenerator
 from deval.protocol import EvalSynapse
 from deval.rewards import RewardResult
 from deval.utils.uids import get_random_uids
@@ -119,8 +119,12 @@ async def forward(self):
             self.config.neuron.tasks, p=self.config.neuron.task_p
         )
         bt.logging.info(f"📋 Creating {task_name} task... ")
+
+        llm_pipeline = self.task_generator.get_random_llm()
+        bt.logging.info(f"Utilizing {llm_pipeline.api} with model id {llm_pipeline.model_id}")
+
         try:
-            task = create_task(llm_pipeline=self.llm_pipeline, task_name=task_name)
+            task = self.task_generator.create_task(llm_pipeline=llm_pipeline, task_name=task_name)
             break
         except Exception as e:
             bt.logging.error(

@@ -65,11 +65,12 @@ class Task(ABC):
         return state
  
     def generate(
-        self, prompt: str, llm_pipeline: BaseLLM
+        self, prompt: str, system_prompt: str, llm_pipeline: BaseLLM
     ) -> str:
         """Uses the llm to generate a response to a prompt"""
         return llm_pipeline.query(
-            prompt=prompt
+            prompt=prompt,
+            system_prompt=system_prompt
         )
 
     def generate_input(self, llm_pipeline, prompt, system_prompt) -> str:
@@ -78,6 +79,7 @@ class Task(ABC):
         bt.logging.info("🤖 Generating query...")
         input = self.generate(
             prompt=prompt,
+            system_prompt = system_prompt,
             llm_pipeline=llm_pipeline,
         )
 

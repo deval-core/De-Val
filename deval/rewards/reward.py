@@ -175,18 +175,25 @@ class BaseRewardModel(ABC):
 
 
 if __name__ == "__main__":
-    from deval.llms import OpenAIPipeline
     from deval.tasks import TasksEnum
     from deval.task_generator import create_task
     from deval.agent import HumanAgent
     from deval.protocol import EvalSynapse
     from deval.dendrite import DendriteResponseEvent
     from deval.rewards.pipeline import RewardPipeline
+    from deval.llms.openai_llm import OpenAILLM
+    from deval.llms.base_llm import LLMArgs, LLMFormatType
+    from dotenv import load_dotenv, find_dotenv
+    
+    task_name = TasksEnum.HALLUCINATION.value
+    _ = load_dotenv(find_dotenv())
 
-    llm_pipeline = OpenAIPipeline(
+    model_kwargs = LLMArgs(format = LLMFormatType.TEXT)
+    llm_pipeline = OpenAILLM(
         model_id="gpt-4o-mini",
-        mock=False,
-    )  
+        model_kwargs=model_kwargs
+    )
+ 
 
     # get task 
     task_name = TasksEnum.COMPLETENESS.value

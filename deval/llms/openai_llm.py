@@ -2,7 +2,7 @@
 import time
 import bittensor as bt
 from typing import List, Dict
-from deval.llms.base_llm import BaseLLM, LLMArgs
+from deval.llms.base_llm import BaseLLM, LLMArgs, LLMAPIs
 from deval.mock import MockPipeline
 from openai import OpenAI 
 import os
@@ -13,20 +13,18 @@ class OpenAILLM(BaseLLM):
     def __init__(
         self,
         model_id: str,
-        system_prompt: str,
         model_kwargs: LLMArgs,
     ):
-        super().__init__(model_id, system_prompt, model_kwargs)
+        api = LLMAPIs.OPENAI
+        super().__init__(api, model_id, model_kwargs)
         self.llm = self.load(model_id)
-
-        # Keep track of generation data using messages and times
-        self.messages = [{"content": self.system_prompt, "role": "system"}]
 
     def query(
         self,
         prompt: str,
+        system_prompt: str,
     ):
-        # Adds the message to the list of messages for tracking purposes, even though it's not used downstream
+        self.messages = [{"content": system_prompt, "role": "system"}]
         messages = self.messages + [{"content": prompt, "role": "user"}]
 
         t0 = time.time()
@@ -79,12 +77,11 @@ class OpenAILLM(BaseLLM):
 if __name__ == "__main__":
     from deval.llms.base_llm import LLMFormatType
     from dotenv import load_dotenv, find_dotenv
-
     _ = load_dotenv(find_dotenv())
-    # Example usage
+
     model_kwargs = LLMArgs(format = LLMFormatType.TEXT)
-    llm = OpenAILLM(model_id="gpt-4o-mini", system_prompt="You are a helpful AI assistant", model_kwargs=model_kwargs)
+    llm = OpenAILLM(model_id="gpt-4o-mini",  model_kwargs=model_kwargs)
 
     message = "What is the capital of Texas?"
-    response = llm.query(message)
+    response = llm.query(message, system_prompt="You are a helpful AI assistant")
     print(response)

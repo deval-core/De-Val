@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 
+class LLMAPIs(Enum):
+    OPENAI="openai"
 
 class LLMFormatType(Enum):
     JSON="json_object"
@@ -20,11 +22,11 @@ class BaseLLM(ABC):
 
     def __init__(
         self,
+        api: LLMAPIs,
         model_id: str,
-        system_prompt: str,
         model_kwargs: LLMArgs,
     ):
-        self.system_prompt = system_prompt
+        self.api = api
         self.model_kwargs = model_kwargs.dict()
         self.model_id = model_id
         self.messages = []
@@ -35,6 +37,7 @@ class BaseLLM(ABC):
     def query(
         self,
         prompt: str,
+        system_prompt: str,
     ) -> str:
         ...
 

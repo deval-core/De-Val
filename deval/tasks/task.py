@@ -32,16 +32,14 @@ class Task(ABC):
     llm_response: str
     reference: float
     reward_definition: List[dict]
+    api: str
+    model_id: str
     query: str = ""
     penalty_definition: List[dict] = None
-    reward_threshold: float = 0.0
-    complete: bool = False
-    cleaner = None
-    clean_reference = False
     joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, api={self.api!r}, model_id={self.model_id!r})"
 
     def __repr__(self):
         return str(self)
@@ -58,6 +56,8 @@ class Task(ABC):
             "topic": self.topic,
             "subtopic": self.subtopic,
             "context_time": self.context.stats.get("fetch_time", 0.0),
+            "api": self.api,
+            "model_id": self.model_id,
         }
         if full:
             state.update(asdict(self.context))

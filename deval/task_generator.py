@@ -9,6 +9,9 @@ class TaskGenerator:
 
     def __init__(self):
         # initialize available models 
+        self.supported_models = {
+            LLMAPIs.OPENAI : ["gpt-4o-mini", "gpt-4o-2024-08-06"]
+        }
         self.available_models = self.get_available_models()
 
     def get_available_models(self) -> list[BaseLLM]:
@@ -20,11 +23,12 @@ class TaskGenerator:
         # go through each of our models and store the available ones
         openai_key = os.getenv("OPENAI_API_KEY", None)
         if openai_key is not None:
-            openai_llm = OpenAILLM(
-                model_id="gpt-4o-mini",
-                model_kwargs=model_kwargs
-            )
-            available_models.append(openai_llm)
+            for model_id in self.supported_models.get(LLMAPIs.OPENAI):
+                openai_llm = OpenAILLM(
+                    model_id=model_id,
+                    model_kwargs=model_kwargs
+                )
+                available_models.append(openai_llm)
             
         # we only require that at least one model can be run 
         if len(available_models) == 0:

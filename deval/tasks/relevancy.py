@@ -96,6 +96,8 @@ class RelevancyTask(Task):
         self.topic = context.title
         self.subtopic = context.topic
         self.tags = context.tags
+        self.api = llm_pipeline.api.value
+        self.model_id = llm_pipeline.model_id
 
     def generate_reference(self, response: Config):
         self.rag_context = response.context

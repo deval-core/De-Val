@@ -20,6 +20,9 @@ class ToolSchemaGenerator:
 
         if api == LLMAPIs.OPENAI:
             return self.generate_openai_schema()
+
+        elif api == LLMAPIs.BEDROCK:
+            return self.generate_aws_bedrock_schema()
         
         else:
             raise ValueError(f"Unsupported API for tool use {api} - please implement a schema for this API")
@@ -38,4 +41,23 @@ class ToolSchemaGenerator:
                     "additionalProperties": False,
                 },
             }
+        }
+    
+    def generate_aws_bedrock_schema(self) -> dict:
+        return {
+            "tools": [
+                {
+                    "toolSpec": {
+                        "name": self.name,
+                        "description": self.description,
+                        "inputSchema": {
+                            "json": {
+                                "type": "object",
+                                "properties": self.properties,
+                                "required": self.required
+                            }
+                        }
+                    }
+                }
+            ]
         }

@@ -6,10 +6,8 @@ from enum import Enum
 
 class LLMAPIs(Enum):
     OPENAI="openai"
+    BEDROCK="aws_bedrock"
 
-SUPPORTED_MODELS = {
-    LLMAPIs.OPENAI : ["gpt-4o-mini", "gpt-4o-2024-08-06"]
-}
 
 class LLMFormatType(Enum):
     JSON="json_object"
@@ -63,6 +61,6 @@ class BaseLLM(ABC):
         ...
 
     @abstractmethod
-    def load(self, model_id: str):
+    def load(self):
         ...
     

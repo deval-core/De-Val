@@ -1,9 +1,7 @@
 
 import time
 import bittensor as bt
-from typing import List, Dict
 from deval.llms.base_llm import BaseLLM, LLMArgs, LLMAPIs
-from deval.mock import MockPipeline
 from openai import OpenAI 
 import os
 
@@ -17,7 +15,7 @@ class OpenAILLM(BaseLLM):
     ):
         api = LLMAPIs.OPENAI
         super().__init__(api, model_id, model_kwargs)
-        self.llm = self.load(model_id)
+        self.llm = self.load()
 
     def query(
         self,
@@ -81,7 +79,7 @@ class OpenAILLM(BaseLLM):
         
         return content
     
-    def load(self, api_key: str):
+    def load(self):
         """Loads the OpenAI GPT pipeline for the LLM"""
         api_key = os.getenv("OPENAI_API_KEY", None)
         if api_key is None:

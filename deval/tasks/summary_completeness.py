@@ -1,6 +1,7 @@
 import bittensor as bt
 from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
+from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel
 from json.decoder import JSONDecodeError
@@ -33,13 +34,7 @@ The new context should follow the past context to generate a consistent story.
 #Past context:
 {past_context}
 
-#JSON structure
-{{
-    "context": string,
-    "summary": string
-}}
-
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema.
 """
 
 class Config(BaseModel):
@@ -50,11 +45,23 @@ class Config(BaseModel):
 @dataclass
 class CompletenessTask(Task):
     name = TasksEnum.COMPLETENESS.value
-    desc = "Estimates the comprehensiveness of a summary"
-    goal = "to identify how complete a provided summary is"
+    desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
+    goal = "Estimates the comprehensiveness of a summary"
 
+    max_paragraphs = 3
+    properties = {
+        "context": {
+            "type": "string",
+            "description": "The generated context used as input into an LLM RAG pipeline",
+        },
+        "summary": {
+            "type": "string",
+            "description": "The generated summary that is derived from the associated context",
+        },
+    }
+    required_values = ["context", "summary"]
 
-    max_paragraphs = 20
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -71,6 +78,7 @@ class CompletenessTask(Task):
         num_pagraphs = random.randint(1, self.max_paragraphs)
         num_summaries = random.randint(1, num_pagraphs)
         system_prompt = COMPLETENESS_SYSTEM_PROMPT
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):
@@ -85,7 +93,7 @@ class CompletenessTask(Task):
                 subtopic=context.subtopic, 
                 context_type=context.context_type,
                 past_context=past_context)
-            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
             # format 
             try:

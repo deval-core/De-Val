@@ -38,6 +38,7 @@ class BaseLLM(ABC):
         self,
         prompt: str,
         system_prompt: str,
+        tool_schema: dict | None = None
     ) -> str:
         ...
 
@@ -47,6 +48,14 @@ class BaseLLM(ABC):
         self, 
         messages: list[dict[str, str]]
     ) -> str:
+        ...
+
+    @abstractmethod
+    def parse_response(
+        self, 
+        output
+    ) -> str:
+        # types unknown and dependent on input API 
         ...
 
     @abstractmethod

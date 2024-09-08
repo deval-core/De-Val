@@ -4,6 +4,7 @@ from deval.tasks.task import Task, TasksEnum
 import random
 from pydantic import BaseModel
 from json.decoder import JSONDecodeError
+from deval.tasks.tool_schema import ToolSchemaGenerator
 
 
 
@@ -42,13 +43,7 @@ The new context should follow the past context to generate a consistent conversa
 #Past context:
 {past_context}
 
-#JSON structure
-{{
-    "context": string,
-    "action_items": list[string]
-}}
-
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema
 """
 
 class Config(BaseModel):
@@ -60,11 +55,30 @@ class Config(BaseModel):
 @dataclass
 class AttributionTask(Task):
     name = TasksEnum.ATTRIBUTION.value
-    desc = "Estimates the number of correctly attributed action items in a response given a RAG context"
-    goal = "to identify the correct number of attributions"
+    desc = "Generate a context and associated action items for a misattribution evaluation task"
+    goal = "Estimates the number of correctly attributed action items in a response given a RAG context"
 
     max_particpants = 5
-    max_paragraphs = 20
+    max_paragraphs = 3
+
+    properties = {
+        "context": {
+            "type": "string",
+            "description": "The generated context used as input into an LLM RAG pipeline",
+        },
+        "action_items": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 5,
+            "description": "The generated action items this derived from the context",
+        },
+    }
+    required_values = ["context", "action_items"]
+
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -83,6 +97,7 @@ class AttributionTask(Task):
         num_participants = random.randint(1, self.max_particpants)
         probability_true = random.random()
         system_prompt = ATTRIBUTION_SYSTEM_PROMPT
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):
@@ -99,7 +114,7 @@ class AttributionTask(Task):
                 num_participants = num_participants,
                 attributed_correctly=true_or_false, 
                 past_context=past_context)
-            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
             # format 
             try:
@@ -114,7 +129,6 @@ class AttributionTask(Task):
 
         self.generate_reference(responses, num_action_groups)
         
-        # TODO: I dont think these are right for any of them 
         self.topic = context.title
         self.subtopic = context.topic
         self.tags = context.tags

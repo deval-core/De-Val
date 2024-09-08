@@ -12,7 +12,7 @@ from enum import Enum
 
 class TasksEnum(Enum):
     HALLUCINATION = "hallucination"
-    COMPLETENESS = "summary completeness"
+    COMPLETENESS = "summary_completeness"
     ATTRIBUTION = "attribution"
     RELEVANCY = "relevancy"
     UNKNOWN = "unknown"
@@ -64,23 +64,16 @@ class Task(ABC):
 
         return state
  
-    def generate(
-        self, prompt: str, system_prompt: str, llm_pipeline: BaseLLM
-    ) -> str:
-        """Uses the llm to generate a response to a prompt"""
-        return llm_pipeline.query(
-            prompt=prompt,
-            system_prompt=system_prompt
-        )
 
-    def generate_input(self, llm_pipeline, prompt, system_prompt) -> str:
+
+    def generate_input(self, llm_pipeline: BaseLLM, prompt: str, system_prompt: str, tool_schema: dict) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
         bt.logging.info("🤖 Generating query...")
-        input = self.generate(
+        input = llm_pipeline.query(
             prompt=prompt,
-            system_prompt = system_prompt,
-            llm_pipeline=llm_pipeline,
+            system_prompt=system_prompt,
+            tool_schema = tool_schema
         )
 
         self.query_time = time.time() - t0

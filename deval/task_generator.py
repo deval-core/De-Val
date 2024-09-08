@@ -15,7 +15,7 @@ class TaskGenerator:
         available_models = []
 
         # TODO: integrate with config settings 
-        model_kwargs = LLMArgs(format = LLMFormatType.JSON)
+        model_kwargs = LLMArgs(format = LLMFormatType.TEXT)
 
         # go through each of our models and store the available ones
         openai_key = os.getenv("OPENAI_API_KEY", None)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     from deval.llms.base_llm import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.HALLUCINATION.value
+    task_name = TasksEnum.RELEVANCY.value
     _ = load_dotenv(find_dotenv())
 
     task_generator = TaskGenerator()

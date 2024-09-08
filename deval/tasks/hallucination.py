@@ -1,6 +1,7 @@
 import bittensor as bt
 from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
+from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel
 from json.decoder import JSONDecodeError
@@ -44,13 +45,7 @@ The new context should follow the past context to generate a consistent story.
 #Past context:
 {past_context}
 
-#JSON structure
-{{
-    "context": string,
-    "claim": string
-}}
-
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema.
 """
 
 class Config(BaseModel):
@@ -62,10 +57,23 @@ class Config(BaseModel):
 @dataclass
 class HallucinationTask(Task):
     name = TasksEnum.HALLUCINATION.value
-    desc = "Estimates the number of hallucination in a response given a RAG context"
-    goal = "to identify the correct number of hallucinations"
-
+    desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
+    goal = "Estimates the number of hallucination in a response given a RAG context"
     max_paragraphs = 3
+    properties = {
+        "context": {
+            "type": "string",
+            "description": "The generated context used as input into an LLM RAG pipeline",
+        },
+        "claim": {
+            "type": "string",
+            "description": "The generated claim that is either true or false generated from the context",
+        },
+    }
+    required_values = ["context", "claim"]
+
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
+
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -83,6 +91,7 @@ class HallucinationTask(Task):
         num_claims = random.randint(1, num_pagraphs)
         probability_true = random.random()
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):
@@ -101,7 +110,7 @@ class HallucinationTask(Task):
                 difficulty_rating=context.difficulty, 
                 past_context=past_context)
 
-            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
             # format 
             try:

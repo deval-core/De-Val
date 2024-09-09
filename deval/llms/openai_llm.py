@@ -2,7 +2,7 @@
 import time
 import bittensor as bt
 from deval.llms.base_llm import BaseLLM
-from deval.llms.llm_config import LLMAPIs, LLMArgs
+from deval.llms.config import LLMAPIs, LLMArgs
 from openai import OpenAI 
 import os
 

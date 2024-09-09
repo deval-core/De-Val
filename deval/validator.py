@@ -21,10 +21,12 @@ class Validator(BaseValidatorNeuron):
 
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
-        
-        self.task_generator = TaskGenerator()
 
+        # get allowed model ids and init generator
+        allowed_models = self.config.neuron.model_ids.split(",")
+        self.task_generator = TaskGenerator(allowed_models=allowed_models)
 
+        # define how often tasks should run 
         if abs(1-sum(self.config.neuron.task_p)) > 0.001:
             raise ValueError("Task probabilities do not sum to 1.")
 

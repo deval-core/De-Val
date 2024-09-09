@@ -181,18 +181,18 @@ if __name__ == "__main__":
     from deval.protocol import EvalSynapse
     from deval.dendrite import DendriteResponseEvent
     from deval.rewards.pipeline import RewardPipeline
-    from deval.llms.llm_config import LLMAPIs
+    from deval.llms.config import LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
     task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
-    task_generator = TaskGenerator()
+    allowed_models = ["gpt-4o-mini"]
+    task_generator = TaskGenerator(allowed_models=allowed_models)
 
     llm_pipeline = [
         model for model in task_generator.available_models 
         if model.api == LLMAPIs.OPENAI 
-        and model.model_id == "gpt-4o-mini"
     ][0]
  
     task = task_generator.create_task(llm_pipeline, task_name)

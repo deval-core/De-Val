@@ -2,17 +2,29 @@ from deval.tasks import TasksEnum, Task, TASKS
 from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
-from deval.llms.llm_config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
+from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
 import os 
 import numpy as np
 
 
 class TaskGenerator:
 
-    def __init__(self):
+    def __init__(self, allowed_models: list[str] | None):
         # initialize available models 
         self.supported_models = SUPPORTED_MODELS
+
+        if allowed_models is not None:
+            self.supported_models = self.filter_to_allowed_models(allowed_models)
+
         self.available_models = self.get_available_models()
+
+    def filter_to_allowed_models(self, allowed_models: list[str] | None) -> dict:
+        filtered_dict = {}
+        for key, value in self.supported_models.items():
+            filtered_values = [model for model in value if model in allowed_models]
+            filtered_dict[key] = filtered_values
+
+        return filtered_dict
 
     def get_available_models(self) -> list[BaseLLM]:
         available_models = []
@@ -23,7 +35,7 @@ class TaskGenerator:
         # go through each of our models and store the available ones
         openai_key = os.getenv("OPENAI_API_KEY", None)
         if openai_key is not None:
-            for model_id in self.supported_models.get(LLMAPIs.OPENAI):
+            for model_id in self.supported_models.get(LLMAPIs.OPENAI, []):
                 openai_llm = OpenAILLM(
                     model_id=model_id,
                     model_kwargs=model_kwargs
@@ -33,7 +45,7 @@ class TaskGenerator:
         aws_access_key = os.getenv("AWS_ACCESS_KEY_ID", None)
         aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY", None)
         if aws_access_key is not None and aws_secret_key is not None:
-            for model_id in self.supported_models.get(LLMAPIs.BEDROCK):
+            for model_id in self.supported_models.get(LLMAPIs.BEDROCK, []):
                 bedrock_llm = AWSBedrockLLM(
                     model_id=model_id,
                     model_kwargs=model_kwargs
@@ -73,18 +85,19 @@ class TaskGenerator:
 
 if __name__ == "__main__":
     from deval.llms.openai_llm import OpenAILLM
-    from deval.llms.llm_config import LLMArgs, LLMFormatType, LLMAPIs
+    from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
     task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
-    task_generator = TaskGenerator()
+
+    allowed_models = ["gpt-4o-mini"]
+    task_generator = TaskGenerator(allowed_models=allowed_models)
 
     llm_pipeline = [
         model for model in task_generator.available_models 
         if model.api == LLMAPIs.OPENAI 
-        and model.model_id == "gpt-4o-mini"
     ][0]
  
     task = task_generator.create_task(llm_pipeline, task_name)

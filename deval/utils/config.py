@@ -22,6 +22,7 @@ import argparse
 import bittensor as bt
 import logging
 from deval.tasks import TASKS
+from deval.llms.config import SUPPORTED_MODELS
 
 from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
 
@@ -281,10 +282,10 @@ def add_validator_args(cls, parser):
     )
 
     parser.add_argument(
-        "--neuron.model_id",
+        "--neuron.model_ids",
         type=str,
-        help="The model to use for the validator.",
-        default="gpt-4o-mini",
+        help="The complete list of models to use for the validator - comma separated, no spaces e.g., 'gpt-4o,gpt-4o-mini'. Defaults to all available models.",
+        default=",".join([x for v in SUPPORTED_MODELS.values() for x in v]),
     )
 
     parser.add_argument(

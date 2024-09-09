@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from deval.llms.llm_config import LLMAPIs, LLMArgs
+from deval.llms.config import LLMAPIs, LLMArgs
 
 
 class BaseLLM(ABC):

@@ -1,23 +1,5 @@
 from abc import ABC, abstractmethod
-
-from pydantic import BaseModel, Field
-from enum import Enum
-
-
-class LLMAPIs(Enum):
-    OPENAI="openai"
-    BEDROCK="aws_bedrock"
-
-
-class LLMFormatType(Enum):
-    JSON="json_object"
-    TEXT="text"
-
-class LLMArgs(BaseModel):
-    max_new_tokens:int = 500
-    temperature: float = 0.7
-    top_p: float = 0.97
-    format:LLMFormatType
+from deval.llms.llm_config import LLMAPIs, LLMArgs
 
 
 class BaseLLM(ABC):

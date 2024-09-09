@@ -1,7 +1,8 @@
 from deval.tasks import TasksEnum, Task, TASKS
 from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
-from deval.llms.base_llm import LLMArgs, LLMFormatType, BaseLLM, LLMAPIs
+from deval.llms.base_llm import BaseLLM
+from deval.llms.llm_config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
 import os 
 import numpy as np
 
@@ -10,10 +11,7 @@ class TaskGenerator:
 
     def __init__(self):
         # initialize available models 
-        self.supported_models = {
-            LLMAPIs.OPENAI : ["gpt-4o-mini", "gpt-4o-2024-08-06"],
-            LLMAPIs.BEDROCK : ["anthropic.claude-3-haiku-20240307-v1:0", "cohere.command-r-plus-v1:0", "anthropic.claude-3-sonnet-20240229-v1:0",  "mistral.mistral-small-2402-v1:0", "mistral.mistral-large-2402-v1:0"]
-        }
+        self.supported_models = SUPPORTED_MODELS
         self.available_models = self.get_available_models()
 
     def get_available_models(self) -> list[BaseLLM]:
@@ -75,7 +73,7 @@ class TaskGenerator:
 
 if __name__ == "__main__":
     from deval.llms.openai_llm import OpenAILLM
-    from deval.llms.base_llm import LLMArgs, LLMFormatType, LLMAPIs
+    from deval.llms.llm_config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
     task_name = TasksEnum.HALLUCINATION.value

@@ -71,6 +71,7 @@ class RelevancyTask(Task):
 
     def __init__(self, llm_pipeline, context):
         self.context = context.content
+        print("CONTEXT ", self.context)
 
         system_prompt = RELEVANCY_SYSTEM_PROMPT
         probability_relevant = random.random()

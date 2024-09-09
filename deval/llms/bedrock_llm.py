@@ -5,6 +5,7 @@ from deval.llms.base_llm import BaseLLM, LLMArgs, LLMAPIs
 import os
 import json
 import boto3
+from botocore.exceptions import ClientError
 
 
 
@@ -77,17 +78,43 @@ class AWSBedrockLLM(BaseLLM):
         return content
     
     def parse_response(self, output) -> str:
+        if "mistral" in self.model_id:
+            return self.parse_mistral(output)
+        elif "anthropic" in self.model_id:
+            return self.parse_anthropic_cohere(output)
+        elif "cohere" in self.model_id:
+            return self.parse_anthropic_cohere(output)
+        else:
+            return response
+            #raise ValueError("Output parsing method for selected model ID not implemented")
+    
+    def parse_anthropic_cohere(self, output) -> str:
         # default to tools if provided, otherwise return message
-        response = output.get("output").get("message").get("content")
-        print(response)
-        
+        response = output.get('output').get('message').get('content')
+
         tool_calls = [r for r in response if "toolUse" in r]
         if len(tool_calls) > 0:
+            tool_call = tool_calls[0].get("toolUse").get("input")
+            content = json.dumps(tool_call)
+        else:
+            content =[r for r in response if "text" in r][0]
+
+        return content 
+
+
+
+    def parse_mistral(self, output) -> str:
+        # default to tools if provided, otherwise return message
+        response = output.get("output").get("message").get("content")
+        
+        tool_calls = [r for r in response if "arguments" in r.get("text")]
+        if len(tool_calls) > 0:
             tool_call = tool_calls[0]
-            content = tool_call.get("toolUse", {}).get("input")
-            print(content)
+            text = tool_call.get("text")
+            content = json.dumps(json.loads(text).get("arguments"))
         else:
             bt.logging.info("No tool response found, returning content")
+            print("No tool response found, returning content")
             content = [r for r in response if "text" in r][0]
             content =  content.get("text")
         
@@ -104,6 +131,23 @@ class AWSBedrockLLM(BaseLLM):
             service_name="bedrock-runtime",
         )
 
+    def check_model_id_access(self) -> bool:
+        # returns true if able to run a query against the selected model ID otherwise false
+        # actual feature not yet implemented so this is Janky
+        # https://github.com/aws/aws-sdk/issues/810
+
+        prompt = "Do I have access?"
+        system_prompt = "return True always"
+        try:
+            response = self.query(prompt, system_prompt)
+            return True
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'AccessDeniedException':
+                return False
+
+        except Exception as e:
+            bt.logging.error(f"Unhandled error at {e}")
+
 
 
 
@@ -114,7 +158,7 @@ if __name__ == "__main__":
     _ = load_dotenv(find_dotenv())
 
     model_kwargs = LLMArgs(format = LLMFormatType.TEXT)
-    llm = AWSBedrockLLM(model_id="meta.llama3-70b-instruct-v1:0",  model_kwargs=model_kwargs)
+    llm = AWSBedrockLLM(model_id="anthropic.claude-3-haiku-20240307-v1:0",  model_kwargs=model_kwargs)
 
     message = "What is the capital of Texas?"
     response = llm.query(message, system_prompt="You are a helpful AI assistant")

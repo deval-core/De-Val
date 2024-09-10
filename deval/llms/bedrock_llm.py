@@ -98,7 +98,10 @@ class AWSBedrockLLM(BaseLLM):
             tool_call = tool_calls[0].get("toolUse").get("input")
             content = json.dumps(tool_call)
         else:
-            content =[r for r in response if "text" in r][0]
+            bt.logging.info("No tool response found, returning content")
+            print("No tool response found, returning content")
+            print(response)
+            content =[r for r in response if "text" in r][0]['text']
 
         return content 
 

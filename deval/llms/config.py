@@ -18,6 +18,6 @@ class LLMArgs(BaseModel):
     format:LLMFormatType
 
 SUPPORTED_MODELS = {
-    LLMAPIs.OPENAI : ["gpt-4o-mini", "gpt-4o-2024-08-06"],
+    LLMAPIs.OPENAI : ["gpt-4o-mini", "gpt-4o-2024-08-06", "gpt-4o-mini", "gpt-4o-mini"],
     LLMAPIs.BEDROCK : ["anthropic.claude-3-haiku-20240307-v1:0", "cohere.command-r-plus-v1:0", "anthropic.claude-3-sonnet-20240229-v1:0",  "mistral.mistral-small-2402-v1:0", "mistral.mistral-large-2402-v1:0"]
 }

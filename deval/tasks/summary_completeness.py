@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 
 
@@ -34,7 +34,13 @@ The new context should follow the past context to generate a consistent story.
 #Past context:
 {past_context}
 
-Return the requested informat as dictated by the provided tool schema.
+#JSON structure
+{{
+    "context": string,
+    "summary": string
+}}
+
+Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -48,7 +54,7 @@ class CompletenessTask(Task):
     desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
     goal = "Estimates the comprehensiveness of a summary"
 
-    max_paragraphs = 3
+    max_paragraphs = 20
     properties = {
         "context": {
             "type": "string",
@@ -75,8 +81,8 @@ class CompletenessTask(Task):
         responses = []
 
 
-        num_pagraphs = random.randint(1, self.max_paragraphs)
-        num_summaries = random.randint(1, num_pagraphs)
+        num_pagraphs = random.randint(5, self.max_paragraphs)
+        num_summaries = random.randint(5, num_pagraphs)
         system_prompt = COMPLETENESS_SYSTEM_PROMPT
         tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
@@ -100,7 +106,8 @@ class CompletenessTask(Task):
                 json_response = self.parse_llm_query(response)
                 resp_tmp = Config(**json_response)
                 responses.append(resp_tmp)
-            except JSONDecodeError as e:
+            except (JSONDecodeError, ValidationError) as e:
+                num_summaries -= 1 # we decrease number of claims for each unparseable response
                 bt.logging.debug(f"Experienced {e} in Attribution task")
                 continue
             
@@ -119,7 +126,7 @@ class CompletenessTask(Task):
         self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
-        subset_summaries = random.sample(responses, num_summaries)
+        subset_summaries = random.sample(responses, max(num_summaries, 3)) # we must always have at least 3 summary points
         self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]

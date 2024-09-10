@@ -1,39 +1,47 @@
-from deval.llms import OpenAIPipeline
-from deval.task_generator import create_task
+from deval.task_generator import TaskGenerator
 from deval.tasks import TasksEnum
 import pandas as pd
 from dotenv import load_dotenv, find_dotenv
-import os
+import numpy as np
 
 _ = load_dotenv(find_dotenv())
 
 # INIT Variables
-task_name = TasksEnum.ATTRIBUTION.value
-num_to_generate = 5
+task_name = TasksEnum.RELEVANCY.value
+num_to_generate = 7
 data_path = "./exports"
 
-def extractTaskToRow(task):
+def extractTaskToRow(task, llm_pipeline):
     name = task.name
     rag_context = task.rag_context
     query = task.query
     llm_response = task.llm_response
     reference = task.reference
+    api = llm_pipeline.api
+    model_id = llm_pipeline.model_id
 
-    return [name, rag_context, query, llm_response, reference]
+
+    return [name, api, model_id, rag_context, query, llm_response, reference]
 
 
-llm_pipeline = OpenAIPipeline(
-    model_id="gpt-4o-mini",
-    mock=False,
-    api_key=os.environ.get("OPENAI_API_KEY")
-)  
-rows = []
-
+allowed_models = ["mistral.mistral-large-2402-v1:0"]
+task_generator = TaskGenerator()
+rows =[]
 for i in range(num_to_generate):
     print(i)
-    task = create_task(llm_pipeline, task_name)
-    row = extractTaskToRow(task)
+
+    llm_pipeline = task_generator.get_random_llm()
+    print(f"Model ID: {llm_pipeline.model_id}")
+ 
+    try:
+        task = task_generator.create_task(llm_pipeline, task_name)
+        print(task)
+    except Exception as e:
+        print(e) 
+        continue
+
+    row = extractTaskToRow(task, llm_pipeline)
     rows.append(row)
 
-df = pd.DataFrame(rows, columns= ['task', 'rag_context', 'query', 'llm_response', 'reference'])
+df = pd.DataFrame(rows, columns= ['task', "api", "model_id", 'rag_context', 'query', 'llm_response', 'reference'])
 df.to_csv(f"./scripts/exports/task_{task_name}.csv", index = False)

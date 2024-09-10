@@ -33,7 +33,13 @@ but if the difficulty is easy then it should be easy for the reader.
 #Context:
 {context}
 
-Return the requested informat as dictated by the provided tool schema.
+#JSON structure
+{{
+    "query": string,
+    "answer": string
+}}
+
+Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -71,8 +77,7 @@ class RelevancyTask(Task):
 
     def __init__(self, llm_pipeline, context):
         self.context = context.content
-        print("CONTEXT ", self.context)
-
+        
         system_prompt = RELEVANCY_SYSTEM_PROMPT
         probability_relevant = random.random()
         relevant_or_not = True if random.random() <= probability_relevant else False

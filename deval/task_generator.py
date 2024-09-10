@@ -9,7 +9,7 @@ import numpy as np
 
 class TaskGenerator:
 
-    def __init__(self, allowed_models: list[str] | None):
+    def __init__(self, allowed_models: list[str] | None = None):
         # initialize available models 
         self.supported_models = SUPPORTED_MODELS
 

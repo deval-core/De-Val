@@ -35,6 +35,7 @@ class Task(ABC):
     api: str
     model_id: str
     query: str = ""
+    reward_threshold: float = 0.0
     penalty_definition: List[dict] = None
     joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
     complete: bool = False

@@ -4,14 +4,15 @@ from abc import ABC
 from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import List, Union, Dict
-from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
+#from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
+from deval.llms.base_llm import BaseLLM
 #from deval.cleaners.cleaner import CleanerPipeline
 import json
 from enum import Enum
 
 class TasksEnum(Enum):
     HALLUCINATION = "hallucination"
-    COMPLETENESS = "summary completeness"
+    COMPLETENESS = "summary_completeness"
     ATTRIBUTION = "attribution"
     RELEVANCY = "relevancy"
     UNKNOWN = "unknown"
@@ -31,16 +32,16 @@ class Task(ABC):
     llm_response: str
     reference: float
     reward_definition: List[dict]
+    api: str
+    model_id: str
     query: str = ""
-    penalty_definition: List[dict] = None
     reward_threshold: float = 0.0
-    complete: bool = False
-    cleaner = None
-    clean_reference = False
+    penalty_definition: List[dict] = None
     joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
+    complete: bool = False
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, api={self.api!r}, model_id={self.model_id!r})"
 
     def __repr__(self):
         return str(self)
@@ -57,35 +58,24 @@ class Task(ABC):
             "topic": self.topic,
             "subtopic": self.subtopic,
             "context_time": self.context.stats.get("fetch_time", 0.0),
+            "api": self.api,
+            "model_id": self.model_id,
         }
         if full:
             state.update(asdict(self.context))
 
         return state
  
-    def generate(
-        self, system: str, prompt: str, pipeline: BasePipeline, clean=True
-    ) -> str:
-        """Uses the llm to generate a response to a prompt"""
 
-        #cleaner = (
-        #    CleanerPipeline(cleaning_pipeline=self.cleaning_pipeline) if clean else None
-        #)
 
-        # TODO: find a better place to define temperature
-        return ValidatorLLM(pipeline, system_prompt=system, temperature=1).query(
-            prompt=prompt
-        )
-
-    def generate_input(self, pipeline: BasePipeline, prompt, system_prompt) -> str:
+    def generate_input(self, llm_pipeline: BaseLLM, prompt: str, system_prompt: str, tool_schema: dict) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
         bt.logging.info("🤖 Generating query...")
-        input = self.generate(
-            system=system_prompt, 
+        input = llm_pipeline.query(
             prompt=prompt,
-            pipeline=pipeline,
-            clean=False,
+            system_prompt=system_prompt,
+            tool_schema = tool_schema
         )
 
         self.query_time = time.time() - t0

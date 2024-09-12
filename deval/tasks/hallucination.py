@@ -1,8 +1,9 @@
 import bittensor as bt
 from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
+from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 
 
@@ -15,7 +16,8 @@ The context that you create should be greater than 5 sentences and the following
 
 HALLUCINATION_PROMPT_TEMPLATE = """\
 Your goal is to generate a context consisting of at least 5-10 sentences, and claim that is a statement to be derived from the context.\
-However, I will request that this claim is either true or false based on the preceding context. 
+You must return both the context and claim in a JSON format according to the provided tool schema.\
+However, I will request that this claim is either true or false based on the preceding context.
 
 I will give you five parameters: a topic, a sub-topic, whether the claim should be true or false, context type, and a difficulty rating.\
 In response you will return the context in JSON format following the structure defined below.\
@@ -44,13 +46,13 @@ The new context should follow the past context to generate a consistent story.
 #Past context:
 {past_context}
 
-#JSON structure
+#JSON structure and tool schema
 {{
     "context": string,
     "claim": string
 }}
 
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -62,10 +64,23 @@ class Config(BaseModel):
 @dataclass
 class HallucinationTask(Task):
     name = TasksEnum.HALLUCINATION.value
-    desc = "Estimates the number of hallucination in a response given a RAG context"
-    goal = "to identify the correct number of hallucinations"
-
+    desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
+    goal = "Estimates the number of hallucination in a response given a RAG context"
     max_paragraphs = 20
+    properties = {
+        "context": {
+            "type": "string",
+            "description": "The generated context used as input into an LLM RAG pipeline",
+        },
+        "claim": {
+            "type": "string",
+            "description": "The generated claim that is either true or false generated from the context",
+        },
+    }
+    required_values = ["context", "claim"]
+
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
+
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -79,10 +94,11 @@ class HallucinationTask(Task):
         responses = []
 
 
-        num_pagraphs = random.randint(1, self.max_paragraphs)
-        num_claims = random.randint(1, num_pagraphs)
+        num_pagraphs = random.randint(5, self.max_paragraphs)
+        num_claims = random.randint(3, num_pagraphs)
         probability_true = random.random()
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):
@@ -101,7 +117,7 @@ class HallucinationTask(Task):
                 difficulty_rating=context.difficulty, 
                 past_context=past_context)
 
-            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
             # format 
             try:
@@ -109,7 +125,8 @@ class HallucinationTask(Task):
                 json_response['true_or_false'] = true_or_false
                 resp_tmp = Config(**json_response)
                 responses.append(resp_tmp)
-            except JSONDecodeError as e:
+            except (JSONDecodeError, ValidationError) as e:
+                num_claims -= 1 # we decrease number of claims for each unparseable response
                 bt.logging.debug(f"Experienced {e} in Hallucination task")
                 continue
             
@@ -119,6 +136,8 @@ class HallucinationTask(Task):
         self.topic = context.title
         self.subtopic = context.topic
         self.tags = context.tags
+        self.api = llm_pipeline.api.value
+        self.model_id = llm_pipeline.model_id
 
     def generate_reference(self, responses: list[Config], num_claims: int):
         # context input 
@@ -126,7 +145,7 @@ class HallucinationTask(Task):
         self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
-        subset_claims = random.sample(responses, num_claims)
+        subset_claims = random.sample(responses, max(num_claims, 3)) # we must always have at least 3 claims
         num_true = len([claim for claim in subset_claims if claim.true_or_false == True])
         self.reference = round(num_true / (len(subset_claims) + 1e-10), 2) 
 

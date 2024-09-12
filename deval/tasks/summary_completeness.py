@@ -1,8 +1,9 @@
 import bittensor as bt
 from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
+from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 
 
@@ -39,7 +40,7 @@ The new context should follow the past context to generate a consistent story.
     "summary": string
 }}
 
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -50,11 +51,23 @@ class Config(BaseModel):
 @dataclass
 class CompletenessTask(Task):
     name = TasksEnum.COMPLETENESS.value
-    desc = "Estimates the comprehensiveness of a summary"
-    goal = "to identify how complete a provided summary is"
-
+    desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
+    goal = "Estimates the comprehensiveness of a summary"
 
     max_paragraphs = 20
+    properties = {
+        "context": {
+            "type": "string",
+            "description": "The generated context used as input into an LLM RAG pipeline",
+        },
+        "summary": {
+            "type": "string",
+            "description": "The generated summary that is derived from the associated context",
+        },
+    }
+    required_values = ["context", "summary"]
+
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
         dict(name="float_diff", weight=1.0),
@@ -68,9 +81,10 @@ class CompletenessTask(Task):
         responses = []
 
 
-        num_pagraphs = random.randint(1, self.max_paragraphs)
-        num_summaries = random.randint(1, num_pagraphs)
+        num_pagraphs = random.randint(5, self.max_paragraphs)
+        num_summaries = random.randint(5, num_pagraphs)
         system_prompt = COMPLETENESS_SYSTEM_PROMPT
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):
@@ -85,14 +99,15 @@ class CompletenessTask(Task):
                 subtopic=context.subtopic, 
                 context_type=context.context_type,
                 past_context=past_context)
-            response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+            response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
             # format 
             try:
                 json_response = self.parse_llm_query(response)
                 resp_tmp = Config(**json_response)
                 responses.append(resp_tmp)
-            except JSONDecodeError as e:
+            except (JSONDecodeError, ValidationError) as e:
+                num_summaries -= 1 # we decrease number of claims for each unparseable response
                 bt.logging.debug(f"Experienced {e} in Attribution task")
                 continue
             
@@ -102,6 +117,8 @@ class CompletenessTask(Task):
         self.topic = context.title
         self.subtopic = context.topic
         self.tags = context.tags
+        self.api = llm_pipeline.api.value
+        self.model_id = llm_pipeline.model_id
 
     def generate_reference(self, responses: list[Config], num_summaries: int):
         # context input 
@@ -109,7 +126,7 @@ class CompletenessTask(Task):
         self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
-        subset_summaries = random.sample(responses, num_summaries)
+        subset_summaries = random.sample(responses, max(num_summaries, 3)) # we must always have at least 3 summary points
         self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
 
         summaries = [r.summary for r in subset_summaries]

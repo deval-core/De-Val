@@ -1,47 +1,48 @@
-import bittensor as bt
 from abc import ABC, abstractmethod
-#from deval.cleaners.cleaner import CleanerPipeline
-from typing import Any, Dict, List
-
-
-class BasePipeline(ABC):
-    @abstractmethod
-    def __call__(self, composed_prompt: str, **kwargs: dict) -> Any:
-        ...
+from deval.llms.config import LLMAPIs, LLMArgs
 
 
 class BaseLLM(ABC):
+
     def __init__(
         self,
-        llm_pipeline: BasePipeline,
-        system_prompt: str,
-        model_kwargs: dict,
+        api: LLMAPIs,
+        model_id: str,
+        model_kwargs: LLMArgs,
     ):
-        self.llm_pipeline = llm_pipeline
-        self.system_prompt = system_prompt
-        self.model_kwargs = model_kwargs
+        self.api = api
+        self.model_kwargs = model_kwargs.dict()
+        self.model_id = model_id
         self.messages = []
-        self.times = []
+        self.times = [0]
 
+
+    @abstractmethod
     def query(
         self,
         prompt: str,
-        #role: str = "user",
-        #disregard_system_prompt: bool = False,
-        #cleaner: CleanerPipeline = None,
+        system_prompt: str,
+        tool_schema: dict | None = None
     ) -> str:
         ...
 
-    def forward(self, messages: List[Dict[str, str]]):
+
+    @abstractmethod
+    def forward(
+        self, 
+        messages: list[dict[str, str]]
+    ) -> str:
         ...
 
-    def clean_response(self, cleaner, response: str) -> str:
-        if cleaner is not None:
-            clean_response = cleaner.apply(generation=response)
-            if clean_response != response:
-                bt.logging.debug(
-                    f"Response cleaned, chars removed: {len(response) - len(clean_response)}..."
-                )
+    @abstractmethod
+    def parse_response(
+        self, 
+        output
+    ) -> str:
+        # types unknown and dependent on input API 
+        ...
 
-            return clean_response
-        return response
+    @abstractmethod
+    def load(self):
+        ...
+    

@@ -22,8 +22,8 @@ import random
 import datetime
 import bittensor as bt
 import wikipedia as wiki
-from typing import Dict, Union, List, Tuple
-from queue import Queue, Full, Empty
+from typing import Dict, List
+from queue import Queue, Full
 from functools import lru_cache
 from .base import Dataset
 from ..selector import Selector

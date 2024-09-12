@@ -1,6 +1,7 @@
 import bittensor as bt
 from dataclasses import dataclass
 from deval.tasks.task import Task, TasksEnum
+from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel
 
@@ -38,7 +39,7 @@ but if the difficulty is easy then it should be easy for the reader.
     "answer": string
 }}
 
-You should return only the JSON as a string and no other text or markers.
+Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -54,6 +55,20 @@ class RelevancyTask(Task):
     desc = "Estimates the relevancy of an answer to a user query based on a provided context"
     goal = "to identify whether an answer to a user query is relevant or not"
 
+    properties = {
+        "query": {
+            "type": "string",
+            "description": "The generated user query from the provided context",
+        },
+        "answer": {
+            "type": "string",
+            "description": "The generated answer based on the query and context that is either relevant or irrelevant",
+        },
+    }
+    required_values = ["query", "answer"]
+
+    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
+
 
     reward_definition = [
         dict(name="ordinal", weight=1.0),
@@ -61,22 +76,23 @@ class RelevancyTask(Task):
     penalty_definition = []
 
     def __init__(self, llm_pipeline, context):
-        self.context = context
-
+        self.context = context.content
+        
         system_prompt = RELEVANCY_SYSTEM_PROMPT
         probability_relevant = random.random()
         relevant_or_not = True if random.random() <= probability_relevant else False
+        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         query_prompt = RELEVANCY_PROMPT_TEMPLATE.format(
             relevant_or_not = relevant_or_not,
             difficulty_rating = context.difficulty,
-            context=context.content
+            context=self.context
         )
-        response = self.generate_input(llm_pipeline, query_prompt, system_prompt)
+        response = self.generate_input(llm_pipeline, query_prompt, system_prompt, tool_schema)
 
         # format 
         json_response = self.parse_llm_query(response)
-        json_response['context'] = context.content
+        json_response['context'] = self.context
         json_response['relevant_or_not'] = relevant_or_not
         response = Config(**json_response)
         
@@ -86,6 +102,8 @@ class RelevancyTask(Task):
         self.topic = context.title
         self.subtopic = context.topic
         self.tags = context.tags
+        self.api = llm_pipeline.api.value
+        self.model_id = llm_pipeline.model_id
 
     def generate_reference(self, response: Config):
         self.rag_context = response.context

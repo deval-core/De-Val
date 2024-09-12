@@ -26,27 +26,27 @@ Before proceeding, make sure you have:
 2. **Select a Region** where AWS Bedrock is supported (e.g., **us-east-1**).
 3. Navigate to **Amazon Bedrock** by typing “Bedrock” in the search bar.
 
-   ![](images/step_1.png)
+   ![](images/aws_access_step_1.png)
 
 4. Click on **"Get Started"**.
    - Once inside the console, navigate to the **bottom** of the side panel.
    - In the **"Bedrock Configuration"** section, select **Model Access**.
 
-   ![](images/step_2.png)
+   ![](images/aws_access_step_2.png)
 
 5. Select **Modify Model Access**.
 
-   ![](images/step_3.png)
+   ![](images/aws_access_step_3.png)
 
 6. In the **Bedrock Models** section, request access to models belonging to Anthropic, Mistral, and Cohere.
 
-   ![](images/step_4.png)
+   ![](images/aws_access_step_4.png)
 
 7. You will be prompted to review the selected models and submit the request. During the request, fill in the required fields:
    - **Company Name**: Enter `de-val`.
    - **Use Case**: Provide a description like “Evaluate the effectiveness of internally developed LLMs.”
 
-   ![](images/step_5.png)
+   ![](images/aws_access_step_5.png)
 
 ---
 

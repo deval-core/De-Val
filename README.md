@@ -1,7 +1,7 @@
 <div align="center">
 
 # De-Val: The Ultimate Decentralized Evaluation Subnet for LLMs <!-- omit in toc -->
-<a href="de-val.ai">
+<a href="https://www.de-val.ai">
   <img src="logos/de-val_logo.png" alt="De-Val" width="150"/>
 </a>
 
@@ -156,8 +156,8 @@ poetry shell
 Now that everyhing ready you are ready to launch your validator after registering to the subnet.
 example command for registering a validator/miner:
 ```
-btcli s register --subtensor.network <local/test/finney> --netuid <XX> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
-#testnet:202
+btcli s register --subtensor.network <local/test/finney> --netuid <15> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
+
 ```
 
 Running Validator:
@@ -172,8 +172,11 @@ pm2 start neurons/validator.py --name de-val-validator -- \
     --axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine
 ```
 
+## New: Guide for Choosing Models for Validation
 
+If you'd like to explicitly define which models to run for validation (e.g., OpenAI, Anthropic, Mistral), please refer to our [Validator Model Selection Guide](vali_AWS_process/Validator_AWS_README.md). This guide includes instructions on how to configure your validator to choose specific models using the `--neuron.model_ids` flag.
 
+---
 ### Miner Setup
 
 Just like the validator setup we attempted to make everything as easy to run as possible, that is why we went with `poetry` as the package and venv manager.
@@ -202,7 +205,7 @@ btcli s register --subtensor.network <local/test/finney> --netuid <15> --wallet.
 
 Running Miner:
 ```
-pm2 start neurons/miner.py --name de-val-miner -- \
+pm2 start neurons/miners/openai_miner.py --name de-val-miner -- \
     --netuid 15 
     --subtensor.network <finney/local/test>
     --wallet.name <your coldkey> # Must be created using the bittensor-cli

@@ -97,20 +97,25 @@ def process_page(
     header = ""
     sections = {}
 
-    for section_title in page.sections:
-        content = page.section(section_title)
-        if not content:
-            header = section_title
-            continue
+    sections_list = page.sections
 
-        # Filter out sections that don't match the headers and/or are not valid
-        if (valid_header and not valid_header(header)) or (
-            valid_content and not valid_content(content)
-        ):
-            continue
+    if len(sections) > 0:
+        for section_title in sections_list:
+            content = page.section(section_title)
+            if not content:
+                header = section_title
+                continue
 
-        key = (header, section_title)
-        sections[key] = content.splitlines()
+            # Filter out sections that don't match the headers and/or are not valid
+            if (valid_header and not valid_header(header)) or (
+                valid_content and not valid_content(content)
+            ):
+                continue
+
+            key = (header, section_title)
+            sections[key] = content.splitlines()
+    else:
+        sections[("wiki", "whole_page")] = page.content.splitlines()
 
     if not sections:
         bt.logging.debug(f"No valid sections found in page {page.title!r} ({page.url})")

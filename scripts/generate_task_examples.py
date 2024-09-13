@@ -8,7 +8,7 @@ _ = load_dotenv(find_dotenv())
 
 # INIT Variables
 task_name = TasksEnum.RELEVANCY.value
-num_to_generate = 7
+num_to_generate = 3
 data_path = "./exports"
 
 def extractTaskToRow(task, llm_pipeline):
@@ -24,8 +24,8 @@ def extractTaskToRow(task, llm_pipeline):
     return [name, api, model_id, rag_context, query, llm_response, reference]
 
 
-allowed_models = ["mistral.mistral-large-2402-v1:0"]
-task_generator = TaskGenerator()
+allowed_models = ["gpt-4o-mini"]
+task_generator = TaskGenerator(allowed_models=allowed_models)
 rows =[]
 for i in range(num_to_generate):
     print(i)

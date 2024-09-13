@@ -76,7 +76,8 @@ class RelevancyTask(Task):
     penalty_definition = []
 
     def __init__(self, llm_pipeline, context):
-        self.context = context.content
+        content = context.content
+        self.context = context
         
         system_prompt = RELEVANCY_SYSTEM_PROMPT
         probability_relevant = random.random()
@@ -92,7 +93,7 @@ class RelevancyTask(Task):
 
         # format 
         json_response = self.parse_llm_query(response)
-        json_response['context'] = self.context
+        json_response['context'] = content
         json_response['relevant_or_not'] = relevant_or_not
         response = Config(**json_response)
         

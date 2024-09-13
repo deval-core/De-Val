@@ -88,7 +88,7 @@ if __name__ == "__main__":
     from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.HALLUCINATION.value
+    task_name = TasksEnum.RELEVANCY.value
     _ = load_dotenv(find_dotenv())
 
 

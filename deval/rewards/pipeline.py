@@ -5,13 +5,19 @@ from deval.rewards import (
     BaseRewardModel,
     FloatDiffModel,
     DistPenaltyRewardModel,
-    OrdinalRewardModel
+    OrdinalRewardModel,
+    RougeRewardModel,
+    RelevanceRewardModel,
+    ExactMatchRewardModel
 )
 
 REWARD_MODELS = {
     "float_diff": FloatDiffModel,
     "dist_penalty": DistPenaltyRewardModel,
-    "ordinal": OrdinalRewardModel
+    "ordinal": OrdinalRewardModel,
+    "rouge": RougeRewardModel,
+    "relevance": RelevanceRewardModel,
+    "exact_match": ExactMatchRewardModel
 }
 
 

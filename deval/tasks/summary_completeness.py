@@ -5,6 +5,7 @@ from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
+from deval.rewards.reward import RewardReferenceType
 
 
 # Used to obtain the set of contexts and claims 
@@ -70,10 +71,14 @@ class CompletenessTask(Task):
     tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
-        dict(name="float_diff", weight=1.0),
+        dict(name="float_diff", weight=1.0, reference_type = RewardReferenceType.SCORE),
+        dict(name="rouge", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevancy", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
-        dict(name="dist_penalty", weight=0.5),
+        dict(name="dist_penalty", weight=0.5, reference_type = RewardReferenceType.SCORE),
+        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevancy", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
     ]
 
     def __init__(self, llm_pipeline, context):
@@ -131,3 +136,6 @@ class CompletenessTask(Task):
 
         summaries = [r.summary for r in subset_summaries]
         self.llm_response = "".join([c + random.choice(self.joiners) for c in summaries])
+
+        # store mistakes for comparisons
+        self.reference_mistakes = [s for s in responses if s not in subset_summaries]

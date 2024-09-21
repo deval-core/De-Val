@@ -48,6 +48,7 @@ class HumanAgent:
         self.llm_response = self.task.llm_response
         self.query = self.task.query
         self.reference = self.task.reference
+        self.reference_mistakes = self.task.reference_mistakes
     
 
     def __state_dict__(self, full=False):
@@ -57,6 +58,7 @@ class HumanAgent:
             "query": self.query,
             "llm_response": self.llm_response,
             "reference": self.reference,
+            "reference_mistakes": self.reference_mistakes
             **self.task.__state_dict__(full=full),
         }
 

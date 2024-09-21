@@ -3,10 +3,7 @@ import bittensor as bt
 from abc import ABC
 from dataclasses import dataclass, asdict
 from enum import Enum
-from typing import List, Union, Dict
-#from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
 from deval.llms.base_llm import BaseLLM
-#from deval.cleaners.cleaner import CleanerPipeline
 import json
 from enum import Enum
 
@@ -26,17 +23,18 @@ class Task(ABC):
     goal: str
     topic: str
     subtopic: str
-    tags: List[str]
+    tags: list[str]
     context: dict
     rag_context: str
     llm_response: str
     reference: float
-    reward_definition: List[dict]
+    reference_mistakes: list[str]
+    reward_definition: list[dict]
     api: str
     model_id: str
     query: str = ""
     reward_threshold: float = 0.0
-    penalty_definition: List[dict] = None
+    penalty_definition: list[dict] = None
     joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
     complete: bool = False
 

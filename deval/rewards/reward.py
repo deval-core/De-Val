@@ -12,6 +12,9 @@ class RewardModelTypeEnum(Enum):
     FILTER_REWARD = "filter"
     PENALTY = "penalty"
 
+class RewardReferenceType(Enum):
+    SCORE = "score"
+    MISTAKES = "mistakes"
 
 @dataclass
 class RewardEvent:
@@ -64,6 +67,8 @@ class RewardResult:
         )
         self.rewards = self.total_reward()
 
+        self.reward_mistakes_on = True # Switch to turn on evaluation of this field
+
     def __state_dict__(self, full=False):
         state = {"rewards": self.rewards.tolist()}
         for event in self.reward_events + self.penalty_events:
@@ -71,7 +76,11 @@ class RewardResult:
         return state
 
     def reward_responses(
-        self, reference: float, models: List[dict], reward_type: RewardModelTypeEnum
+        self, 
+        reference_score: float, 
+        reference_mistakes: list[str], 
+        models: List[dict], 
+        reward_type: RewardModelTypeEnum
     ) -> List[RewardEvent]:
         """Calculates the rewards for the responses given the task and returns a RewardEvent for each reward model
         reward_events: List[RewardEvent] = [
@@ -89,8 +98,22 @@ class RewardResult:
                     f"Reward model {reward_info['name']} not supported. Please choose from {self.reward_pipeline.keys()}"
                 )
             # Compute the rewards for the responses given the prompt
+            reference_type = reward_info.get("reference_type")
+            reference = reference_score if reference_type == RewardReferenceType.SCORE else reference_mistakes
+
+            if reference_type == RewardReferenceType.SCORE:
+                completions = self.response_event.completions
+                reference = reference_score 
+        
+            if reference_type == RewardReferenceType.MISTAKES:
+                # TODO: remove once we have fully rolled out new mechanism
+                if not self.reward_mistakes_on:
+                    continue
+                completions = self.response_event.mistakes
+                reference = reference_mistakes
+
             reward_event = reward_model.apply(
-                reference, self.response_event, reward_type=reward_type
+                reference, completions, reward_type=reward_type
             )
             reward_events.append(reward_event)
 
@@ -154,9 +177,14 @@ class BaseRewardModel(ABC):
     def reward(self, reference: float, completions: List[float]) -> BatchRewardOutput:
         pass
 
-    def apply(self, reference: float, response_event, reward_type) -> RewardEvent:
+    def apply(
+        self, 
+        reference: float, 
+        completions: float | list[str], # score or mistakes 
+        reward_type: RewardModelTypeEnum, 
+    ) -> RewardEvent:
         t0 = time.time()
-        batch_rewards_output = self.reward(reference, response_event.completions)
+        batch_rewards_output = self.reward(reference, completions)
         batch_rewards_time = time.time() - t0
 
         return RewardEvent(

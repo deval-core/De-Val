@@ -9,12 +9,20 @@ class DendriteResponseEvent:
     ):
         self.uids = uids
         self.completions = []
+        self.mistakes = []
         self.status_messages = []
         self.status_codes = []
         self.timings = []
 
         for synapse in responses:
             self.completions.append(synapse.completion)
+
+            # TODO: remove once fully rolled out mechanism
+            try:
+                self.mistakes.append(synapse.mistakes)
+            except:
+                pass 
+
             self.status_messages.append(synapse.dendrite.status_message)
 
             if math.isnan(synapse.completion) and synapse.dendrite.status_code == 200:

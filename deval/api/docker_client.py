@@ -1,35 +1,38 @@
-import time
+import requests
 from deval.protocol import EvalRequest, EvalResponse
 
 class DockerClient:
 
     def __init__(self):
-        self.host = "localhost" # TODO: add actual host 
+        self.host = "http://localhost" # TODO: add actual host 
+        self.port = 8000
+
+        self.api_url = f"{self.host}:{self.port}"
 
     def init_miner_docker(self, model_dir: str) -> None:
         pass 
 
-    def invoke(self, request) -> dict:
+    def invoke(self, request: EvalRequest) -> EvalResponse:
         #TODO: implement
         """
         To keep in mind:
         - error handling a response
         - forcefully timing out if the response takes too long 
         """
-        return {
-                "completion": -1
-            } 
+        eval_query_url = f"{self.api_url}/eval_query"
+        response = requests.post(eval_query_url, request)
+        print(response.json())
+
+        return EvalResponse(
+            completion = -1, 
+            response_time = 10
+        )
 
     def query_miner(self, uid: int, request: EvalRequest) -> EvalResponse:
-        start_time = time.time()
-        response_raw = self.invoke(request)
-        process_time = time.time() - start_time
-
-        response = EvalResponse(
-            uid = uid,
-            completion = response_raw.get("completion", -1),
-            process_time = process_time
-        )
+        
+        response = self.invoke(request)
+        response.uid = uid
+        
         return response
 
         

@@ -48,7 +48,13 @@ class DeValContest:
                 return False
 
             else: 
-                # TODO: zero out the UID's rewards -- figure out how to do this 
+                # if the current model is actually the real one, then we need to update
+                # the model that the hash points to and zero out the duplicate rewards 
+                # update the model associated 
+                self.model_hashes[miner_state.model_hash] = miner_state
+                
+                # TODO: I think I can just delete the UID? just add a remove from dict for the duplicated UID
+                self.model_rewards
                 pass
 
                 

@@ -106,17 +106,16 @@ if __name__ == "__main__":
     from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.RELEVANCY.value
     _ = load_dotenv(find_dotenv())
 
+    task_sample_rate = [
+        (TasksEnum.RELEVANCY.value, 2),
+        (TasksEnum.HALLUCINATION.value, 1)
+    ]
 
     allowed_models = ["gpt-4o-mini"]
-    task_generator = TaskRepository(allowed_models=allowed_models)
+    task_repo = TaskRepository(allowed_models=allowed_models)
 
-    llm_pipeline = [
-        model for model in task_generator.available_models 
-        if model.api == LLMAPIs.OPENAI 
-    ][0]
- 
-    task = task_generator.create_task(llm_pipeline, task_name)
-    print(task)
+    task_repo.generate_all_tasks(task_sample_rate)
+    for t in task_repo.get_all_tasks():
+        print(t)

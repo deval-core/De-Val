@@ -179,35 +179,27 @@ if __name__ == "__main__":
     from deval.tasks import TasksEnum
     from deval.task_repository import TaskRepository
     from deval.agent import HumanAgent
-    from deval.protocol import EvalSynapse
-    from deval.dendrite import DendriteResponseEvent
+    from deval.protocol import EvalResponse
     from deval.rewards.pipeline import RewardPipeline
-    from deval.llms.config import LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
     task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
     allowed_models = ["gpt-4o-mini"]
-    task_generator = TaskRepository(allowed_models=allowed_models)
-
-    llm_pipeline = [
-        model for model in task_generator.available_models 
-        if model.api == LLMAPIs.OPENAI 
-    ][0]
+    task_repo = TaskRepository(allowed_models=allowed_models)
+    llm_pipeline = task_repo.get_random_llm()
  
-    task = task_generator.create_task(llm_pipeline, task_name)
+    task = task_repo.create_task(llm_pipeline, task_name)
     agent = HumanAgent(task=task)
 
     # prep fake response
-    responses = [
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.5),
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 1.0),
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.0)
-    ]
-
-    uids = torch.tensor([1, 2, 3])
-    response_event = DendriteResponseEvent(responses, uids, timeout = 10)
+    uid = torch.tensor(1)
+    response_event = EvalResponse(
+        uid = uid,
+        completion = 0.5,
+        response_time = 5
+    )
 
     # reward compute
     active_tasks = [TasksEnum.ATTRIBUTION.value, TasksEnum.COMPLETENESS.value, TasksEnum.HALLUCINATION.value, TasksEnum.RELEVANCY.value]

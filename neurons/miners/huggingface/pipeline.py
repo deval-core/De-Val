@@ -4,12 +4,12 @@ from transformers import Pipeline
 """
 Notes
 - how to pass in the model location and tokenizer?
-
+    - assumes a single file location 
 
 """
 
 
-class MyPipeline(Pipeline):
+class DeValPipeline(Pipeline):
     def _sanitize_parameters(self, **kwargs):
         preprocess_kwargs = {}
         if "maybe_arg" in kwargs:

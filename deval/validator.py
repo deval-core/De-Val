@@ -49,8 +49,9 @@ class Validator(BaseValidatorNeuron):
             if p > 0
         ]
         # Load the reward pipeline
+        active_tasks = [t[0] for t in self.task_sample_rate]
         self.reward_pipeline = RewardPipeline(
-            selected_tasks=self.active_tasks, device=self.device
+            selected_tasks=active_tasks, device=self.device
         )
 
     # TODO: these are only staticmethods to enable early testability while bringing similar components to same place

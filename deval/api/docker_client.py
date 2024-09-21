@@ -1,4 +1,3 @@
-from deval.responses import EvalResponseEvent
 import time
 from deval.protocol import EvalRequest, EvalResponse
 

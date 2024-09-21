@@ -16,7 +16,7 @@ class MyPipeline(Pipeline):
             preprocess_kwargs["maybe_arg"] = kwargs["maybe_arg"]
         return preprocess_kwargs, {}, {}
 
-    def preprocess(self, inputs, maybe_arg=2):
+    def preprocess(self, inputs, model_dir, maybe_arg=2):
         # parse input 
 
         # get tokenizer 

@@ -5,16 +5,6 @@ from pydantic import BaseModel
 from datetime import datetime
 from deval.rewards import RewardPipeline
 
-class ModelStore(BaseModel):
-    repo_id: str
-    model_id: str
-    weights_hash: str
-    model_submission_time: str
-    rewards: list = []
-
-
-
-
 class DeValContest:
 
     def __init__(self, reward_pipeline: RewardPipeline, forward_start_time: int, timeout: int):
@@ -63,8 +53,6 @@ class DeValContest:
 
                 
         
-
-
     def update_model_state_with_rewards(self, miner_state: ModelState) -> None:
         self.model_rewards[miner_state.uid] = miner_state.rewards 
 

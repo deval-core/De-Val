@@ -105,6 +105,12 @@ class EvalSynapse(bt.Synapse):
         description="Scored fields for each task. This attribute is mutable and can be updated.",
     )
 
+    mistakes: list[str] = pydantic.Field(
+        [""],
+        title="Mistakes",
+        description="Identified hallucinations, misattributions, summaries, etc."
+    )
+
     required_hash_fields: List[str] = pydantic.Field(
         ["tasks", "rag_context", "llm_response"],
         title="Required Hash Fields",

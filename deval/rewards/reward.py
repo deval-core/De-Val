@@ -43,13 +43,14 @@ class RewardResult:
         Args:
             reward_pipeline (RewardPipeline): List of all loaded/ative reward models
             task (Task): Task instance which contains reward_definition (list of reward model requirements) and a reference answer (str)
-            response_event (DendriteResponseEvent): Network responses to the prompt
+            response_event (EvalResponse): Network responses to the prompt
             device (str): Device to run the reward models on
         """
 
         self.reward_pipeline = reward_pipeline
         self.response_event = response_event
         self.device = device
+        self.task_name = agent.task.name
         self.task_rewards = agent.task.reward_definition
         self.task_penalties = agent.task.penalty_definition
         self.reward_events = self.reward_responses(
@@ -102,7 +103,7 @@ class RewardResult:
         # TODO: How would using the Agent as a reward model fit into this flow?
         # Compute the rewards for the responses given the prompt        
         rewards = torch.zeros_like(
-            self.response_event.uids, dtype=torch.float32, device=self.device
+            self.response_event.uid, dtype=torch.float32, device=self.device
         )
 
         for event in self.reward_events:
@@ -176,7 +177,7 @@ class BaseRewardModel(ABC):
 
 if __name__ == "__main__":
     from deval.tasks import TasksEnum
-    from deval.task_generator import TaskGenerator
+    from deval.task_repository import TaskRepository
     from deval.agent import HumanAgent
     from deval.protocol import EvalSynapse
     from deval.dendrite import DendriteResponseEvent
@@ -188,7 +189,7 @@ if __name__ == "__main__":
     _ = load_dotenv(find_dotenv())
 
     allowed_models = ["gpt-4o-mini"]
-    task_generator = TaskGenerator(allowed_models=allowed_models)
+    task_generator = TaskRepository(allowed_models=allowed_models)
 
     llm_pipeline = [
         model for model in task_generator.available_models 

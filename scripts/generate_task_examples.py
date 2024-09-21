@@ -1,4 +1,4 @@
-from deval.task_generator import TaskGenerator
+from deval.task_repository import TaskRepository
 from deval.tasks import TasksEnum
 import pandas as pd
 from dotenv import load_dotenv, find_dotenv
@@ -25,7 +25,7 @@ def extractTaskToRow(task, llm_pipeline):
 
 
 allowed_models = ["gpt-4o-mini"]
-task_generator = TaskGenerator(allowed_models=allowed_models)
+task_generator = TaskRepository(allowed_models=allowed_models)
 rows =[]
 for i in range(num_to_generate):
     print(i)

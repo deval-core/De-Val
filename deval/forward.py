@@ -22,20 +22,13 @@ import numpy as np
 import bittensor as bt
 from deval.agent import HumanAgent
 from deval.dendrite import DendriteResponseEvent
-from deval.task_generator import TaskGenerator
+from deval.task_repository import TaskRepository
 from deval.protocol import EvalSynapse
 from deval.rewards import RewardResult
 from deval.utils.uids import get_random_uids
 from deval.utils.logging import log_event
 from deval.utils.misc import async_log
 
-"""
-@async_log
-async def generate_reference(agent):    
-    loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(None, agent.task.generate_reference, agent.llm_pipeline)
-    return result    
-"""
 
 @async_log
 async def execute_dendrite_call(dendrite_call):

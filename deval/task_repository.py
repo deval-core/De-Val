@@ -7,7 +7,9 @@ import os
 import numpy as np
 
 
-class TaskGenerator:
+class TaskRepository:
+
+    tasks: list[Task] = [] 
 
     def __init__(self, allowed_models: list[str] | None = None):
         # initialize available models 
@@ -65,7 +67,7 @@ class TaskGenerator:
     def get_random_llm(self) -> BaseLLM:
         return np.random.choice(self.available_models)
 
-    def create_task(self, llm_pipeline, task_name: str) -> Task:
+    def create_task(self, llm_pipeline: BaseLLM, task_name: str) -> Task:
         
         task_extract = TASKS.get(task_name, None)
         if task_extract is None:
@@ -81,6 +83,22 @@ class TaskGenerator:
 
         return task
 
+    def generate_all_tasks(
+        self, 
+        task_probabilities: list[tuple(str, int)],
+    ) -> None:
+        # loops through and stores all tasks to be evaluated against in the epoch 
+
+        for task_name, n in task_probabilities:
+            for i in range(n):
+                llm_pipeline = self.get_random_llm()
+                task = self.create_task(llm_pipeline, task_name)
+                self.tasks.append(task)
+
+    def get_all_tasks(self) -> Task:
+        for task in self.tasks:
+            yield task
+
 
 
 if __name__ == "__main__":
@@ -93,7 +111,7 @@ if __name__ == "__main__":
 
 
     allowed_models = ["gpt-4o-mini"]
-    task_generator = TaskGenerator(allowed_models=allowed_models)
+    task_generator = TaskRepository(allowed_models=allowed_models)
 
     llm_pipeline = [
         model for model in task_generator.available_models 

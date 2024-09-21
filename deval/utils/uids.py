@@ -43,7 +43,7 @@ def check_uid_availability(
     return True
 
 
-def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor:
+def get_candidate_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor:
     """Returns k available random uids from the metagraph.
     Args:
         k (int): Number of uids to return.
@@ -87,5 +87,28 @@ def get_random_uids(self, k: int, exclude: List[int] = None) -> torch.LongTensor
         return torch.tensor(candidate_uids)
     elif len(candidate_uids) >= k:
         return torch.tensor(random.sample(candidate_uids, k))
+    else:
+        raise ValueError(f"No eligible uids were found. Cannot return {k} uids")
+
+
+
+def get_top_incentive_uids(
+    self, 
+    k: int,
+    num_uids: int = 256
+) -> torch.LongTensor:
+    # returns the top UIDs within the top_k threshold based on incentive 
+    incentive_values = getattr(self.metagraph, 'I')
+
+    incentive_by_uid = [(i,k)  for i, k in zip(range(num_uids), incentive_values)]
+    sorted_incentive_by_uid = sorted(incentive_by_uid, key=lambda tup: tup[1], reverse = True)
+
+    # drop to top k and pull out only the uids
+    sorted_incentive_by_uid = sorted_incentive_by_uid[:k]
+    uids = [uid for uid, _ in sorted_incentive_by_uid]
+    uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
+
+    if len(uids) > 0:
+        return torch.tensor(uids)
     else:
         raise ValueError(f"No eligible uids were found. Cannot return {k} uids")

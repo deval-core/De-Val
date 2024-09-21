@@ -300,8 +300,15 @@ def add_validator_args(cls, parser):
         "--neuron.task_p",
         type=float,
         nargs="+",
-        help="The probability of sampling each task.",
-        default=[v['run_probability'] for v in TASKS.values()],
+        help="The percentage of sampling each task. If we generate 30 of each task and this value is .5 for one task, we will only generate 15 samples.",
+        default=[v['task_p'] for v in TASKS.values()],
+    )
+
+    parser.add_argument(
+        "--neuron.num_task_examples",
+        type=int,
+        help="The maximum number of each task to generate. This is reduced according to task_p",
+        default=512,
     )
 
     parser.add_argument(
@@ -326,10 +333,10 @@ def add_validator_args(cls, parser):
     )
 
     parser.add_argument(
-        "--neuron.sample_size",
+        "--neuron.miner_incentive_threshold",
         type=int,
-        help="The number of miners to query in a single step.",
-        default=50,
+        help="The number of miners to evaluate based on an incentive threshold.",
+        default=40,
     )
 
     parser.add_argument(

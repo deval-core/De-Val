@@ -12,21 +12,21 @@ TASKS = {
     TasksEnum.RELEVANCY.value: {
         "task_function": RelevancyTask,
         "dataset": WikiDataset,
-        "run_probability": 0.25,
+        "task_p": 0.25,
     },
     TasksEnum.HALLUCINATION.value: {
         "task_function": HallucinationTask,
         "dataset": GenericDataset,
-        "run_probability": 0.25,
+        "task_p": 0.25,
     },
     TasksEnum.COMPLETENESS.value: {
         "task_function": CompletenessTask,
         "dataset": GenericDataset,
-        "run_probability": 0.25,
+        "task_p": 0.25,
     },
     TasksEnum.ATTRIBUTION.value: {
         "task_function": AttributionTask,
         "dataset": AttributionDataset,
-        "run_probability": 0.25,
+        "task_p": 0.25,
     }
 }

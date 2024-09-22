@@ -15,10 +15,7 @@ class RewardResult:
             task (Task): Task instance which contains reward_definition (list of reward model requirements) and a reference answer (str)
             response_event (DendriteResponseEvent): Network responses to the prompt
             device (str): Device to run the reward models on
-        """
-
-        # TODO: remove once mechanism is fully implemented
-        self.reward_mistakes_on = True 
+        """ 
 
         self.reward_pipeline = reward_pipeline
         self.response_event = response_event
@@ -77,9 +74,6 @@ class RewardResult:
                 reference = reference_score 
         
             if reference_type == RewardReferenceType.MISTAKES:
-                # TODO: remove once we have fully rolled out new mechanism
-                if not self.reward_mistakes_on:
-                    continue
                 completions = self.response_event.mistakes
                 reference = reference_extracted_items
 
@@ -92,8 +86,6 @@ class RewardResult:
 
     def total_reward(self) -> torch.FloatTensor:
         """Combines the rewards from all the reward models into a single reward tensor"""
-
-        # TODO: How would using the Agent as a reward model fit into this flow?
         # Compute the rewards for the responses given the prompt        
         rewards = torch.zeros_like(
             self.response_event.uids, dtype=torch.float32, device=self.device

@@ -16,12 +16,7 @@ class DendriteResponseEvent:
 
         for synapse in responses:
             self.completions.append(synapse.completion)
-
-            # TODO: remove once fully rolled out mechanism
-            try:
-                self.mistakes.append(synapse.mistakes)
-            except:
-                pass 
+            self.mistakes.append(synapse.mistakes)
 
             self.status_messages.append(synapse.dendrite.status_message)
 

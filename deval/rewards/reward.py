@@ -82,6 +82,7 @@ class RewardResult:
             reward_event = reward_model.apply(
                 reference, completions, reward_type=reward_type
             )
+            print(f'Reward:  {reward_info["name"]}, {reward_event.rewards}')
             reward_events.append(reward_event)
 
         return reward_events
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     from deval.llms.config import LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.RELEVANCY.value
+    task_name = TasksEnum.COMPLETENESS.value
     _ = load_dotenv(find_dotenv())
 
     allowed_models = ["gpt-4o-mini"]

@@ -75,7 +75,9 @@ class RewardResult:
         
             if reference_type == RewardReferenceType.MISTAKES:
                 completions = self.response_event.mistakes
+                print("PRINTING MISTAKES", completions)
                 reference = reference_extracted_items
+                print("PRINTING REFERENCE Mistakes", reference)
 
             reward_event = reward_model.apply(
                 reference, completions, reward_type=reward_type
@@ -142,7 +144,7 @@ class BaseRewardModel(ABC):
 
     def apply(
         self, 
-        reference: float, 
+        reference: float | list[str], # score or mistakes 
         completions: float | list[str], # score or mistakes 
         reward_type: RewardModelTypeEnum, 
     ) -> RewardEvent:
@@ -187,7 +189,7 @@ if __name__ == "__main__":
     ][0]
  
     task = task_generator.create_task(llm_pipeline, task_name)
-    
+
     agent = HumanAgent(task=task)
     print(f"Reference score: {agent.reference}")
     print(f"Reference Mistakes: {agent.reference_mistakes}")

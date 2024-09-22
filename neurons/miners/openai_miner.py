@@ -195,6 +195,7 @@ class OpenAIMiner(Miner):
                 if mistakes_prompt:
                     mistakes_completion = self.extract_mistakes(mistakes_prompt, rag_context, llm_response)
                     bt.logging.info(f"eval score completion: {mistakes_completion}")
+                    print(f"eval score completion: {score_completion}")
                     synapse.mistakes = mistakes_completion
 
             synapse_latency = time.time() - t0

@@ -77,24 +77,32 @@ In our first iteration of the subnet, we will release evaluators focused on:
 
 ## Roadmap
 
+Our key goals for this subnet are:
+1. Immediately launch an external API to enable developers an researchers to leverage reference-free evaluations for their research and applications. 
+1. Integrate evaluation methods into a synthetic data generation pipeline to ensure that we can generate high-quality and substantive synthetic data for training and benchmarking purposes. 
+1. Deploy a new leaderboard based on synthetic data evaluated by models generated on the de_val subnet. Expand trust and transparency in AI benchmarks. 
+
 ### Phase 1: Foundation (Q3 2024)
 - [x] Launch on testnet
 - [x] Develop baseline evaluators
 - [x] Launch on Testnet
 - [x] Launch website
 - [x] Begin marketing for brand awareness and interest
+- [ ] Integrate contest style validation and winner takes most incentive
+- [ ] Develop top-down task generation approach (currently only bottoms up generation)
 
 ### Phase 2: Expansion (Q4 2024)
-- [ ] Achieve competitive baseline evaluation accuracy
 - [ ] Launch outward-facing API
-- [ ] Introduce next level of evaluation metrics and validation processes
+- [ ] Achieve competitive baseline evaluation accuracy
 - [ ] Collaborations and partnerships with synergistic companies and subnets
-- [ ] Build an open-source database for real-world data submissions
+- [ ] Introduce next level of evaluation metrics
 - [ ] Monetize evaluations through API
+- [ ] Develop tools to generate high-quality synthetic data based on our evaluators
+- [ ] Launch the de_val leaderboard aimed at providing a constantly changing, reference-free synthetic data leaderboard that is harder to game, but also fully transparent
 
 ### Phase 3: Refinement (Q1 2025)
+- [ ] Build an open-source database for real-world data submissions
 - [ ] Market and sales expansion
-- [ ] Further develop baseline evaluators
 - [ ] Expand to additional evaluation metrics such as harmful content detection
 - [ ] Explore niche use cases such as regulatory evaluation and privacy compliance
 - [ ] Monetize API access to evaluations and proprietary database

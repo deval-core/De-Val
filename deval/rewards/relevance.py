@@ -2,7 +2,7 @@ import time
 import torch
 from angle_emb import AnglE
 from torch.nn.functional import cosine_similarity
-from deval.rewards import (
+from deval.rewards.reward import (
     BaseRewardModel,
     BatchRewardOutput,
 )

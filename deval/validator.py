@@ -2,7 +2,7 @@ import bittensor as bt
 from deval.forward import forward
 from deval.llms.openai_llm import OpenAILLM
 from deval.base.validator import BaseValidatorNeuron
-from deval.rewards import RewardPipeline
+from deval.rewards.pipeline import RewardPipeline
 from deval.task_generator import TaskGenerator
 from dotenv import load_dotenv, find_dotenv
 import os

@@ -1,8 +1,7 @@
 import time
 import torch
-from typing import List
 from rouge import Rouge
-from deval.rewards import (
+from deval.rewards.reward import (
     BaseRewardModel,
     BatchRewardOutput,
 )
@@ -13,7 +12,7 @@ class ExactMatchRewardModel(BaseRewardModel):
     def name(self) -> str:
         return "exact_match"
 
-    def __init__(self, ngram="rouge-l", metric="f", avg=False, **kwargs):
+    def __init__(self, ngram="rouge-l", metric="f", avg=False, device=None, **kwargs):
         super().__init__()
         self.ngram = ngram
         self.metric = metric
@@ -53,7 +52,11 @@ class ExactMatchRewardModel(BaseRewardModel):
                 
                 matches.append(int(matched_reference))
 
-            rewards.append(sum(matches) / len(matches))
+            if len(matches) > 0:
+                rewards.append(sum(matches) / len(matches))
+            else:
+                rewards.append(0)
+                
             timings.append(time.time() - t0)
 
         output = BatchRewardOutput(

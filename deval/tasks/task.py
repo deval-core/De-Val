@@ -29,6 +29,7 @@ class Task(ABC):
     llm_response: str
     reference: float
     reference_mistakes: list[str]
+    reference_true_values: list[str]
     reward_definition: list[dict]
     api: str
     model_id: str
@@ -39,7 +40,7 @@ class Task(ABC):
     complete: bool = False
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, api={self.api!r}, model_id={self.model_id!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, reference_mistakes={self.reference_mistakes!r}, reference_true_values={self.reference_true_values!r}, api={self.api!r}, model_id={self.model_id!r})"
 
     def __repr__(self):
         return str(self)

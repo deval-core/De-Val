@@ -1,7 +1,7 @@
 import time
 import torch
 from rouge import Rouge
-from deval.rewards import (
+from deval.rewards.reward import (
     BaseRewardModel,
     BatchRewardOutput,
 )

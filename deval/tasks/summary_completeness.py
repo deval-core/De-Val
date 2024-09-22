@@ -55,7 +55,7 @@ class CompletenessTask(Task):
     desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
     goal = "Estimates the comprehensiveness of a summary"
 
-    max_paragraphs = 20
+    max_paragraphs = 5
     properties = {
         "context": {
             "type": "string",
@@ -71,14 +71,14 @@ class CompletenessTask(Task):
     tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
-        dict(name="float_diff", weight=1.0, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevancy", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
+        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
         dict(name="dist_penalty", weight=0.5, reference_type = RewardReferenceType.SCORE),
         dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevancy", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
     ]
 
     def __init__(self, llm_pipeline, context):
@@ -138,4 +138,5 @@ class CompletenessTask(Task):
         self.llm_response = "".join([c + random.choice(self.joiners) for c in summaries])
 
         # store mistakes for comparisons
-        self.reference_mistakes = [s for s in responses if s not in subset_summaries]
+        self.reference_mistakes = [s.summary for s in responses if s not in subset_summaries]
+        self.reference_true_values = [s.summary for s in subset_summaries]

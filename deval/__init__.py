@@ -24,17 +24,3 @@ __spec_version__ = (
     + (1 * int(version_split[2]))
 )
 
-# Import all submodules.
-from . import protocol
-from . import base
-from . import rewards
-from . import tasks
-from . import tools
-from . import utils
-
-from . import forward
-from . import agent
-from . import dendrite
-from . import validator
-
-from .task_generator import TASKS

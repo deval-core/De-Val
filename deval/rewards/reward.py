@@ -75,14 +75,11 @@ class RewardResult:
         
             if reference_type == RewardReferenceType.MISTAKES:
                 completions = self.response_event.mistakes
-                print("PRINTING MISTAKES", completions)
                 reference = reference_extracted_items
-                print("PRINTING REFERENCE Mistakes", reference)
 
             reward_event = reward_model.apply(
                 reference, completions, reward_type=reward_type
             )
-            print(f'Reward:  {reward_info["name"]}, {reward_event.rewards}')
             reward_events.append(reward_event)
 
         return reward_events

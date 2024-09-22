@@ -72,7 +72,7 @@ class AttributionTask(Task):
     goal = "Estimates the number of correctly attributed action items in a response given a RAG context"
 
     max_particpants = 5
-    max_paragraphs = 5
+    max_paragraphs = 15
 
     properties = {
         "context": {

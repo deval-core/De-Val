@@ -152,6 +152,7 @@ class OpenAIMiner(Miner):
             max_tokens = self.max_tokens,
         )
         response = output.choices[0].message.content
+        print("SUCCES RESPONSE", response)
         return self.parse_mistakes_response(response)
         
 
@@ -190,6 +191,7 @@ class OpenAIMiner(Miner):
             # TODO: remove once fully implemented mechanism
             if self.reward_mistakes_on:
                 mistakes_prompt = prompts.get("mistakes", None)
+                print("SUCCESSFULLY pulled prompt")
                 
                 # we do not evaluate for all tasks
                 if mistakes_prompt:

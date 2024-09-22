@@ -1,7 +1,3 @@
-def format_prompt(prompt, rag_context, query, llm_response):
-    return prompt.format(rag_context = rag_context, query = query, llm_response = llm_response)
-
-
 RELEVANCY_PROMPT = """\
 Your goal is to determine if the provided LLM response is relevant to the user's query.\
     You should disregard whether the response is factually accurate or not and only be concerned with relevance. 

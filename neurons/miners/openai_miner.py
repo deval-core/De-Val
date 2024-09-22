@@ -30,7 +30,6 @@ from deval.base.eval_miner import Miner
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI 
 from neurons.miners.prompts import (
-    format_prompt,
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
     HALLUCINATION_MISTAKES_PROMPT,
@@ -120,7 +119,7 @@ class OpenAIMiner(Miner):
         llm_response: str
     ) -> float:
 
-        prompt = format_prompt(prompt, rag_context=rag_context, query=query, llm_response=llm_response)
+        prompt = prompt.format(rag_context = rag_context, query = query, llm_response = llm_response)
         messages = [{"content": prompt, "role": "user"}]
             
         output = self.model.chat.completions.create(
@@ -142,7 +141,7 @@ class OpenAIMiner(Miner):
         rag_context: str, 
         llm_response: str
     ) -> list[str]:
-        prompt = format_prompt(prompt, rag_context=rag_context, llm_response=llm_response)
+        prompt = prompt.format(rag_context = rag_context, llm_response = llm_response)
         messages = [{"content": prompt, "role": "user"}]
 
         output = self.model.chat.completions.create(

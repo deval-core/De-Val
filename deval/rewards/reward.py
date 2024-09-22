@@ -187,7 +187,7 @@ if __name__ == "__main__":
     ][0]
  
     task = task_generator.create_task(llm_pipeline, task_name)
-    print(task)
+    
     agent = HumanAgent(task=task)
     print(f"Reference score: {agent.reference}")
     print(f"Reference Mistakes: {agent.reference_mistakes}")

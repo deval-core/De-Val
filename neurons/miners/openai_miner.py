@@ -86,7 +86,7 @@ class OpenAIMiner(Miner):
             }
         elif task == TasksEnum.COMPLETENESS.value:
             return {
-                "scores": SUMMARY_COMPLETENESS_PROMPT,
+                "score": SUMMARY_COMPLETENESS_PROMPT,
                 "mistakes": SUMMARY_MISTAKES_PROMPT,
             }
         elif task == TasksEnum.HALLUCINATION.value:

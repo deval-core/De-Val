@@ -132,7 +132,7 @@ class OpenAIMiner(Miner):
         response = output.choices[0].message.content
         return self.parse_score_response(response)
 
-    def parse_mistakes_response(response: str) -> list[str]:
+    def parse_mistakes_response(self, response: str) -> list[str]:
         return response.split("\n")
 
     def extract_mistakes(

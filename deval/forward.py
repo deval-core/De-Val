@@ -24,7 +24,7 @@ from deval.agent import HumanAgent
 from deval.dendrite import DendriteResponseEvent
 from deval.task_generator import TaskGenerator
 from deval.protocol import EvalSynapse
-from deval.rewards import RewardResult
+from deval.rewards.reward import RewardResult
 from deval.utils.uids import get_random_uids
 from deval.utils.logging import log_event
 from deval.utils.misc import async_log

@@ -112,3 +112,7 @@ class RelevancyTask(Task):
         self.query = response.query
         self.llm_response = response.answer
         self.reference = 1.0 if response.relevant_or_not else 0.0
+
+        # store empty mistakes and true values - we don't use these
+        self.reference_mistakes = []
+        self.reference_true_values = []

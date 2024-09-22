@@ -1,7 +1,7 @@
 import time
 import bittensor as bt
 from abc import ABC
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from enum import Enum
 from deval.llms.base_llm import BaseLLM
 import json
@@ -40,7 +40,7 @@ class Task(ABC):
     complete: bool = False
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, reference_mistakes={self.reference_mistakes!r}, reference_true_values={self.reference_true_values!r}, api={self.api!r}, model_id={self.model_id!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, reference_mistakes={self.reference_mistakes}, reference_true_values={self.reference_true_values}, api={self.api!r}, model_id={self.model_id!r})"
 
     def __repr__(self):
         return str(self)
@@ -64,7 +64,6 @@ class Task(ABC):
             state.update(asdict(self.context))
 
         return state
- 
 
 
     def generate_input(self, llm_pipeline: BaseLLM, prompt: str, system_prompt: str, tool_schema: dict) -> str:

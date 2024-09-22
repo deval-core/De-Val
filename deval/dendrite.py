@@ -48,10 +48,11 @@ class DendriteResponseEvent:
         return {
             "uids": self.uids.tolist(),
             "completions": self.completions,
+            "mistakes": self.mistakes,
             "timings": self.timings,
             "status_messages": self.status_messages,
             "status_codes": self.status_codes,
         }
 
     def __repr__(self):
-        return f"DendriteResponseEvent(uids={self.uids}, completions={self.completions}, timings={self.timings}, status_messages={self.status_messages}, status_codes={self.status_codes})"
+        return f"DendriteResponseEvent(uids={self.uids}, completions={self.completions}, mistakes={self.mistakes}, timings={self.timings}, status_messages={self.status_messages}, status_codes={self.status_codes})"

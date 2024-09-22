@@ -19,7 +19,7 @@ class ExactMatchRewardModel(BaseRewardModel):
         self.avg = avg
         self.rouge = Rouge(**kwargs)
 
-        self.exact_match_threshold = 0.95
+        self.exact_match_threshold = 0.85
 
     def rouge_score(self, reference, completion):
         if not completion or not reference:

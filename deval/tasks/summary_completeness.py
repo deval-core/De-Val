@@ -71,14 +71,14 @@ class CompletenessTask(Task):
     tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
     reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="float_diff", weight=1.0, reference_type = RewardReferenceType.SCORE),
+        dict(name="rouge", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevance", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
         dict(name="dist_penalty", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="rouge", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="relevance", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
 
     def __init__(self, llm_pipeline, context):

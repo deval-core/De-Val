@@ -84,12 +84,12 @@ class HallucinationTask(Task):
 
 
     reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="float_diff", weight=1.0, reference_type = RewardReferenceType.SCORE),
+        dict(name="exact_match", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
         dict(name="dist_penalty", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="exact_match", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
 
     def __init__(self, llm_pipeline, context):

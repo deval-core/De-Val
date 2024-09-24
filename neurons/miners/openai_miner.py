@@ -68,7 +68,6 @@ class OpenAIMiner(Miner):
 
         self.system_prompt = "You are LLM evaluator. Your goal is to respond to the evaluation question with a score between 0 and 1, where 1 signifies fully accurate and 0 signifies completely inaccurate."
         
-        self.reward_mistakes_on = True # Switch to turn on evaluation of this field
 
     def set_parameters(self) -> None:
         self.model_id = self.config.neuron.model_id
@@ -190,7 +189,9 @@ class OpenAIMiner(Miner):
             synapse.completion = score_completion
 
             # TODO: remove once fully implemented mechanism
-            if self.reward_mistakes_on:
+            try:
+                _ = synapse.mistakes
+                bt.logging.info(f"Successfully identified synapse as having mistakes field. Continuing")
                 mistakes_prompt = prompts.get("mistakes", None)
                 
                 # we do not evaluate for all tasks
@@ -199,6 +200,9 @@ class OpenAIMiner(Miner):
                     bt.logging.info(f"eval score completion: {mistakes_completion}")
                     print(f"eval score completion: {mistakes_completion}")
                     synapse.mistakes = mistakes_completion
+            except:
+                bt.logging.info(f"Synapse does not have mistakes field. Skipping.")
+                pass
 
             synapse_latency = time.time() - t0
             bt.logging.info(f"✅ Served Response with latency: {synapse_latency}")

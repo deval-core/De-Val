@@ -5,6 +5,7 @@ from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
+from deval.rewards.reward import RewardReferenceType
 
 
 
@@ -83,10 +84,12 @@ class HallucinationTask(Task):
 
 
     reward_definition = [
-        dict(name="float_diff", weight=1.0),
+        dict(name="float_diff", weight=1.0, reference_type = RewardReferenceType.SCORE),
+        dict(name="exact_match", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
-         dict(name="dist_penalty", weight=0.5),
+        dict(name="dist_penalty", weight=0.5, reference_type = RewardReferenceType.SCORE),
+        dict(name="exact_match", weight=0.0, reference_type = RewardReferenceType.MISTAKES),
     ]
 
     def __init__(self, llm_pipeline, context):
@@ -152,3 +155,7 @@ class HallucinationTask(Task):
         claims = [r.claim for r in subset_claims]
         random.shuffle(claims)
         self.llm_response = "".join([c + random.choice(self.joiners) for c in claims])
+
+        # store mistakes for comparisons
+        self.reference_mistakes = [r.claim for r in subset_claims if r.true_or_false == False]
+        self.reference_true_values = [r.claim for r in subset_claims if r.true_or_false == True]

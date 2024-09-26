@@ -16,7 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 # Define the version of the template module.
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 version_split = __version__.split(".")
 __spec_version__ = (
     (10000 * int(version_split[0]))
@@ -24,17 +24,3 @@ __spec_version__ = (
     + (1 * int(version_split[2]))
 )
 
-# Import all submodules.
-from . import protocol
-from . import base
-from . import rewards
-from . import tasks
-from . import tools
-from . import utils
-
-from . import forward
-from . import agent
-from . import dendrite
-from . import validator
-
-from .task_generator import TASKS

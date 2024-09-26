@@ -1,12 +1,9 @@
 import time
 import bittensor as bt
 from abc import ABC
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from enum import Enum
-from typing import List, Union, Dict
-#from deval.llms import OpenAILLM as ValidatorLLM, BasePipeline
 from deval.llms.base_llm import BaseLLM
-#from deval.cleaners.cleaner import CleanerPipeline
 import json
 from enum import Enum
 
@@ -26,22 +23,24 @@ class Task(ABC):
     goal: str
     topic: str
     subtopic: str
-    tags: List[str]
+    tags: list[str]
     context: dict
     rag_context: str
     llm_response: str
     reference: float
-    reward_definition: List[dict]
+    reference_mistakes: list[str]
+    reference_true_values: list[str]
+    reward_definition: list[dict]
     api: str
     model_id: str
     query: str = ""
     reward_threshold: float = 0.0
-    penalty_definition: List[dict] = None
+    penalty_definition: list[dict] = None
     joiners = ["\n", " ", "  ", "\t", "\n\n", "", "..."]
     complete: bool = False
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, api={self.api!r}, model_id={self.model_id!r})"
+        return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, rag_context={self.rag_context!r}, query={self.query}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r}, responses={self.llm_response!r}, reference={self.reference!r}, reference_mistakes={self.reference_mistakes}, reference_true_values={self.reference_true_values}, api={self.api!r}, model_id={self.model_id!r})"
 
     def __repr__(self):
         return str(self)
@@ -65,7 +64,6 @@ class Task(ABC):
             state.update(asdict(self.context))
 
         return state
- 
 
 
     def generate_input(self, llm_pipeline: BaseLLM, prompt: str, system_prompt: str, tool_schema: dict) -> str:

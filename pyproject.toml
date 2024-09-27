@@ -24,6 +24,7 @@ pandas = "^2.2.2"
 boto3 = "^1.35.14"
 transformers = "^4.44.2"
 pyarmor = "^8.5.11"
+uvicorn = "0.30"
 
 
 [build-system]

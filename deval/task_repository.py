@@ -85,7 +85,7 @@ class TaskRepository:
 
     def generate_all_tasks(
         self, 
-        task_probabilities: list[tuple(str, int)],
+        task_probabilities: list[tuple()],
     ) -> None:
         # loops through and stores all tasks to be evaluated against in the epoch 
 
@@ -109,8 +109,9 @@ if __name__ == "__main__":
     _ = load_dotenv(find_dotenv())
 
     task_sample_rate = [
-        (TasksEnum.RELEVANCY.value, 2),
-        (TasksEnum.HALLUCINATION.value, 1)
+        (TasksEnum.RELEVANCY.value, 1),
+        (TasksEnum.HALLUCINATION.value, 1),
+        (TasksEnum.ATTRIBUTION.value, 1),
     ]
 
     allowed_models = ["gpt-4o-mini"]

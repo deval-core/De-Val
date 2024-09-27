@@ -15,14 +15,6 @@ class DeValContest:
         self.reward_pipeline: RewardPipeline = reward_pipeline
         self.timeout: int = timeout
 
-    def add_new_model_state(self, miner_state: ModelState) -> bool:
-        # stores the new model metadata in the contest 
-
-        # validates the model, stores all the metadata for the model
-        is_valid_model = self.validate_model(miner_state)
-
-        return is_valid_model
-
     def validate_model(self, miner_state: ModelState) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date:
@@ -52,10 +44,8 @@ class DeValContest:
                 # the model that the hash points to and zero out the duplicate rewards 
                 # update the model associated 
                 self.model_hashes[miner_state.model_hash] = miner_state
-                
-                # TODO: I think I can just delete the UID? just add a remove from dict for the duplicated UID
-                self.model_rewards
-                pass
+                self.model_rewards.pop(duplicated_model_uid, None)
+                return True
 
                 
         

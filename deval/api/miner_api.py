@@ -21,7 +21,7 @@ def download_model_and_pipeline(repo_id, model_dir):
 async def startup_event():
     """Download model and pipeline at startup."""
     print(f"Downloading model and pipeline for {repo_id}...")
-    model_dir = download_model_and_pipeline(repo_id)
+    #model_dir = download_model_and_pipeline(repo_id)
     print(f"Model and pipeline downloaded to {model_dir}")
 
 @app.post("/eval_query")
@@ -38,14 +38,5 @@ async def query_model(request: EvalRequest) -> EvalResponse:
     
     return EvalResponse(
         completion = completion,
-        response_time = process_time
+        response_time = process_time,
     )
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up model files after the container shuts down."""
-    if os.path.exists(model_path):
-        shutil.rmtree(model_path)
-    if os.path.exists(pipeline_path):
-        shutil.rmtree(pipeline_path)
-    print("Model and pipeline files cleaned up.")

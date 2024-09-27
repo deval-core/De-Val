@@ -130,7 +130,9 @@ class Validator(BaseValidatorNeuron):
     ):
         #pull model, update contest, and validate model 
         model_dir = HuggingFaceModel.pull_model_and_files(miner_state)
-        contest.add_new_model_state(miner_state)
+        is_valid = contest.validate_model(miner_state)
+        if not is_valid:
+            return miner_state
 
 
         # TODO: Integration with new docker container occurs here? 

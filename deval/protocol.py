@@ -72,8 +72,8 @@ class ModelQuerySynapse(bt.Synapse):
 
 class EvalResponse(pydantic.BaseModel):
     completion: float 
-    response_time: int
-    uid: int | None
+    response_time: float
+    uid: int | None = None
 
 class EvalRequest(pydantic.BaseModel):
     tasks: list[str]

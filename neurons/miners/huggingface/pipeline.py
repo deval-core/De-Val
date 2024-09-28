@@ -1,11 +1,10 @@
 from transformers import Pipeline, AutoTokenizer, AutoModelForCausalLM
-from neurons.miners.prompts import (
+from neurons.miners.huggingface.prompts import (
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
     ATTRIBUTION_PROMPT, 
     SUMMARY_COMPLETENESS_PROMPT
 )
-from deval.tasks import TasksEnum
 
 class DeValPipeline(Pipeline):
 
@@ -35,13 +34,13 @@ class DeValPipeline(Pipeline):
         query: str | None,
         llm_response: str
     ) -> str:
-        if task == TasksEnum.ATTRIBUTION.value:
+        if task == "attribution":
             prompt = ATTRIBUTION_PROMPT
-        elif task == TasksEnum.COMPLETENESS.value:
+        elif task == 'summary_completeness':
             prompt = SUMMARY_COMPLETENESS_PROMPT
-        elif task == TasksEnum.HALLUCINATION.value:
+        elif task == "hallucination":
             prompt = HALLUCINATION_PROMPT
-        elif task == TasksEnum.RELEVANCY.value:
+        elif task == "relevancy":
             prompt = RELEVANCY_PROMPT
         else:
             raise ValueError(f"Unable to find the correct task: {task}")

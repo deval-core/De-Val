@@ -29,7 +29,7 @@ import re
 from deval.base.eval_miner import Miner
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI 
-from neurons.miners.prompts import (
+from neurons.miners.huggingface.prompts import (
     format_prompt,
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 

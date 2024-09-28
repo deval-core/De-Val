@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import os
-import shutil
+from neurons.miners.pipeline import DeValPipeline
 from deval.model.huggingface_model import HuggingFaceModel
 from deval.protocol import EvalRequest, EvalResponse
 import time
@@ -10,31 +10,33 @@ app = FastAPI()
 repo_id = os.getenv("REPO_ID")
 model_dir = os.getenv("MODEL_DIR")
 
-def download_model_and_pipeline(repo_id, model_dir):
+
+def download_model_and_pipeline():
     """Download model and pipeline from HuggingFace."""
     
     # TODO: enable downloading to specific model directory
-    model_dir = HuggingFaceModel.pull_model_and_files(repo_id)
-    return model_dir
-
-@app.on_event("startup")
-async def startup_event():
-    """Download model and pipeline at startup."""
-    print(f"Downloading model and pipeline for {repo_id}...")
-    #model_dir = download_model_and_pipeline(repo_id)
+    #model_dir = HuggingFaceModel.pull_model_and_files(repo_id)
+    model_dir = "../model"
     print(f"Model and pipeline downloaded to {model_dir}")
+
+    return DeValPipeline("de_val", model_dir = model_dir)
+
+pipe = download_model_and_pipeline()
+
 
 @app.post("/eval_query")
 async def query_model(request: EvalRequest) -> EvalResponse:
     """Process a user query through the miner's model."""
     
     start_time = time.time()
-    # TODO: replace with pipe through custom pipeline pointing at model directory 
-    completion = -1
+    tasks = request.tasks
+    rag_context = request.rag_context
+    query = request.query
+    llm_response = request.llm_response
+
+    completion = pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response)
     process_time = time.time() - start_time
 
-
-    # Dummy response - real implementation would call the participant's model and pipeline
     
     return EvalResponse(
         completion = completion,

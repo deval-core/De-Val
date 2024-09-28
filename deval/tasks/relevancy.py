@@ -4,6 +4,7 @@ from deval.tasks.task import Task, TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel
+from deval.rewards.reward import RewardReferenceType
 
 
 # Used to obtain the set of contexts and QA pairs 
@@ -71,7 +72,7 @@ class RelevancyTask(Task):
 
 
     reward_definition = [
-        dict(name="ordinal", weight=1.0),
+        dict(name="ordinal", weight=1.0, reference_type = RewardReferenceType.SCORE),
     ]
     penalty_definition = []
 
@@ -111,3 +112,7 @@ class RelevancyTask(Task):
         self.query = response.query
         self.llm_response = response.answer
         self.reference = 1.0 if response.relevant_or_not else 0.0
+
+        # store empty mistakes and true values - we don't use these
+        self.reference_mistakes = []
+        self.reference_true_values = []

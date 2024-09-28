@@ -63,6 +63,12 @@ class ModelQuerySynapse(bt.Synapse):
         allow_mutation=True,
     )
 
+    mistakes: list[str] = pydantic.Field(
+        [""],
+        title="Mistakes",
+        description="Identified hallucinations, misattributions, summaries, etc."
+    )
+
     required_hash_fields: List[str] = pydantic.Field(
         [],
         title="Required Hash Fields",

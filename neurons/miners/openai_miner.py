@@ -33,8 +33,11 @@ from neurons.miners.huggingface.prompts import (
     format_prompt,
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
+    HALLUCINATION_MISTAKES_PROMPT,
     ATTRIBUTION_PROMPT, 
-    SUMMARY_COMPLETENESS_PROMPT
+    ATTRIBUTION_MISTAKES_PROMPT,
+    SUMMARY_COMPLETENESS_PROMPT,
+    SUMMARY_MISTAKES_PROMPT
 )
 
 
@@ -75,20 +78,29 @@ class OpenAIMiner(Miner):
         self.top_p = self.config.neuron.top_p or 0.95
         self.top_k = self.config.neuron.top_k or 0
 
-    def select_task_prompt(self, task: str) -> str:
+    def select_task_prompt(self, task: str) -> dict[str, str]:
         if task == TasksEnum.ATTRIBUTION.value:
-            return ATTRIBUTION_PROMPT
+            return {
+                "score": ATTRIBUTION_PROMPT,
+                "mistakes": ATTRIBUTION_MISTAKES_PROMPT,
+            }
         elif task == TasksEnum.COMPLETENESS.value:
-            return SUMMARY_COMPLETENESS_PROMPT
+            return {
+                "score": SUMMARY_COMPLETENESS_PROMPT,
+                "mistakes": SUMMARY_MISTAKES_PROMPT,
+            }
         elif task == TasksEnum.HALLUCINATION.value:
-            return HALLUCINATION_PROMPT
+            return {
+                "score": HALLUCINATION_PROMPT,
+                "mistakes": HALLUCINATION_MISTAKES_PROMPT,
+            }
         elif task == TasksEnum.RELEVANCY.value:
-            return RELEVANCY_PROMPT
+            return {"score": RELEVANCY_PROMPT}
         else:
             bt.logging.error("Unable to identify the task")
             raise ValueError(f"Unable to find the correct task: {task}")
 
-    def parse_response(self, response: str) -> float:
+    def parse_score_response(self, response: str) -> float:
         float_regex = "((0\.\d+?|1\.0+?|0|1|\.\d+))"
         match = re.search(f"response: {float_regex}", response.lower())
         if match:
@@ -99,7 +111,51 @@ class OpenAIMiner(Miner):
             bt.logging.debug("Unable to parse response")
             return -1.0
 
+    def compute_eval_score(
+        self, 
+        prompt: str, 
+        rag_context: str, 
+        query: str, 
+        llm_response: str
+    ) -> float:
 
+        prompt = prompt.format(rag_context = rag_context, query = query, llm_response = llm_response)
+        messages = [{"content": prompt, "role": "user"}]
+            
+        output = self.model.chat.completions.create(
+            model=self.model_id,
+            messages=messages,
+            temperature = self.temperature,
+            top_p = self.top_p,
+            max_tokens = self.max_tokens,
+        )
+        response = output.choices[0].message.content
+        return self.parse_score_response(response)
+
+    def parse_mistakes_response(self, response: str) -> list[str]:
+        response = response.split("\n")   
+        response = [r.strip() for r in response]
+        return [r for r in response if r != '']
+
+    def extract_mistakes(
+        self, 
+        prompt: str, 
+        rag_context: str, 
+        llm_response: str
+    ) -> list[str]:
+        prompt = prompt.format(rag_context = rag_context, llm_response = llm_response)
+        messages = [{"content": prompt, "role": "user"}]
+
+        output = self.model.chat.completions.create(
+            model=self.model_id,
+            messages=messages,
+            temperature = self.temperature,
+            top_p = self.top_p,
+            max_tokens = self.max_tokens,
+        )
+        response = output.choices[0].message.content
+        return self.parse_mistakes_response(response)
+        
 
     async def forward(self, synapse: EvalSynapse) -> EvalSynapse:
         """
@@ -125,28 +181,32 @@ class OpenAIMiner(Miner):
             llm_response = synapse.llm_response
 
             # generate our prompt and format
-            prompt = self.select_task_prompt(task)
-            prompt = format_prompt(prompt, rag_context=rag_context, query=query, llm_response=llm_response)
-            messages = [{"content": prompt, "role": "user"}]
+            prompts = self.select_task_prompt(task)
             
-
             # generate our response and return
-            output = self.model.chat.completions.create(
-                model=self.model_id,
-                messages=messages,
-                temperature = self.temperature,
-                top_p = self.top_p,
-                max_tokens = self.max_tokens,
-            )
-            response = output.choices[0].message.content
-            completion = self.parse_response(response)
-            bt.logging.info(f"completion: {completion}")
-            synapse.completion = completion
+            score_prompt = prompts.get("score")
+            score_completion = self.compute_eval_score(score_prompt, rag_context, query, llm_response)
+            bt.logging.info(f"eval score completion: {score_completion}")
+            synapse.completion = score_completion
+
+            # TODO: remove once fully implemented mechanism
+            try:
+                _ = synapse.mistakes
+                bt.logging.info(f"Successfully identified synapse as having mistakes field. Continuing")
+                mistakes_prompt = prompts.get("mistakes", None)
+                
+                # we do not evaluate for all tasks
+                if mistakes_prompt:
+                    mistakes_completion = self.extract_mistakes(mistakes_prompt, rag_context, llm_response)
+                    bt.logging.info(f"eval score completion: {mistakes_completion}")
+                    print(f"eval score completion: {mistakes_completion}")
+                    synapse.mistakes = mistakes_completion
+            except:
+                bt.logging.info(f"Synapse does not have mistakes field. Skipping.")
+                pass
 
             synapse_latency = time.time() - t0
-
-            
-            bt.logging.info(f"✅ Served Response: {response}, with latency: {synapse_latency}")
+            bt.logging.info(f"✅ Served Response with latency: {synapse_latency}")
 
             return synapse
         except Exception as e:

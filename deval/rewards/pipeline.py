@@ -1,19 +1,24 @@
 from typing import List
 
 from deval.tasks import TASKS
-from deval.rewards import (
-    BaseRewardModel,
-    FloatDiffModel,
-    DistPenaltyRewardModel,
-    OrdinalRewardModel
-)
+
+from deval.rewards.reward import BaseRewardModel
+
+from deval.rewards.dist_penalty import DistPenaltyRewardModel
+from deval.rewards.exact_match import ExactMatchRewardModel
+from deval.rewards.float_diff import FloatDiffModel
+from deval.rewards.ordinal import OrdinalRewardModel
+from deval.rewards.rouge_reward import RougeRewardModel
+from deval.rewards.relevance import RelevanceRewardModel
 
 REWARD_MODELS = {
     "float_diff": FloatDiffModel,
     "dist_penalty": DistPenaltyRewardModel,
-    "ordinal": OrdinalRewardModel
+    "ordinal": OrdinalRewardModel,
+    "rouge": RougeRewardModel,
+    "relevance": RelevanceRewardModel,
+    "exact_match": ExactMatchRewardModel
 }
-
 
 class RewardPipeline:
     def __init__(self, selected_tasks: List[str], device):
@@ -100,7 +105,7 @@ class RewardPipeline:
 
             cls = REWARD_MODELS[name]
 
-            params = {k: v for k, v in model.items() if k not in ["name", "weight"]}
+            params = {k: v for k, v in model.items() if k not in ["name", "weight", "reference_type"]}
             reward_models[name] = cls(device=self.device, **params)
 
         self.reward_models = reward_models

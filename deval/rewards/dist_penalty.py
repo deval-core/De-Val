@@ -1,7 +1,7 @@
 import time
 import torch
 from typing import List
-from deval.rewards import BaseRewardModel, BatchRewardOutput
+from deval.rewards.reward import BaseRewardModel, BatchRewardOutput
 
 
 class DistPenaltyRewardModel(BaseRewardModel):

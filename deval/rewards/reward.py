@@ -4,10 +4,11 @@ from typing import List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from deval.rewards.models import RewardEvent, RewardModelTypeEnum, RewardReferenceType
+from deval.responses import EvalResponse
 
 
 class RewardResult:
-    def __init__(self, reward_pipeline, agent, response_event, device):
+    def __init__(self, reward_pipeline, responses: List[EvalResponse], device):
         """Passes the responses through the reward models and calculates the total reward
 
         Args:
@@ -18,24 +19,41 @@ class RewardResult:
         """ 
 
         self.reward_pipeline = reward_pipeline
-        self.response_event = response_event
+        self.responses = responses
         self.device = device
-        self.task_name = agent.task.name
-        self.task_rewards = agent.task.reward_definition
-        self.task_penalties = agent.task.penalty_definition
-        self.reward_events = self.reward_responses(
-            reference_score=agent.task.reference,
-            reference_extracted_items=agent.task.reference_mistakes,
-            models=self.task_rewards,
-            reward_type=RewardModelTypeEnum.WEIGHTED_REWARD,
-        )
-        self.penalty_events = self.reward_responses(
-            reference_score=agent.reference,
-            reference_extracted_items=agent.task.reference_true_values,
-            models=self.task_penalties,
-            reward_type=RewardModelTypeEnum.PENALTY,
-        )
-        self.rewards = self.total_reward()
+        self.rewards = []
+
+        for r in responses:
+            reference_score = r.human_agent.reference
+            reference_mistakes = r.human_agent.reference_mistakes
+            reference_true_values = r.human_agent.reference_true_values
+
+            task_rewards = r.human_agent.task.reward_definition
+            task_penalties = r.human_agent.task.penalty_definition
+            
+            reward_events = self.reward_responses(
+                miner_score=r.score,
+                miner_extracted_items=r.mistakes,
+                reference_score=reference_score,
+                reference_extracted_items=reference_mistakes,
+                models=task_rewards,
+                reward_type=RewardModelTypeEnum.WEIGHTED_REWARD,
+            )
+            penalty_events = self.reward_responses(
+                miner_score=r.score,
+                miner_extracted_items=r.mistakes,
+                reference_score=reference_score,
+                reference_extracted_items=reference_true_values,
+                models=task_penalties,
+                reward_type=RewardModelTypeEnum.PENALTY,
+            )
+            reward = self.total_reward(
+                reward_events,
+                penalty_events,
+                task_rewards,
+                task_penalties
+            )
+            self.rewards.append(reward)
 
 
     def __state_dict__(self, full=False):
@@ -46,6 +64,8 @@ class RewardResult:
 
     def reward_responses(
         self, 
+        miner_score: float, 
+        miner_extracted_items: list[str],
         reference_score: float, 
         reference_extracted_items: list[str], 
         models: List[dict], 
@@ -71,36 +91,42 @@ class RewardResult:
             reference = reference_score if reference_type == RewardReferenceType.SCORE else reference_extracted_items
 
             if reference_type == RewardReferenceType.SCORE:
-                completions = self.response_event.completions
+                completion = miner_score
                 reference = reference_score 
         
             if reference_type == RewardReferenceType.MISTAKES:
-                completions = self.response_event.mistakes
+                completion = miner_extracted_items
                 reference = reference_extracted_items
 
             reward_event = reward_model.apply(
-                reference, completions, reward_type=reward_type
+                reference, completion, reward_type=reward_type
             )
             reward_events.append(reward_event)
 
         return reward_events
 
-    def total_reward(self) -> torch.FloatTensor:
+    def total_reward(
+        self, 
+        reward_events, 
+        penalty_events,
+        reward_models,
+        penalty_models
+    ) -> torch.FloatTensor:
         """Combines the rewards from all the reward models into a single reward tensor"""
         # Compute the rewards for the responses given the prompt        
         rewards = torch.zeros_like(
             self.response_event.uid, dtype=torch.float32, device=self.device
         )
 
-        for event in self.reward_events:
+        for event in reward_events:
             for reward_info in filter(
-                lambda x: x["name"] == event.model_name, self.task_rewards
+                lambda x: x["name"] == event.model_name, reward_models
             ):
                 rewards += reward_info["weight"] * event.rewards.to(self.device)
 
-        for event in self.penalty_events:
+        for event in penalty_events:
             for reward_info in filter(
-                lambda x: x["name"] == event.model_name, self.task_penalties
+                lambda x: x["name"] == event.model_name, penalty_models
             ):
                 rewards *= 1 - reward_info["weight"] * event.rewards.to(self.device)
 
@@ -170,7 +196,7 @@ if __name__ == "__main__":
     from deval.tasks import TasksEnum
     from deval.task_repository import TaskRepository
     from deval.agent import HumanAgent
-    from deval.protocol import EvalResponse
+    from deval.responses import EvalResponse
     from deval.rewards.pipeline import RewardPipeline
     from dotenv import load_dotenv, find_dotenv
     
@@ -188,34 +214,22 @@ if __name__ == "__main__":
     print(f"Reference True Values: {agent.reference_true_values}")
 
     # prep fake response
-
-    # NEW APPROACH
-    uid = torch.tensor(1)
-    response_event = EvalResponse(
-        uid = uid,
-        completion = 0.5,
-        response_time = 5
-    )
-
-    # OLD APPROACH -- Need to consolidate 
+    uid = 1 
     responses = [
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.5, mistakes = agent.reference_true_values),
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 1.0),
-        EvalSynapse(tasks = [agent.tasks_challenge], rag_context = agent.rag_context, query = agent.query, llm_response = agent.llm_response, completion = 0.0, mistakes = agent.reference_mistakes)
+        EvalResponse(uid = uid, score = 0.5, mistakes = agent.reference_true_values, human_agent = agent),
+        EvalResponse(uid = uid, score = 1.0, mistakes = [], human_agent = agent),
+        EvalResponse(uid = uid, score = 0.0, mistakes = agent.reference_mistakes, human_agent = agent)
     ]
-
-    uids = torch.tensor([1, 2, 3])
-    response_event = DendriteResponseEvent(responses, uids, timeout = 10)
 
     # reward compute
     active_tasks = [TasksEnum.ATTRIBUTION.value,  TasksEnum.HALLUCINATION.value, TasksEnum.COMPLETENESS.value, TasksEnum.RELEVANCY.value]
+    
     reward_pipeline = RewardPipeline(
         selected_tasks=active_tasks, device="cpu"
     )
     rewards = RewardResult(
         reward_pipeline,
-        agent=agent,
-        response_event=response_event,
+        responses=responses,
         device="cpu",
     )
 

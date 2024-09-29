@@ -1,6 +1,6 @@
 from transformers import Pipeline
 import bittensor as bt
-from deval.protocol import EvalRequest
+from deval.requests import EvalRequest
 import os
 from huggingface_hub import HfApi, HfFolder, Repository, snapshot_download
 from deval.model.obfuscate import Obfuscator
@@ -75,9 +75,3 @@ class HuggingFaceModel:
                 token= token
             )
             print("Completed model upload")
-
-       
-    @staticmethod
-    def run(request: EvalRequest, pipe: Pipeline):
-        pass
-        #return pipe()

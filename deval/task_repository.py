@@ -9,7 +9,7 @@ import numpy as np
 
 class TaskRepository:
 
-    tasks: list[Task] = [] 
+    tasks: dict[TasksEnum, list[Task]] = {} 
 
     def __init__(self, allowed_models: list[str] | None = None):
         # initialize available models 
@@ -88,16 +88,17 @@ class TaskRepository:
         task_probabilities: list[tuple()],
     ) -> None:
         # loops through and stores all tasks to be evaluated against in the epoch 
-
         for task_name, n in task_probabilities:
+            self.tasks[task_name] = []
             for i in range(n):
                 llm_pipeline = self.get_random_llm()
                 task = self.create_task(llm_pipeline, task_name)
-                self.tasks.append(task)
+                self.tasks[task_name].append(task)
+                    
 
     def get_all_tasks(self) -> Task:
-        for task in self.tasks:
-            yield task
+        for task_name, tasks in self.tasks.items():
+            yield task_name, tasks
 
 
 

@@ -21,7 +21,7 @@ import bittensor as bt
 
 # Bittensor Miner Template:
 import deval
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 
 # import base miner class which takes care of most of the boilerplate
 from deval.base.miner import BaseMinerNeuron

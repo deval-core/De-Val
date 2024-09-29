@@ -2,7 +2,7 @@ import pytest
 import asyncio
 import bittensor as bt
 from deval.mock import MockDendrite, MockMetagraph, MockSubtensor
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 from deval.tasks import TasksEnum
 
 wallet = bt.MockWallet()

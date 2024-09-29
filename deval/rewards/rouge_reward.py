@@ -26,17 +26,16 @@ class RougeRewardModel(BaseRewardModel):
             self.ngram
         ][self.metric]
 
-    def reward(self, reference: list[str], completions: list[list[str]]) -> BatchRewardOutput:
+    def reward(self, reference: list[str], completions: list[str]) -> BatchRewardOutput:
         """Compute ROUGE scores given a completion and reference pair."""
         rewards = []
         timings = []
         reference = "\n".join(r for r in reference)
 
-        for completion in completions:
-            t0 = time.time()
-            completion = "\n".join(c for c in completion)
-            rewards.append(self.rouge_score(reference, completion))
-            timings.append(time.time() - t0)
+        t0 = time.time()
+        completion = "\n".join(c for c in completion)
+        rewards.append(self.rouge_score(reference, completion))
+        timings.append(time.time() - t0)
 
         output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards),

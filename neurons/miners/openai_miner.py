@@ -21,7 +21,7 @@ import bittensor as bt
 import argparse
 
 # Bittensor Miner Template:
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 from deval.tasks import TasksEnum
 import re
 

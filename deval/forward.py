@@ -23,7 +23,7 @@ import bittensor as bt
 from deval.agent import HumanAgent
 from deval.dendrite import DendriteResponseEvent
 from deval.task_repository import TaskRepository
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 from deval.rewards.reward import RewardResult
 from deval.utils.uids import get_random_uids
 from deval.utils.logging import log_event

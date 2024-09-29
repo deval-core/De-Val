@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import bittensor as bt
 import hashlib
 import os
-from deval.rewards import RewardResult
+from deval.rewards.reward import RewardResult
 from deval.tasks import TASKS
 
 
@@ -113,10 +113,8 @@ class ModelState:
         # deletes existing model and ensures the GPU is free
         pass 
 
-    def add_reward(self, reward: RewardResult):
-        # stores the model rewards on a single sample for a single task
-        task_name = reward.task_name
-        self.rewards[task_name].append(reward.total_reward)
+    def add_reward(self, task_name: str, reward: RewardResult):
+        self.rewards[task_name].append(reward.rewards)
 
     def get_total_rewards(self):
         # gets all of the rewards by task 

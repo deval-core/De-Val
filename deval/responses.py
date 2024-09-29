@@ -3,7 +3,9 @@ import bittensor as bt
 from typing import List
 import math
 from deval.utils.misc import async_log
-from deval.protocol import ModelQuerySynapse, EvalResponse
+from deval.requests import ModelQuerySynapse
+from pydantic import BaseModel
+from deval.agent import HumanAgent
 
 
 
@@ -29,4 +31,10 @@ class DendriteModelQueryEvent:
             self.repo_id = synapse.repo_id
 
             
+class EvalResponse(BaseModel):
+    score: float 
+    mistakes: list[str]
+    response_time: float
+    uid: int | None = None
+    human_agent: HumanAgent | None = None
 

@@ -76,11 +76,6 @@ class ModelQuerySynapse(bt.Synapse):
         allow_mutation=False,
     )
 
-class EvalResponse(pydantic.BaseModel):
-    completion: float 
-    response_time: float
-    uid: int | None = None
-
 class EvalRequest(pydantic.BaseModel):
     tasks: list[str]
     rag_context: str

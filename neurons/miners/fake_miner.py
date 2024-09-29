@@ -20,7 +20,7 @@ import bittensor as bt
 import argparse
 
 # Bittensor Miner Template:
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 from deval.task_registry import TaskResult
 
 # import base miner class which takes care of most of the boilerplate

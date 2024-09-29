@@ -2,8 +2,9 @@ from fastapi import FastAPI
 import os
 from neurons.miners.pipeline import DeValPipeline
 from deval.model.huggingface_model import HuggingFaceModel
-from deval.protocol import EvalRequest, EvalResponse
+from deval.requests import EvalRequest
 import time
+from deval.responses import EvalResponse
 
 app = FastAPI()
 
@@ -35,10 +36,14 @@ async def query_model(request: EvalRequest) -> EvalResponse:
     llm_response = request.llm_response
 
     completion = pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response)
+    score = completion.get("score_completion")
+    mistakes = completion.get("mistakes_completion")
+    
     process_time = time.time() - start_time
 
     
     return EvalResponse(
-        completion = completion,
+        score = score,
+        mistakes = mistakes,
         response_time = process_time,
     )

@@ -1,7 +1,7 @@
 import bittensor as bt
 import time
 from deval.base.validator import BaseValidatorNeuron
-from deval.rewards import RewardPipeline, RewardResult
+from deval.rewards.reward import RewardPipeline, RewardResult
 from deval.task_repository import TaskRepository
 from dotenv import load_dotenv, find_dotenv
 from deval.utils.uids import get_top_incentive_uids, get_candidate_uids
@@ -9,9 +9,9 @@ import os
 from deval.model.model_state import ModelState
 from deval.model.huggingface_model import HuggingFaceModel
 from deval.contest import DeValContest
-from deval.responses import get_metadata_from_miner, DendriteModelQueryEvent
+from deval.responses import get_metadata_from_miner, DendriteModelQueryEvent, EvalResponseEvent
 from deval.agent import HumanAgent
-from deval.protocol import EvalRequest
+from deval.requests import EvalRequest
 from deval.api.docker_client import DockerClient
 from deval.tasks import Task
 
@@ -140,8 +140,8 @@ class Validator(BaseValidatorNeuron):
         docker_client.init_miner_docker(model_dir)
 
         # run through all tasks
-        for task in task_repo.get_all_tasks():
-            miner_state = Validator.run_step(task, docker_client, miner_state, contest)
+        for task_name, tasks in task_repo.get_all_tasks():
+            miner_state = Validator.run_step(task_name, tasks, docker_client, miner_state, contest)
 
 
         # cleanup docker and model 
@@ -151,27 +151,35 @@ class Validator(BaseValidatorNeuron):
 
     @staticmethod
     def run_step(
-        task: Task, 
+        task_name: str,
+        tasks: list[Task], 
         docker_client: DockerClient,
         miner_state: ModelState,
         contest: DeValContest
     ):
-        # query docker container with task 
-        agent = HumanAgent(
-            task=task
-        )
-        request = EvalRequest.init_from_task(task)
-        response = docker_client.invoke(request, miner_state.uid)
         
+        responses = []
+
+        for task in tasks:
+            # query docker container with task 
+            agent = HumanAgent(
+                task=task
+            )
+            request = EvalRequest.init_from_task(task)
+            response = docker_client.invoke(request, miner_state.uid)
+            response.uid = miner_state.uid
+            response.agent = agent
+
+            responses.append(response)
+            
         # generate and store reward  
         reward_result = RewardResult(
             contest.reward_pipeline,
-            agent=agent,
-            response_event=response,
+            responses=responses,
             device="cpu" # self.device,
         )
         
-        miner_state.add_reward(reward_result)
+        miner_state.add_reward(task_name, reward_result)
 
         # TODO: add logging for specific event here 
 

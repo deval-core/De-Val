@@ -35,29 +35,28 @@ class ExactMatchRewardModel(BaseRewardModel):
         else:
             return False
 
-    def reward(self, reference: list[str], completions: list[list[str]]) -> BatchRewardOutput:
+    def reward(self, reference: list[str], completion: list[str]) -> BatchRewardOutput:
         """Compute the number of exact matches scores given a completion and reference pair."""
         rewards = []
         timings = []
 
-        for completion in completions:
-            t0 = time.time()
-            matches = []
-            for reference_mistake in reference:
-                matched_reference = False
-                for completion_mistake in completion:
-                    is_match = self.check_match(reference_mistake, completion_mistake)
-                    if is_match:
-                        matched_reference = True
-                
-                matches.append(int(matched_reference))
+        t0 = time.time()
+        matches = []
+        for reference_mistake in reference:
+            matched_reference = False
+            for completion_mistake in completion:
+                is_match = self.check_match(reference_mistake, completion_mistake)
+                if is_match:
+                    matched_reference = True
+            
+            matches.append(int(matched_reference))
 
-            if len(matches) > 0:
-                rewards.append(sum(matches) / len(matches))
-            else:
-                rewards.append(0)
-                
-            timings.append(time.time() - t0)
+        if len(matches) > 0:
+            rewards.append(sum(matches) / len(matches))
+        else:
+            rewards.append(0)
+            
+        timings.append(time.time() - t0)
 
         output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards),

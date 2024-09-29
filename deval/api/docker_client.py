@@ -1,5 +1,6 @@
 import requests
-from deval.protocol import EvalRequest, EvalResponse
+from deval.requests import EvalRequest
+from deval.responses import EvalResponse
 
 class DockerClient:
 
@@ -24,7 +25,8 @@ class DockerClient:
         print(response.json())
 
         return EvalResponse(
-            completion = -1, 
+            score = -1, 
+            mistakes = ['mistake'],
             response_time = 10
         )
 

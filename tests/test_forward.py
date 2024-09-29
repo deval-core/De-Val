@@ -10,7 +10,7 @@ from deval.tasks import Task, QuestionAnsweringTask
 from .fixtures.task import WIKI_CONTEXT
 from deval.agent import HumanAgent
 from unittest.mock import patch, Mock
-from deval.protocol import EvalSynapse
+from deval.requests import EvalSynapse
 from deval.tasks import TasksEnum
 
 sys.argv = [__file__, "--mock", "--wandb.off", "--neuron.tasks", "qa"]

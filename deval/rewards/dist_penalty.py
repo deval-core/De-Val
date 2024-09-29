@@ -31,17 +31,16 @@ class DistPenaltyRewardModel(BaseRewardModel):
         return reward
             
 
-    def reward(self, reference: float, completions: List[float]) -> BatchRewardOutput:
+    def reward(self, reference: float, completion: float) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
         classes = self.categories
-        for completion in completions:
-            t0 = time.time()
-            reward = self.dist_score(reference, completion, classes)
-            
-            timings.append(time.time() - t0)
-            rewards.append(reward)
+        t0 = time.time()
+        reward = self.dist_score(reference, completion, classes)
+        
+        timings.append(time.time() - t0)
+        rewards.append(reward)
 
         output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards),

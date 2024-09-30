@@ -1,6 +1,6 @@
 import requests
-from deval.requests import EvalRequest
-from deval.responses import EvalResponse
+from deval.protocol import EvalRequest
+from deval.protocol import EvalResponse
 
 class DockerClient:
 

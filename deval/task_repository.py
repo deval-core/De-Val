@@ -1,11 +1,42 @@
-from deval.tasks import TasksEnum, Task, TASKS
+from deval.tasks.task import TasksEnum, Task
 from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
 from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
+from deval.tasks.hallucination import HallucinationTask
+from deval.tasks.summary_completeness import CompletenessTask
+from deval.tasks.attribution import AttributionTask
+from deval.tasks.relevancy import RelevancyTask
+from deval.tasks.task import Task, TasksEnum
+from deval.tools import (
+    WikiDataset, GenericDataset, AttributionDataset
+)
 import os 
 import numpy as np
 
+
+TASKS = {
+    TasksEnum.RELEVANCY.value: {
+        "task_function": RelevancyTask,
+        "dataset": WikiDataset,
+        "task_p": 0.25,
+    },
+    TasksEnum.HALLUCINATION.value: {
+        "task_function": HallucinationTask,
+        "dataset": GenericDataset,
+        "task_p": 0.25,
+    },
+    TasksEnum.COMPLETENESS.value: {
+        "task_function": CompletenessTask,
+        "dataset": GenericDataset,
+        "task_p": 0.25,
+    },
+    TasksEnum.ATTRIBUTION.value: {
+        "task_function": AttributionTask,
+        "dataset": AttributionDataset,
+        "task_p": 0.25,
+    }
+}
 
 class TaskRepository:
 

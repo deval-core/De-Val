@@ -1,5 +1,5 @@
 import torch
-from deval.tasks import TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.model.model_state import ModelState
 from pydantic import BaseModel
 from datetime import datetime

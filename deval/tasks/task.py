@@ -1,7 +1,7 @@
 import time
 import bittensor as bt
 from abc import ABC
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 from enum import Enum
 from deval.llms.base_llm import BaseLLM
 import json

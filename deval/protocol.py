@@ -15,11 +15,31 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import pydantic
+
+from pydantic import BaseModel, Field
 import bittensor as bt
 
 from typing import List
-from deval.tasks import Task
+from deval.tasks.task import Task
+import bittensor as bt
+from typing import List
+from deval.utils.misc import async_log
+from deval.agent import HumanAgent
+
+
+
+@async_log
+async def execute_dendrite_call(dendrite_call):
+    responses = await dendrite_call
+    return responses
+
+
+async def get_metadata_from_miner(validator, uid: int) -> list[bt.synapse]:
+    axons = [validator.metagraph.axons[uid]]
+    dendrite_call_task = execute_dendrite_call(validator.dendrite(axons=axons, synapse=ModelQuerySynapse, timeout=5))
+    responses = await dendrite_call_task 
+
+    return responses
 
 
 class ModelQuerySynapse(bt.Synapse):
@@ -49,34 +69,28 @@ class ModelQuerySynapse(bt.Synapse):
         return self
 
 
-    repo_id: str = pydantic.Field(
+    repo_id: str = Field(
         ...,
         title="HuggingFace Repo ID",
         description="The miner's repo name for HuggingFace. Mutable",
         allow_mutation=True,
     )
 
-    model_id: str = pydantic.Field(
+    model_id: str = Field(
         ...,
         title="HuggingFace Model ID",
         description="The miner's model name for HuggingFace. Mutable",
         allow_mutation=True,
     )
 
-    mistakes: list[str] = pydantic.Field(
-        [""],
-        title="Mistakes",
-        description="Identified hallucinations, misattributions, summaries, etc."
-    )
-
-    required_hash_fields: List[str] = pydantic.Field(
+    required_hash_fields: List[str] = Field(
         [],
         title="Required Hash Fields",
         description="A list of required fields for the hash.",
         allow_mutation=False,
     )
 
-class EvalRequest(pydantic.BaseModel):
+class EvalRequest(BaseModel):
     tasks: list[str]
     rag_context: str
     query: str | None = ""
@@ -91,5 +105,21 @@ class EvalRequest(pydantic.BaseModel):
             query = task.query,
             llm_response = task.llm_response
         )
+
+class DendriteModelQueryEvent:
+    def __init__(
+        self, responses: list[bt.synapse], 
+    ):
+        for synapse in responses:
+            self.model_id = synapse.model_id
+            self.repo_id = synapse.repo_id
+
+            
+class EvalResponse(BaseModel):
+    score: float 
+    mistakes: list[str]
+    response_time: float
+    uid: int | None = None
+    human_agent: HumanAgent | None = None
 
 

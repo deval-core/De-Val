@@ -21,8 +21,8 @@ import bittensor as bt
 import argparse
 
 # Bittensor Miner Template:
-from deval.requests import EvalSynapse
-from deval.tasks import TasksEnum
+from deval.protocol import EvalSynapse
+from deval.tasks.task import TasksEnum
 import re
 
 # import base miner class which takes care of most of the boilerplate

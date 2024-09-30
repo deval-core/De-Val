@@ -20,7 +20,7 @@ import argparse
 import asyncio
 import threading
 import bittensor as bt
-from deval.requests import EvalSynapse
+from deval.protocol import EvalSynapse
 from deval.base.neuron import BaseNeuron
 from deval.utils.config import add_miner_args
 from traceback import print_exception

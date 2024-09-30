@@ -21,7 +21,7 @@ import torch
 import argparse
 import bittensor as bt
 import logging
-from deval.tasks import TASKS
+from deval.task_repository import TASKS
 from deval.llms.config import SUPPORTED_MODELS
 
 from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME

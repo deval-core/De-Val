@@ -4,7 +4,7 @@ import bittensor as bt
 import hashlib
 import os
 from deval.rewards.reward import RewardResult
-from deval.tasks import TASKS
+from deval.task_repository import TASKS
 
 
 class ModelState:

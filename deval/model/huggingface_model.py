@@ -1,6 +1,6 @@
 from transformers import Pipeline
 import bittensor as bt
-from deval.requests import EvalRequest
+from deval.protocol import EvalRequest
 import os
 from huggingface_hub import HfApi, HfFolder, Repository, snapshot_download
 from deval.model.obfuscate import Obfuscator

@@ -1,5 +1,5 @@
 from deval.task_repository import TaskRepository
-from deval.tasks import TasksEnum
+from deval.tasks.task import TasksEnum
 import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 import numpy as np

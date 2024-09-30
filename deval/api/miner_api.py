@@ -2,9 +2,9 @@ from fastapi import FastAPI
 import os
 from neurons.miners.pipeline import DeValPipeline
 from deval.model.huggingface_model import HuggingFaceModel
-from deval.requests import EvalRequest
+from deval.protocol import EvalRequest
 import time
-from deval.responses import EvalResponse
+from deval.protocol import EvalResponse
 
 app = FastAPI()
 

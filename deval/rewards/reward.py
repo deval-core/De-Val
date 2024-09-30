@@ -4,7 +4,7 @@ from typing import List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from deval.rewards.models import RewardEvent, RewardModelTypeEnum, RewardReferenceType
-from deval.responses import EvalResponse
+from deval.protocol import EvalResponse
 
 
 class RewardResult:
@@ -193,10 +193,10 @@ class BaseRewardModel(ABC):
 
 
 if __name__ == "__main__":
-    from deval.tasks import TasksEnum
+    from deval.tasks.task import TasksEnum
     from deval.task_repository import TaskRepository
     from deval.agent import HumanAgent
-    from deval.responses import EvalResponse
+    from deval.protocol import EvalResponse
     from deval.rewards.pipeline import RewardPipeline
     from dotenv import load_dotenv, find_dotenv
     

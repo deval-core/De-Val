@@ -5,15 +5,14 @@ from deval.rewards.reward import RewardPipeline, RewardResult
 from deval.task_repository import TaskRepository
 from dotenv import load_dotenv, find_dotenv
 from deval.utils.uids import get_top_incentive_uids, get_candidate_uids
-import os
 from deval.model.model_state import ModelState
 from deval.model.huggingface_model import HuggingFaceModel
 from deval.contest import DeValContest
-from deval.responses import get_metadata_from_miner, DendriteModelQueryEvent, EvalResponseEvent
+from deval.protocol import get_metadata_from_miner, DendriteModelQueryEvent
 from deval.agent import HumanAgent
-from deval.requests import EvalRequest
+from deval.protocol import EvalRequest
 from deval.api.docker_client import DockerClient
-from deval.tasks import Task
+from deval.tasks.task import Task
 
 
 
@@ -116,7 +115,7 @@ class Validator(BaseValidatorNeuron):
             # update contest
             contest.update_model_state_with_rewards(miner_state) 
 
-        # rank, select winners, and score
+        # TODO: rank, select winners, and score
         contest.rank()
         self.update_scores(reward_result.rewards, uids)
 

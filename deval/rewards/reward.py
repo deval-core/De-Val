@@ -14,7 +14,7 @@ class RewardResult:
         Args:
             reward_pipeline (RewardPipeline): List of all loaded/ative reward models
             task (Task): Task instance which contains reward_definition (list of reward model requirements) and a reference answer (str)
-            response_event (EvalResponse): Network responses to the prompt
+            responses (list[EvalResponse]): Network responses to the prompt
             device (str): Device to run the reward models on
         """ 
 
@@ -114,8 +114,8 @@ class RewardResult:
     ) -> torch.FloatTensor:
         """Combines the rewards from all the reward models into a single reward tensor"""
         # Compute the rewards for the responses given the prompt        
-        rewards = torch.zeros_like(
-            self.response_event.uid, dtype=torch.float32, device=self.device
+        rewards = torch.zeros(
+            (1,), dtype=torch.float32, device=self.device
         )
 
         for event in reward_events:
@@ -133,7 +133,7 @@ class RewardResult:
         return rewards
 
     def __str__(self):
-        return f"{self.__class__.__name__}(rewards={self.rewards!r}, reward_events={self.reward_events!r}, penalty_events={self.penalty_events!r})"
+        return f"{self.__class__.__name__}(rewards={self.rewards!r}"
 
 
 @dataclass
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     from deval.rewards.pipeline import RewardPipeline
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.COMPLETENESS.value
+    task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
     allowed_models = ["gpt-4o-mini"]
@@ -216,9 +216,9 @@ if __name__ == "__main__":
     # prep fake response
     uid = 1 
     responses = [
-        EvalResponse(uid = uid, score = 0.5, mistakes = agent.reference_true_values, human_agent = agent),
-        EvalResponse(uid = uid, score = 1.0, mistakes = [], human_agent = agent),
-        EvalResponse(uid = uid, score = 0.0, mistakes = agent.reference_mistakes, human_agent = agent)
+        EvalResponse(uid = uid, score = 0.5, response_time = 1.5, mistakes = agent.reference_true_values, human_agent = agent),
+        EvalResponse(uid = uid, score = 1.0, response_time = 1.5, mistakes = [], human_agent = agent),
+        EvalResponse(uid = uid, score = 0.0, response_time = 1.5, mistakes = agent.reference_mistakes, human_agent = agent)
     ]
 
     # reward compute

@@ -16,7 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import bittensor as bt
 
 from typing import List
@@ -116,6 +116,8 @@ class DendriteModelQueryEvent:
 
             
 class EvalResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     score: float 
     mistakes: list[str]
     response_time: float

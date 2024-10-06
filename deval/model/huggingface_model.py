@@ -1,17 +1,40 @@
-from transformers import Pipeline
 import bittensor as bt
-from deval.protocol import EvalRequest
 import os
-from huggingface_hub import HfApi, HfFolder, Repository, snapshot_download
+from huggingface_hub import HfApi, snapshot_download
 from deval.model.obfuscate import Obfuscator
+from dotenv import load_dotenv, find_dotenv
+from transformers import pipeline
+from deval.protocol import EvalRequest, EvalResponse
+import time
 
 class HuggingFaceModel:
 
     @staticmethod
-    def pull_model_and_files(repo_id: str) -> str:
-        # TODO: pass in the token somewhere 
-        local_dir = snapshot_download(repo_id=repo_id, repo_type="model", revision="main")
-        bt.logging.info(f"Downloading model and files to {local_dir}")
+    def get_hf_token()-> str:
+        hf_token = os.getenv('HUGGINGFACE_TOKEN', None)
+        
+        if not hf_token:
+            _ = load_dotenv(find_dotenv())
+            hf_token = os.getenv('HUGGINGFACE_TOKEN', None)
+        
+        if not hf_token:
+            raise ValueError("Please provide a HuggingFace Token within you .env file at HUGGINGFACE_TOKEN")
+
+        return hf_token
+
+    @staticmethod
+    def pull_model_and_files(repo_id: str, dir_to_download: str) -> str:
+        hf_token = HuggingFaceModel.get_hf_token()
+
+        bt.logging.info(f"Beggining the download of model data at {repo_id}")
+        local_dir = snapshot_download(
+            repo_id=repo_id, 
+            repo_type="model", 
+            revision="main", 
+            token = hf_token,
+            local_dir = dir_to_download,
+        )
+        bt.logging.info(f"Downloaded model and files to {local_dir}")
         return local_dir
 
     @staticmethod
@@ -19,7 +42,6 @@ class HuggingFaceModel:
         model_dir: str, 
         pipeline_dir: str, 
         repo_id: str, 
-        token: str = None,
         upload_model: bool = False,
         upload_pipeline: bool = True
     ):
@@ -37,32 +59,30 @@ class HuggingFaceModel:
         if not os.path.exists(pipeline_dir):
             raise ValueError(f"Pipeline directory '{pipeline_dir}' does not exist.")
         
-        if token is None:
-            raise ValueError(f"Pass in a valid HuggingFace Token")
+        hf_token = HuggingFaceModel.get_hf_token()
 
-        # Step 2: Check if the Hugging Face repository exists
-        api = HfApi()
+        # Check if the Hugging Face repository exists
+        api = HfApi(token = hf_token)
 
         print(f"Checking if repository {repo_id} exists...")
         try:
             # This will raise an exception if the repository doesn't exist
-            api.repo_info(repo_id=repo_id, token=token)
+            api.repo_info(repo_id=repo_id, token=hf_token)
             print(f"Repository '{repo_id}' already exists.")
         except:
             raise ValueError(f"repository at {repo_id} does not exist, please create.")
 
 
-        # Step 1: Run the obfuscator on the pipeline directory
+        # Run the obfuscator on the pipeline directory
         print("Running PyArmor obfuscation on pipeline directory...")
         Obfuscator.obfuscate(pipeline_dir)
 
         if upload_pipeline:
             print("Starting Pipeline upload")
             api.upload_folder(
-                folder_path=pipeline_dir,
+                folder_path=os.path.join(pipeline_dir, '../obfuscated_pipeline'),
                 repo_id=repo_id,
-                repo_type="model",
-                token= token
+                repo_type="model"
             )
             print("Completed pipeline upload")
         
@@ -72,6 +92,30 @@ class HuggingFaceModel:
                 folder_path=model_dir,
                 repo_id=repo_id,
                 repo_type="model",
-                token= token
             )
             print("Completed model upload")
+
+    @staticmethod
+    def query_hf_model(pipe: pipeline, request: EvalRequest) -> EvalResponse:
+        start_time = time.time()
+        tasks = request.tasks
+        rag_context = request.rag_context
+        query = request.query
+        llm_response = request.llm_response
+
+        completion = pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response)
+        print(f"Completion: {completion}")
+        score = completion.get("score_completion", None)
+        if not score:
+            score = -1
+
+        mistakes = completion.get("mistakes_completion", None)
+        
+        process_time = time.time() - start_time
+
+        
+        return EvalResponse(
+            score = score,
+            mistakes = mistakes,
+            response_time = process_time,
+        )

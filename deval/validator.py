@@ -83,6 +83,7 @@ class Validator(BaseValidatorNeuron):
             self.reward_pipeline, 
             self.config.neuron.timeout
         )
+        self.complete = False
 
         # step 1: collect the top incentive uids
         top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
@@ -115,9 +116,9 @@ class Validator(BaseValidatorNeuron):
             # update contest
             contest.update_model_state_with_rewards(miner_state) 
 
-        # TODO: rank, select winners, and score
-        contest.rank()
-        self.update_scores(reward_result.rewards, uids)
+        
+        self.weights = contest.rank(self.task_sample_rate)
+        self.complete = True
 
         
     @staticmethod
@@ -167,7 +168,7 @@ class Validator(BaseValidatorNeuron):
             request = EvalRequest.init_from_task(task)
             response = docker_client.invoke(request, miner_state.uid)
             response.uid = miner_state.uid
-            response.agent = agent
+            response.human_agent = agent
 
             responses.append(response)
             

@@ -1,15 +1,15 @@
 from fastapi import FastAPI
 import os
-from neurons.miners.pipeline import DeValPipeline
 from deval.model.huggingface_model import HuggingFaceModel
-from deval.protocol import EvalRequest
-import time
-from deval.protocol import EvalResponse
+from deval.protocol import EvalRequest, EvalResponse
+import sys
 
 app = FastAPI()
 
 repo_id = os.getenv("REPO_ID")
 model_dir = os.getenv("MODEL_DIR")
+sys.path.append(model_dir)
+from model.pipeline import DeValPipeline
 
 
 def download_model_and_pipeline():
@@ -20,6 +20,7 @@ def download_model_and_pipeline():
     model_dir = "../model"
     print(f"Model and pipeline downloaded to {model_dir}")
 
+    #TODO: Update to obfuscated pipeline
     return DeValPipeline("de_val", model_dir = model_dir)
 
 pipe = download_model_and_pipeline()
@@ -28,22 +29,5 @@ pipe = download_model_and_pipeline()
 @app.post("/eval_query")
 async def query_model(request: EvalRequest) -> EvalResponse:
     """Process a user query through the miner's model."""
+    return HuggingFaceModel.query_hf_model(pipe, request)
     
-    start_time = time.time()
-    tasks = request.tasks
-    rag_context = request.rag_context
-    query = request.query
-    llm_response = request.llm_response
-
-    completion = pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response)
-    score = completion.get("score_completion")
-    mistakes = completion.get("mistakes_completion")
-    
-    process_time = time.time() - start_time
-
-    
-    return EvalResponse(
-        score = score,
-        mistakes = mistakes,
-        response_time = process_time,
-    )

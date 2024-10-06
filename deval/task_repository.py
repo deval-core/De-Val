@@ -138,7 +138,6 @@ if __name__ == "__main__":
     from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
     task_sample_rate = [
@@ -151,5 +150,5 @@ if __name__ == "__main__":
     task_repo = TaskRepository(allowed_models=allowed_models)
 
     task_repo.generate_all_tasks(task_sample_rate)
-    for t in task_repo.get_all_tasks():
-        print(t)
+    for task_name, tasks in task_repo.get_all_tasks():
+        print(tasks)

@@ -15,6 +15,14 @@ class DeValContest:
         self.reward_pipeline: RewardPipeline = reward_pipeline
         self.timeout: int = timeout
 
+        self.tiers = {
+            0 : 0.5,
+            1 : 0.3,
+            2 : 0.125,
+            3 : 0.05,
+            4 : 0.025
+        }
+
     def validate_model(self, miner_state: ModelState) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date:
@@ -52,8 +60,51 @@ class DeValContest:
     def update_model_state_with_rewards(self, miner_state: ModelState) -> None:
         self.model_rewards[miner_state.uid] = miner_state.rewards 
 
-    def rank(self, available_uids: list[int]):
-        # takes all the models, ranks them, selects winners
-        # TODO: I may need to zero out all uid rewards who were not evaluated 
-        # because we need to drop their incentive 
+    def _adjust_tiers(self, num_participants: int) -> None:
+        # Sum of original tiers
+        total_tiers_sum = sum(self.tiers.values())
+        
+        # Adjust tier proportions based on number of participants
+        if num_participants < len(self.tiers):
+            # Get total rewards of the missing tiers
+            missing_rewards_sum = sum(self.tiers[rank] for rank in range(num_participants, len(self.tiers)))
+            
+            # Calculate the ratio for adjusting remaining tiers
+            adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
+            
+            # Adjust the remaining tiers proportionally
+            adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
+        else:
+            adjusted_tiers = self.tiers
+        
+        # Normalize adjusted tiers to ensure they sum up to 1
+        adjusted_tiers_sum = sum(adjusted_tiers.values())
+        self.tiers = {rank: reward / adjusted_tiers_sum for rank, reward in adjusted_tiers.items()}
+        
+
+    def rank_and_select_winners(
+        self, 
+        task_probabilities: list[tuple()],
+    ) -> list[(int, float)]: # (uid, weight)
+        """
+            takes all the model rewards, ranks them
+        """ 
+        avg_rewards = []
+        denom = sum([num_task for _, num_task in task_probabilities])
+        for uid, scores in self.model_rewards.items():
+            total_scores = [i for values in scores.values() for i in values]
+            avg_score = sum(total_scores) / denom
+            avg_rewards.append((uid, avg_score))
+
+        # rank our rewards and apply weights according to tiers
+        ranked_rewards = sorted(avg_rewards, key=lambda x: x[1])
+
+        self._adjust_tiers(len(ranked_rewards))
+        num_rewards = len(self.tiers)
+        weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
+
+        return weights
+
+    def clear_state(self):
+        # it shouldn't matter, but safe precaution to clear the contest state on next run
         pass

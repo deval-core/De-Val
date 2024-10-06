@@ -1,6 +1,5 @@
 import argparse
 from deval.model.huggingface_model import HuggingFaceModel
-from dotenv import load_dotenv, find_dotenv
 import os
 
 
@@ -36,40 +35,39 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--upload_model",
-        type='store_true',
+        action='store_true',
         help="Boolean value on whether to submit a new version of the model. Defaults to False",
         default=False
     )
 
     parser.add_argument(
         "--upload_pipeline",
-        type='store_true',
+        action='store_true',
         help="Boolean value on whether to submit a new version of your custom pipeline folder. Defaults to True",
-        default=True
+        default=False
     )
 
+    args = parser.parse_args()
 
     # pull out args
-    model_dir = parser.model_dir
-    pipeline_dir = parser.pipeline_dir
-    repo_id = parser.repo_id
-    hf_token = parser.hf_token 
+    model_dir = args.model_dir
+    pipeline_dir = args.pipeline_dir
+    repo_id = args.repo_id
+    hf_token = args.hf_token 
 
     if not hf_token:
-        _ = load_dotenv(find_dotenv())
-        hf_token = os.getenv('HUGGINGFACE_TOKEN', None)
-        if not hf_token:
-            raise ValueError("Please provide a HuggingFace Token")
+        hf_token = HuggingFaceModel.get_hf_token()
+       
 
-    upload_model = parser.upload_model
-    upload_pipeline = parser.upload_pipeline
+    upload_model = args.upload_model
+    upload_pipeline = args.upload_pipeline
+    print("Upload pipeline: ", upload_pipeline)
 
     print("Beginning modle and pipeline submission process")
     HuggingFaceModel.submit_model(
         model_dir,
         pipeline_dir,
         repo_id,
-        hf_token,
         upload_model,
         upload_pipeline
     )

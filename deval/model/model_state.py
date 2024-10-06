@@ -30,27 +30,27 @@ class ModelState:
             files = [f for f in os.listdir(model_dir) if f.endswith('.safetensors')]
             return sorted(files)
         else:
-            return self.fs.glob(f"{self.get_model_url}/*.safetensors")
+            return self.fs.glob(f"{self.get_model_url()}/*.safetensors")
 
     def get_model_url(self):
         return self.repo_id + "/" + self.model_id
 
     def get_last_commit_date(self) -> datetime | None:
-        commits = self.api.list_repo_commits(repo_id=self.get_model_url, repo_type="model", revision="main")
+        commits = self.api.list_repo_commits(repo_id=self.get_model_url(), repo_type="model", revision="main")
 
         if len(commits) > 0:
             return commits[0].created_at
         else: 
-            bt.logging.info(f"No commits found for {self.get_model_url}, return No Commit Date")
+            bt.logging.info(f"No commits found for {self.get_model_url()}, return No Commit Date")
             return None
 
     def get_last_model_update_date(self) -> datetime | None:
         last_modified_date = None
 
-        safetensor_files = self._get_safetensor_files()
-        for f in safetensor_files:
+        safetensor_files = self._get_safetensor_files(None)
+        for fi in safetensor_files:
             try:
-                file = self.fs.ls(f"{self.get_model_url}/{f}", detail=True)
+                file = self.fs.ls(fi, detail=True)
                 tmp_modified_date = file[0]['last_commit'].date
                 if last_modified_date is None:
                     last_modified_date = tmp_modified_date

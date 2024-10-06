@@ -1,6 +1,6 @@
 from transformers import Pipeline, AutoTokenizer, AutoModelForCausalLM
 import re
-from neurons.miners.huggingface.prompts import (
+from neurons.miners.model.prompts import (
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
     HALLUCINATION_MISTAKES_PROMPT,

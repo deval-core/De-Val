@@ -3,7 +3,7 @@ import os
 
 class Obfuscator:
 
-    @classmethod
+    @staticmethod
     def obfuscate(source_dir: str):
         """
         Obfuscates the Python code in the given directory using PyArmor.
@@ -16,7 +16,7 @@ class Obfuscator:
             raise ValueError(f"Source directory '{source_dir}' does not exist.")
         
         # Define the output directory for the obfuscated code
-        output_dir = os.path.join(source_dir, 'obfuscated_pipeline')
+        output_dir = os.path.join(source_dir, '../obfuscated_pipeline')
 
         # Create the output directory if it does not exist
         if not os.path.exists(output_dir):
@@ -25,7 +25,7 @@ class Obfuscator:
         try:
             # Run the PyArmor obfuscation command
             subprocess.run([
-                'pyarmor', '-O', output_dir, source_dir
+                'pyarmor', 'gen', '-O', output_dir, source_dir
             ], check=True)
             print(f"Code successfully obfuscated and saved to: {output_dir}")
         

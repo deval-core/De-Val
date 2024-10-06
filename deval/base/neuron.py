@@ -147,7 +147,7 @@ class BaseNeuron(ABC):
 
     def should_set_weights(self) -> bool:
         # Don't set weights on initialization.
-        if self.step == 0:
+        if not self.complete:
             return False
 
         # Check if enough epoch blocks have elapsed since the last epoch.
@@ -160,10 +160,7 @@ class BaseNeuron(ABC):
         ):
             return False
 
-        # Define appropriate logic for when set weights.
-        return (
-            self.block - self.metagraph.last_update[self.uid]
-        ) > self.config.neuron.epoch_length
+        return True
 
     def save_state(self):
         pass

@@ -98,7 +98,7 @@ class EvalRequest(BaseModel):
 
 
     @staticmethod
-    def init_from_task(self, task: Task) -> "EvalRequest":
+    def init_from_task(task: Task) -> "EvalRequest":
         return EvalRequest(
             tasks = [task.name],
             rag_context = task.rag_context,
@@ -119,7 +119,7 @@ class EvalResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     score: float 
-    mistakes: list[str]
+    mistakes: list[str] | None
     response_time: float
     uid: int | None = None
     human_agent: HumanAgent | None = None

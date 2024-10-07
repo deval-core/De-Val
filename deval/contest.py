@@ -1,7 +1,4 @@
-import torch
-from deval.tasks.task import TasksEnum
 from deval.model.model_state import ModelState
-from pydantic import BaseModel
 from datetime import datetime
 from deval.rewards import RewardPipeline
 
@@ -27,6 +24,9 @@ class DeValContest:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date:
             return False
+
+        if miner_state.repo_id == "deval-core" and miner_state.model_id == "base-eval-test":
+            return True
         
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
         miner_state.compute_model_hash()

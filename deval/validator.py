@@ -13,6 +13,7 @@ from deval.agent import HumanAgent
 from deval.protocol import EvalRequest
 from deval.api.docker_client import DockerClient
 from deval.tasks.task import Task
+from deval.utils.logging import log_event
 
 
 
@@ -24,14 +25,15 @@ class Validator(BaseValidatorNeuron):
     def __init__(self, config=None):
         super(Validator, self).__init__(config=config)
 
-        bt.logging.info("load_state()")
-        self.load_state()
+
+        self.start_over = True
 
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
 
         self.num_uids_total = 256
-        self.max_model_size_gbs = 20 # TODO: figure out actual number
+        self.max_model_size_gbs = 18 # allows for 8B models
+        self.queried_uids = set()
 
         # get allowed model ids and init generator
         allowed_models = self.config.neuron.model_ids.split(",")
@@ -52,6 +54,9 @@ class Validator(BaseValidatorNeuron):
         self.reward_pipeline = RewardPipeline(
             selected_tasks=active_tasks, device=self.device
         )
+
+        bt.logging.info("load_state()")
+        self.load_state()
 
     # TODO: these are only staticmethods to enable early testability while bringing similar components to same place
     # remove staticmethod once we have more mature testing suite
@@ -78,20 +83,24 @@ class Validator(BaseValidatorNeuron):
         forward_start_time = time.time()
 
         # init this rounds contest 
-        contest = DeValContest(
-            forward_start_time, 
-            self.reward_pipeline, 
-            self.config.neuron.timeout
-        )
-        self.complete = False
+        if self.start_over:
+            self.contest = DeValContest(
+                forward_start_time, 
+                self.reward_pipeline, 
+                self.config.neuron.timeout
+            )
+        
+            # collect the top incentive uids
+            top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
+            available_uids = get_candidate_uids(k = self.num_uids_total)
 
-        # step 1: collect the top incentive uids
-        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
-        available_uids = get_candidate_uids(k = self.num_uids_total)
+            # generate all tasks for miners to be evaluated on
+            self.task_repo.generate_task_examples(task_probabilities=self.task_sample_rate)
 
-        # step 2: generate all tasks for miners to be evaluated on
-        self.task_repo.generate_task_examples(task_probabilities=self.task_sample_rate)
-
+            # reset complete
+            self.start_over = False
+        else:
+            available_uids = [uid for uid in available_uids if uid not in self.queried_uids]
 
         for uid in available_uids:
 
@@ -108,17 +117,21 @@ class Validator(BaseValidatorNeuron):
 
             if is_valid:
                 miner_state = Validator.run_epoch(
-                    contest,
+                    self.contest,
                     miner_state, 
                     self.task_repo, 
                 )
 
             # update contest
-            contest.update_model_state_with_rewards(miner_state) 
+            self.contest.update_model_state_with_rewards(miner_state) 
+            self.queried_uids.add(uid)
+            self.save_state()
 
         
-        self.weights = contest.rank(self.task_sample_rate)
-        self.complete = True
+        self.weights = self.contest.rank(self.task_sample_rate)
+        self.set_weights()
+        self.start_over = True
+        self.reset()
 
         
     @staticmethod
@@ -171,6 +184,8 @@ class Validator(BaseValidatorNeuron):
             response.human_agent = agent
 
             responses.append(response)
+
+            
             
         # generate and store reward  
         reward_result = RewardResult(
@@ -178,10 +193,10 @@ class Validator(BaseValidatorNeuron):
             responses=responses,
             device="cpu" # self.device,
         )
+        log_event(responses, reward_result)
         
         miner_state.add_reward(task_name, reward_result)
 
-        # TODO: add logging for specific event here 
 
         return miner_state
 

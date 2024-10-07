@@ -62,11 +62,18 @@ class ModelState:
 
         return last_modified_date
 
-    def get_model_size(self) -> int:
-        # TODO: implement
-        pass 
+    def _get_model_size(self) -> int:
+        safetensor_files = self._get_safetensor_files(None)
+        sizes = []
+        for fi in safetensor_files:
+            file = self.fs.info(fi)
+            sz_in_bytes = file['size']
+            sz_in_gb = sz_in_bytes * 1e-9
+            sizes.append(sz_in_gb)
 
-        
+        return sum(sizes)
+
+
 
     def should_run_evaluation(
         self, 
@@ -81,8 +88,7 @@ class ModelState:
         - check if the miner is in the top incentive UIDs
         - last updated file is from the last 48 hours
         """
-        # TODO: get model size -- if too large then return False
-        if self.get_model_size() > max_model_size_gbs:
+        if self._get_model_size() > max_model_size_gbs:
             return False
 
         if uid in top_incentive_uids:

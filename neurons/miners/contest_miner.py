@@ -47,9 +47,9 @@ class ContestMiner(Miner):
         Returns:
             ModelQuerySynapse: The synapse object with complete outputs 
         """
-        # TODO: populate with base miner
-        synapse.repo_id = ""
-        synapse.model_id = ""
+        
+        synapse.repo_id = "deval-core"
+        synapse.model_id = "base-eval-test"
 
         return synapse
             

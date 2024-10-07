@@ -33,6 +33,9 @@ from deval.base.neuron import BaseNeuron
 from deval.mock import MockDendrite
 from deval.utils.config import add_validator_args
 from deval.utils.exceptions import MaxRetryError
+import pickle
+import os
+from datetime import datetime, timedelta
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -293,13 +296,20 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Saving validator state.")
 
         # Save the state of the validator to file.
+        save_path = self.config.neuron.full_path 
+        with open(os.path.join(save_path, "contest.pkl"), "wb") as f: 
+            pickle.dump(self.contest, f)
+
+        with open(os.path.join(save_path, "task_repo.pkl"), "wb") as f: 
+            pickle.dump(self.task_repo, f)
+
         torch.save(
             {
-                "step": self.step,
-                "scores": self.scores,
+                "start_over": self.start_over,
+                "queried_uids": self.queried_uids,
                 "hotkeys": self.hotkeys,
             },
-            self.config.neuron.full_path + "/state.pt",
+            os.path.join(save_path, "state.pt"),
         )
 
     def load_state(self):
@@ -307,7 +317,34 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Loading validator state.")
 
         # Load the state of the validator from file.
-        state = torch.load(self.config.neuron.full_path + "/state.pt")
-        self.step = state["step"]
-        self.scores = state["scores"]
+        load_path = self.config.neuron.full_path 
+
+        state = torch.load(os.path.join(load_path, "/state.pt"))
+        self.start_over = state["start_over"]
+        self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
+
+        try:
+
+            with open(os.path.join(load_path, "contest.pkl"), "wb") as f: 
+                self.contest = pickle.load(f)
+
+            # we put a time lock on how long a contest will take 
+            max_time = 12
+            now = datetime.now()
+            if now - timedelta(hours=max_time) <= self.contest.forward_start_time:
+                with open(os.path.join(load_path, "task_repo.pkl"), "wb") as f: 
+                    self.task_repo = pickle.load(f)
+            else:
+                # if we exceed the max time then we opt to start
+                self.start_over = True
+                self.queried_uids = set()
+
+        except:
+            bt.logging.warning("Unable to load the task repository or contest state, restarting contest")
+            self.start_over = True
+
+    def reset(self):
+        self.weights = None
+        self.task_repo = None
+        self.queried_uids = set()

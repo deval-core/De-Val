@@ -104,15 +104,26 @@ def reinit_wandb(self):
     init_wandb(self, reinit=True)
 
 
-def log_event(self, event):
-    if not self.config.neuron.dont_save_events:
-        logger.log(38, event)
+#TODO: implement -- add typing and ensure state_dict, actually does what we want 
+def log_event(self, responses, reward_result):
 
-    if self.config.wandb.off:
-        return
+    for response in responses:
+        agent = response.human_agent
 
-    if not getattr(self, "wandb", None):
-        init_wandb(self)
+        event = {
+            **agent.__state_dict__(),
+            **reward_result.__state_dict__(),
+            **response.__state_dict__(),
+        }
+    
+        if not self.config.neuron.dont_save_events:
+            logger.log(38, event)
 
-    # Log the event to wandb.
-    self.wandb.log(event)
+        if self.config.wandb.off:
+            return
+
+        if not getattr(self, "wandb", None):
+            init_wandb(self)
+
+        # Log the event to wandb.
+        self.wandb.log(event)

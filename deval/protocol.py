@@ -125,3 +125,16 @@ class EvalResponse(BaseModel):
     human_agent: HumanAgent | None = None
 
 
+    def __state_dict__(self):
+        return {
+            "miner_score": self.score,
+            "miner_mistakes": self.mistakes,
+            "miner_response_time": self.response_time,
+            "uid": self.uid,
+        }
+
+    def __repr__(self):
+        return str(self)
+
+
+

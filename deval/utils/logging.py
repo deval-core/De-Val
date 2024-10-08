@@ -104,16 +104,15 @@ def reinit_wandb(self):
     init_wandb(self, reinit=True)
 
 
-#TODO: implement -- add typing and ensure state_dict, actually does what we want 
 def log_event(self, responses, reward_result):
-
-    for response in responses:
+    reward_dict = reward_result.__state_dict__()
+    for i, response in enumerate(responses):
         agent = response.human_agent
 
         event = {
             **agent.__state_dict__(),
-            **reward_result.__state_dict__(),
             **response.__state_dict__(),
+            **reward_dict[i],
         }
     
         if not self.config.neuron.dont_save_events:

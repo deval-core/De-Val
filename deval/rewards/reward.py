@@ -22,6 +22,8 @@ class RewardResult:
         self.responses = responses
         self.device = device
         self.rewards = []
+        self.all_reward_events = []
+        self.all_penalty_events = []
 
         for r in responses:
             reference_score = r.human_agent.reference
@@ -39,6 +41,8 @@ class RewardResult:
                 models=task_rewards,
                 reward_type=RewardModelTypeEnum.WEIGHTED_REWARD,
             )
+            self.all_reward_events.append(reward_events)
+
             penalty_events = self.reward_responses(
                 miner_score=r.score,
                 miner_extracted_items=r.mistakes,
@@ -47,6 +51,8 @@ class RewardResult:
                 models=task_penalties,
                 reward_type=RewardModelTypeEnum.PENALTY,
             )
+            self.all_penalty_events.append(penalty_events)
+
             reward = self.total_reward(
                 reward_events,
                 penalty_events,
@@ -56,10 +62,13 @@ class RewardResult:
             self.rewards.append(reward)
 
 
-    def __state_dict__(self, full=False):
-        state = {"rewards": self.rewards.tolist()}
-        for event in self.reward_events + self.penalty_events:
-            state.update(event.asdict())
+    def __state_dict__(self):
+        # split by task where i = 0 is the first task computed
+        state = {}
+        for i in range(len(self.rewards)):
+            state[i] = {"rewards": self.rewards[i]}
+            for event in self.all_reward_events[i] + self.all_penalty_events[i]:
+                state[i].update(event.asdict())
         return state
 
     def reward_responses(
@@ -133,7 +142,7 @@ class RewardResult:
         return rewards
 
     def __str__(self):
-        return f"{self.__class__.__name__}(rewards={self.rewards!r}"
+        return f"{self.__class__.__name__}(reward_events={self.all_reward_events}; penalty_events={self.all_penalty_events}; rewards={self.rewards!r})"
 
 
 @dataclass
@@ -233,4 +242,4 @@ if __name__ == "__main__":
         device="cpu",
     )
 
-    print(rewards)
+    print(rewards.__state_dict__())

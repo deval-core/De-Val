@@ -25,6 +25,7 @@ import bittensor as bt
 from typing import List
 from deval.utils.misc import async_log
 from deval.agent import HumanAgent
+from deval.api.models import EvalResponse, EvalRequest
 
 
 
@@ -90,21 +91,16 @@ class ModelQuerySynapse(bt.Synapse):
         allow_mutation=False,
     )
 
-class EvalRequest(BaseModel):
-    tasks: list[str]
-    rag_context: str
-    query: str | None = ""
-    llm_response: str
 
 
-    @staticmethod
-    def init_from_task(task: Task) -> "EvalRequest":
-        return EvalRequest(
-            tasks = [task.name],
-            rag_context = task.rag_context,
-            query = task.query,
-            llm_response = task.llm_response
-        )
+
+def init_request_from_task(task: Task) -> "EvalRequest":
+    return EvalRequest(
+        tasks = [task.name],
+        rag_context = task.rag_context,
+        query = task.query,
+        llm_response = task.llm_response
+    )
 
 class DendriteModelQueryEvent:
     def __init__(
@@ -115,26 +111,19 @@ class DendriteModelQueryEvent:
             self.repo_id = synapse.repo_id
 
             
-class EvalResponse(BaseModel):
+class BtEvalResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    score: float 
-    mistakes: list[str] | None
-    response_time: float
-    uid: int | None = None
-    human_agent: HumanAgent | None = None
-
+    uid: int
+    response: EvalResponse
+    human_agent: HumanAgent
 
     def __state_dict__(self):
         return {
-            "miner_score": self.score,
-            "miner_mistakes": self.mistakes,
-            "miner_response_time": self.response_time,
-            "uid": self.uid,
+            "miner_score": self.response.score,
+            "miner_mistakes": self.response.mistakes,
+            "miner_response_time": self.response.response_time,
+            "uid": self.response.uid,
         }
 
     def __repr__(self):
         return str(self)
-
-
-

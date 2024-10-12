@@ -4,17 +4,17 @@ from typing import List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from deval.rewards.models import RewardEvent, RewardModelTypeEnum, RewardReferenceType
-from deval.protocol import EvalResponse
+from deval.protocol import BtEvalResponse
 
 
 class RewardResult:
-    def __init__(self, reward_pipeline, responses: List[EvalResponse], device):
+    def __init__(self, reward_pipeline, responses: List[BtEvalResponse], device):
         """Passes the responses through the reward models and calculates the total reward
 
         Args:
             reward_pipeline (RewardPipeline): List of all loaded/ative reward models
             task (Task): Task instance which contains reward_definition (list of reward model requirements) and a reference answer (str)
-            responses (list[EvalResponse]): Network responses to the prompt
+            responses (list[BtEvalResponse]): Network responses to the prompt
             device (str): Device to run the reward models on
         """ 
 
@@ -34,8 +34,8 @@ class RewardResult:
             task_penalties = r.human_agent.task.penalty_definition
             
             reward_events = self.reward_responses(
-                miner_score=r.score,
-                miner_extracted_items=r.mistakes,
+                miner_score=r.response.score,
+                miner_extracted_items=r.response.mistakes,
                 reference_score=reference_score,
                 reference_extracted_items=reference_mistakes,
                 models=task_rewards,
@@ -44,8 +44,8 @@ class RewardResult:
             self.all_reward_events.append(reward_events)
 
             penalty_events = self.reward_responses(
-                miner_score=r.score,
-                miner_extracted_items=r.mistakes,
+                miner_score=r.response.score,
+                miner_extracted_items=r.response.mistakes,
                 reference_score=reference_score,
                 reference_extracted_items=reference_true_values,
                 models=task_penalties,
@@ -205,7 +205,8 @@ if __name__ == "__main__":
     from deval.tasks.task import TasksEnum
     from deval.task_repository import TaskRepository
     from deval.agent import HumanAgent
-    from deval.protocol import EvalResponse
+    from deval.protocol import BtEvalResponse
+    from deval.api.models import EvalResponse
     from deval.rewards.pipeline import RewardPipeline
     from dotenv import load_dotenv, find_dotenv
     
@@ -225,9 +226,9 @@ if __name__ == "__main__":
     # prep fake response
     uid = 1 
     responses = [
-        EvalResponse(uid = uid, score = 0.5, response_time = 1.5, mistakes = agent.reference_true_values, human_agent = agent),
-        EvalResponse(uid = uid, score = 1.0, response_time = 1.5, mistakes = [], human_agent = agent),
-        EvalResponse(uid = uid, score = 0.0, response_time = 1.5, mistakes = agent.reference_mistakes, human_agent = agent)
+        BtEvalResponse(response = EvalResponse(uid = uid, score = 0.5, response_time = 1.5, mistakes = agent.reference_true_values), human_agent = agent),
+        BtEvalResponse(response = EvalResponse(uid = uid, score = 1.0, response_time = 1.5, mistakes = []), human_agent = agent),
+        BtEvalResponse(response = EvalResponse(uid = uid, score = 0.0, response_time = 1.5, mistakes = agent.reference_mistakes), human_agent = agent)
     ]
 
     # reward compute

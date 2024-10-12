@@ -5,6 +5,7 @@ import hashlib
 import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
+import shutil
 
 
 class ModelState:
@@ -106,7 +107,7 @@ class ModelState:
 
         # Open the file in binary mode
         for model_path in safetensor_files:
-            with open(model_path, "rb") as f:
+            with open(os.path.join(model_dir, model_path), "rb") as f:
                 # Read the file in chunks to handle large files efficiently
                 for byte_block in iter(lambda: f.read(4096), b""):
                     sha256_hash.update(byte_block)
@@ -115,15 +116,15 @@ class ModelState:
         self.model_hash = sha256_hash.hexdigest()
 
 
-    def cleanup_all(self):
-        # deletes existing model and ensures the GPU is free
-        pass 
+    def cleanup(self, model_dir: str):
+        # Remove the model directory to save space
+        if os.path.exists(model_dir):
+            shutil.rmtree(model_dir)
+            bt.logging.info(f"Model directory {model_dir} deleted.")
 
     def add_reward(self, task_name: str, reward: RewardResult):
-        self.rewards[task_name].append(reward.rewards)
+        self.rewards[task_name] += reward.rewards
 
-    def get_total_rewards(self):
-        # gets all of the rewards by task 
-        pass
+
 
     

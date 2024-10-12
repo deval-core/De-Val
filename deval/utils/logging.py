@@ -8,10 +8,30 @@ from datetime import datetime
 from typing import List
 import logging
 import deval
+from deval.protocol import BtEvalResponse
+from deval.rewards.reward import RewardResult
 from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
+from pydantic import BaseModel
+from deval.utils.config import config
 
 logger = logging.getLogger(BITTENSOR_LOGGER_NAME)
 
+# TODO: this ishacky  - turn into class
+class WandBConfig(BaseModel):
+    off: bool
+    run_step_length: int
+    dont_save_events: bool
+
+
+    def __init__(config):
+        return WandBConfig(
+            off = config.wandb.off,
+            run_step_length = config.wandb.run_step_length,
+            dont_save_events = config.neuron.dont_save_events
+        )
+    
+
+#wandb_config = WandBConfig(config(None))
 
 @dataclass
 class Log:
@@ -104,7 +124,7 @@ def reinit_wandb(self):
     init_wandb(self, reinit=True)
 
 
-def log_event(self, responses, reward_result):
+def log_event(self, responses: list[BtEvalResponse], reward_result: RewardResult):
     reward_dict = reward_result.__state_dict__()
     for i, response in enumerate(responses):
         agent = response.human_agent
@@ -115,10 +135,10 @@ def log_event(self, responses, reward_result):
             **reward_dict[i],
         }
     
-        if not self.config.neuron.dont_save_events:
+        if not wandb_config.dont_save_events:
             logger.log(38, event)
 
-        if self.config.wandb.off:
+        if wandb_config.off:
             return
 
         if not getattr(self, "wandb", None):

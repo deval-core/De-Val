@@ -1,7 +1,8 @@
 import bittensor as bt
 import time
 from deval.base.validator import BaseValidatorNeuron
-from deval.rewards.reward import RewardPipeline, RewardResult
+from deval.rewards.reward import RewardResult
+from deval.rewards.pipeline import RewardPipeline
 from deval.task_repository import TaskRepository
 from dotenv import load_dotenv, find_dotenv
 from deval.utils.uids import get_top_incentive_uids, get_candidate_uids
@@ -10,8 +11,8 @@ from deval.model.huggingface_model import HuggingFaceModel
 from deval.contest import DeValContest
 from deval.protocol import get_metadata_from_miner, DendriteModelQueryEvent
 from deval.agent import HumanAgent
-from deval.protocol import EvalRequest
-from deval.api.docker_client import DockerClient
+from deval.protocol import init_request_from_task, BtEvalResponse
+from deval.api.miner_docker_client import MinerDockerClient
 from deval.tasks.task import Task
 from deval.utils.logging import log_event
 
@@ -55,6 +56,9 @@ class Validator(BaseValidatorNeuron):
             selected_tasks=active_tasks, device=self.device
         )
 
+
+        self.miner_docker_client = MinerDockerClient()
+
         bt.logging.info("load_state()")
         self.load_state()
 
@@ -63,30 +67,14 @@ class Validator(BaseValidatorNeuron):
     # because we don't pass self, we have to pass a lot of variables around
     @staticmethod
     async def forward(self):
-        """
-        Validator forward pass. Consists of:
-            * collect all UIDs
-            * generate all task samples
-            * iterate through all miners (run_epoch) 
-                * pull model
-                * verify not duplicate 
-                * call run_step 
-                    * run queries against model 
-                    * store results 
-                * update scores in model state
-                * cleanup 
-            * rank models 
-            * update scores and set weights 
-        """
-        
         bt.logging.info("🚀 Starting forward loop...")
         forward_start_time = time.time()
 
         # init this rounds contest 
         if self.start_over:
             self.contest = DeValContest(
-                forward_start_time, 
                 self.reward_pipeline, 
+                forward_start_time, 
                 self.config.neuron.timeout
             )
         
@@ -95,7 +83,7 @@ class Validator(BaseValidatorNeuron):
             available_uids = get_candidate_uids(k = self.num_uids_total)
 
             # generate all tasks for miners to be evaluated on
-            self.task_repo.generate_task_examples(task_probabilities=self.task_sample_rate)
+            self.task_repo.generate_all_tasks(task_probabilities=self.task_sample_rate)
 
             # reset complete
             self.start_over = False
@@ -103,7 +91,6 @@ class Validator(BaseValidatorNeuron):
             available_uids = [uid for uid in available_uids if uid not in self.queried_uids]
 
         for uid in available_uids:
-
             # get the model metadata information from miner
             responses = get_metadata_from_miner(self, uid)
             response_event = DendriteModelQueryEvent(responses)
@@ -120,6 +107,7 @@ class Validator(BaseValidatorNeuron):
                     self.contest,
                     miner_state, 
                     self.task_repo, 
+                    self.miner_docker_client,
                 )
 
             # update contest
@@ -128,7 +116,7 @@ class Validator(BaseValidatorNeuron):
             self.save_state()
 
         
-        self.weights = self.contest.rank(self.task_sample_rate)
+        self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
         self.set_weights()
         self.start_over = True
         self.reset()
@@ -139,26 +127,24 @@ class Validator(BaseValidatorNeuron):
         contest: DeValContest, 
         miner_state: ModelState, 
         task_repo: TaskRepository, 
-        
+        miner_docker_client: MinerDockerClient
     ):
         #pull model, update contest, and validate model 
-        model_dir = HuggingFaceModel.pull_model_and_files(miner_state)
-        is_valid = contest.validate_model(miner_state)
+        model_dir = HuggingFaceModel.pull_model_and_files(miner_state.get_model_url())
+        is_valid = contest.validate_model(miner_state, model_dir)
         if not is_valid:
             return miner_state
 
-
-        # TODO: Integration with new docker container occurs here? 
-        docker_client = DockerClient()
-        docker_client.init_miner_docker(model_dir)
+        miner_docker_client.start_service(model_dir)
 
         # run through all tasks
         for task_name, tasks in task_repo.get_all_tasks():
-            miner_state = Validator.run_step(task_name, tasks, docker_client, miner_state, contest)
+            miner_state = Validator.run_step(task_name, tasks, miner_docker_client, miner_state, contest)
 
 
-        # cleanup docker and model 
-        miner_state.cleanup_all() 
+        # cleanup and remove the model 
+        miner_state.cleanup(model_dir)
+        miner_docker_client.stop_service()
         
         return miner_state
 
@@ -166,7 +152,7 @@ class Validator(BaseValidatorNeuron):
     def run_step(
         task_name: str,
         tasks: list[Task], 
-        docker_client: DockerClient,
+        docker_client: MinerDockerClient,
         miner_state: ModelState,
         contest: DeValContest
     ):
@@ -178,12 +164,15 @@ class Validator(BaseValidatorNeuron):
             agent = HumanAgent(
                 task=task
             )
-            request = EvalRequest.init_from_task(task)
-            response = docker_client.invoke(request, miner_state.uid)
-            response.uid = miner_state.uid
-            response.human_agent = agent
+            request = init_request_from_task(task)
+            response = docker_client.query_eval(request, contest.timeout)
+            bt_response = BtEvalResponse(
+                uid = miner_state.uid,
+                response = response,
+                human_agent = agent
+            )
 
-            responses.append(response)
+            responses.append(bt_response)
 
             
             
@@ -193,7 +182,7 @@ class Validator(BaseValidatorNeuron):
             responses=responses,
             device="cpu" # self.device,
         )
-        log_event(responses, reward_result)
+        #log_event(responses, reward_result)
         
         miner_state.add_reward(task_name, reward_result)
 

@@ -1,0 +1,49 @@
+FROM python:3.11.8-slim
+
+
+# Install dependencies
+RUN apt-get update && apt-get install -y build-essential \ 
+    curl \
+    libatlas-base-dev \
+    liblapack-dev \
+    libblas-dev \
+    gfortran \ 
+    && rm -rf /var/lib/apt/lists/*
+
+# Set a non-root user for security
+RUN useradd -m miner
+
+# Set environment variables
+ENV PATH="${PATH}:/root/.local/bin" \
+  PYTHONFAULTHANDLER=1 \
+  PYTHONUNBUFFERED=1 \
+  PYTHONHASHSEED=random \
+  PIP_NO_CACHE_DIR=off \
+  PIP_DISABLE_PIP_VERSION_CHECK=on \
+  PIP_DEFAULT_TIMEOUT=300 \
+  # Poetry's configuration:
+  POETRY_NO_INTERACTION=1 \
+  POETRY_VIRTUALENVS_CREATE=false \
+  # HF
+  TRANSFORMERS_CACHE=/tmp
+
+# Copy all of deval over and initialize
+WORKDIR /app
+
+COPY --chown=miner:miner . ./
+COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
+RUN pip install poetry 
+RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
+
+# Use read-only filesystem and no root privileges (with write logs and tmp)
+RUN mkdir /app/logs && chmod -R 555 /app && chmod 777 /app/logs
+RUN mkdir -p /tmp && chmod 1777 /tmp 
+ENV TMPDIR=/tmp
+
+# switch to non-root user
+USER miner
+
+
+# Start API 
+EXPOSE 8000
+CMD ["poetry", "run", "uvicorn", "deval.api.miner_api:app", "--host", "0.0.0.0", "--port", "8000"]

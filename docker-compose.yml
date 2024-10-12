@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  miner-api:
+    build:
+      context: .
+      dockerfile: deval/api/dockerfile
+    container_name: miner-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${MODEL_DIR}:/app/eval_model:ro  # Bind mount the model directory as read-only
+    user: "miner"
+    security_opt:
+      - no-new-privileges  # Prevent privilege escalation
+    cap_drop:
+      - ALL  # Drop all unnecessary capabilities
+    cap_add:
+      - NET_BIND_SERVICE  # Allow binding to network services for internal comms
+
+
+networks:
+  internal_net:
+    driver: bridge

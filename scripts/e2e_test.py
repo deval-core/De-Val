@@ -8,7 +8,7 @@ from deval.tasks.task import TasksEnum
 from dotenv import load_dotenv, find_dotenv
 from deval.task_repository import TaskRepository
 from deval.agent import HumanAgent
-from deval.protocol import EvalRequest
+from deval.protocol import init_request_from_task, BtEvalResponse
 import sys
 
 # initialize
@@ -60,11 +60,14 @@ for task_name, tasks in task_repo.get_all_tasks():
         agent = HumanAgent(
             task=task
         )
-        request = EvalRequest.init_from_task(task)
+        request = init_request_from_task(task)
         response = HuggingFaceModel.query_hf_model(pipe, request)
         print(f"Generated response: {response}")
-        response.uid = miner_state.uid
-        response.human_agent = agent
+        bt_response = BtEvalResponse(
+            uid = miner_state.uid,
+            response = response,
+            human_agent = agent
+        )
 
-        responses.append(response)
+        responses.append(bt_response)
         

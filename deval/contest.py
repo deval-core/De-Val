@@ -1,6 +1,7 @@
 from deval.model.model_state import ModelState
 from datetime import datetime
-from deval.rewards import RewardPipeline
+from deval.rewards.pipeline import RewardPipeline
+import pytz
 
 class DeValContest:
 
@@ -8,7 +9,7 @@ class DeValContest:
         self.model_rewards: dict[int, dict[str, list[float]]] = {} # int = uid, str = task name, list[float] = list of rewards
         self.ranked_rewards: list[tuple(int, float)] = [] # int = uid, float = reward
         self.model_hashes: dict[str, ModelState] = {} 
-        self.start_time_datetime: datetime = datetime.fromtimestamp(forward_start_time)
+        self.start_time_datetime: datetime = datetime.fromtimestamp(forward_start_time, tz=pytz.UTC)
         self.reward_pipeline: RewardPipeline = reward_pipeline
         self.timeout: int = timeout
 
@@ -20,16 +21,16 @@ class DeValContest:
             4 : 0.025
         }
 
-    def validate_model(self, miner_state: ModelState) -> bool:
+    def validate_model(self, miner_state: ModelState, model_dir: str) -> bool:
         # ensure the last commit date is before forward start time
-        if self.start_time_datetime < miner_state.get_last_commit_date:
+        if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
-
+ 
         if miner_state.repo_id == "deval-core" and miner_state.model_id == "base-eval-test":
             return True
         
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
-        miner_state.compute_model_hash()
+        miner_state.compute_model_hash(model_dir)
         duplicated_model = self.model_hashes.get(miner_state.model_hash, None)
 
         if duplicated_model is None:
@@ -91,7 +92,9 @@ class DeValContest:
         """ 
         avg_rewards = []
         denom = sum([num_task for _, num_task in task_probabilities])
+        print(f"Denominator: {denom}")
         for uid, scores in self.model_rewards.items():
+            print(f"UID: {uid} with scores: {scores}")
             total_scores = [i for values in scores.values() for i in values]
             avg_score = sum(total_scores) / denom
             avg_rewards.append((uid, avg_score))

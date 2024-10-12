@@ -134,8 +134,6 @@ class TaskRepository:
 
 
 if __name__ == "__main__":
-    from deval.llms.openai_llm import OpenAILLM
-    from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
     _ = load_dotenv(find_dotenv())

@@ -25,7 +25,7 @@ class Obfuscator:
         try:
             # Run the PyArmor obfuscation command
             subprocess.run([
-                'pyarmor', 'gen', '-O', output_dir, source_dir
+                'pyarmor', 'gen', '-O', output_dir, source_dir, "--platform", "linux.aarch64"
             ], check=True)
             print(f"Code successfully obfuscated and saved to: {output_dir}")
         

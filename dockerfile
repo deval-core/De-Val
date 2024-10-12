@@ -7,9 +7,12 @@ RUN apt-get update && apt-get install -y build-essential \
     libatlas-base-dev \
     liblapack-dev \
     libblas-dev \
-    gfortran \ 
+    gfortran \
+    docker.io \ 
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
 
 # Set environment variables
 ENV PATH="${PATH}:/root/.local/bin" \
@@ -32,4 +35,5 @@ COPY --chown=miner:miner . ./
 RUN pip install poetry 
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
 
-CMD ["poetry", "run", "python3", "neurons/validator.py", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["poetry", "run", "python3", "neurons/validator.py"]
+CMD ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]

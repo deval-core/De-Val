@@ -10,7 +10,7 @@ class MinerDockerClient:
 
     def __init__(self):
         self.service_name = "miner-api"
-        self.host = "http://0.0.0.0" 
+        self.host = f"http://{self.service_name}" 
         self.port = 8000
         self.api_url = f"{self.host}:{self.port}"
 
@@ -40,6 +40,16 @@ class MinerDockerClient:
         # Remove the Docker image
         self.remove_image()
 
+    def restart_service(self):
+        try:
+            # Restart the miner-api container
+            subprocess.run(["docker-compose", "restart", self.service_name], check=True)
+            print("miner-api container restarted successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error restarting miner-api: {e}")
+
+        time.sleep(120)
+
     def remove_image(self):
         """Remove the Docker image associated with the miner-api service."""
         try:
@@ -54,8 +64,8 @@ class MinerDockerClient:
         bt.logging.info(f"Querying API on container {self.service_name}...")
         try:
             response = requests.post(
-                f"{self.api_url}/query_eval",
-                json=request,
+                f"{self.api_url}/eval_query",
+                json=request.dict(),
                 timeout=timeout
             )
             resp = response.json()

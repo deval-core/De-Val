@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ${MODEL_DIR}:/app/eval_model:ro  # Bind mount the model directory as read-only
+      - /Users/abell/Documents/personal/bittensor/deval/eval_llm:/app/eval_model:ro  # Bind mount the model directory as read-only
     user: "miner"
     security_opt:
       - no-new-privileges  # Prevent privilege escalation
@@ -17,8 +17,22 @@ services:
       - ALL  # Drop all unnecessary capabilities
     cap_add:
       - NET_BIND_SERVICE  # Allow binding to network services for internal comms
+    networks:
+      - internal_net # prevent external access
+
+  validator:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal_net
+      - default
+    
 
 
 networks:
   internal_net:
     driver: bridge
+    internal: true

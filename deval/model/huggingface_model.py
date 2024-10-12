@@ -23,26 +23,21 @@ class HuggingFaceModel:
         return hf_token
 
     @staticmethod
-    def pull_model_and_files(model_url: str, dir_to_download: str = None) -> str:
+    def pull_model_and_files(model_url: str) -> str:
         hf_token = HuggingFaceModel.get_hf_token()
 
-        bt.logging.info(f"Beggining the download of model data at {model_url}")
-        if dir_to_download:
-            local_dir = snapshot_download(
-                repo_id=model_url, 
-                repo_type="model", 
-                revision="main", 
-                token = hf_token,
-                local_dir = dir_to_download,
-            )
-        else:
-            local_dir = snapshot_download(
-                repo_id=model_url, 
-                repo_type="model", 
-                revision="main", 
-                token = hf_token,
-            )
+        download_dir = "~/eval_llm"
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
 
+        bt.logging.info(f"Beggining the download of model data at {model_url}")
+        local_dir = snapshot_download(
+            repo_id=model_url, 
+            repo_type="model", 
+            revision="main", 
+            token = hf_token,
+            local_dir = download_dir,
+        )
         bt.logging.info(f"Downloaded model and files to {local_dir}")
         return local_dir
 

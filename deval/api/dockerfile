@@ -23,9 +23,7 @@ ENV PATH="${PATH}:/root/.local/bin" \
   PIP_DEFAULT_TIMEOUT=300 \
   # Poetry's configuration:
   POETRY_NO_INTERACTION=1 \
-  POETRY_VIRTUALENVS_CREATE=false \
-  # HF
-  TRANSFORMERS_CACHE=/tmp
+  POETRY_VIRTUALENVS_CREATE=false 
 
 # Copy all of deval over and initialize
 WORKDIR /app

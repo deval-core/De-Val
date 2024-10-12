@@ -6,10 +6,9 @@ import sys
 
 app = FastAPI()
 
-model_dir = os.getenv("MODEL_DIR")
-sys.path.append("/app/eval_model") # matches to the location of the mounted directory
+model_dir = "/app/eval_model"
+sys.path.append(model_dir) # matches to the location of the mounted directory
 from model.pipeline import DeValPipeline
-
 
 pipe = DeValPipeline("de_val", model_dir = model_dir)
 

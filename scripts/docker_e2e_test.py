@@ -1,13 +1,13 @@
 from deval.contest import DeValContest
 from deval.validator import Validator
 import time
-from deval.rewards.reward import RewardResult
 from deval.rewards.pipeline import RewardPipeline
 from deval.task_repository import TaskRepository
 from dotenv import load_dotenv, find_dotenv
 from deval.model.model_state import ModelState
 from deval.tasks.task import TasksEnum
 from deval.api.miner_docker_client import MinerDockerClient
+from deval.utils.logging import WandBLogger
 
 
 # initialize
@@ -16,16 +16,17 @@ allowed_models = ["gpt-4o-mini"]
 
 repo_id = "deval-core"
 model_id = "base-eval-test"
-timeout = 10
+timeout = 600
 uid = 1
 max_model_size_gbs = 18
+
 
 print("Initializing tasks and contest")
 task_repo = TaskRepository(allowed_models=allowed_models)
 
 task_sample_rate = [
-    (TasksEnum.RELEVANCY.value, 1),
-    #(TasksEnum.HALLUCINATION.value, 1),
+    #(TasksEnum.RELEVANCY.value, 1),
+    (TasksEnum.HALLUCINATION.value, 1),
     #(TasksEnum.ATTRIBUTION.value, 1),
     #(TasksEnum.COMPLETENESS.value, 1)
 ]
@@ -43,6 +44,7 @@ contest = DeValContest(
 )
 
 miner_docker_client = MinerDockerClient()
+wandb_logger = WandBLogger(None, None, active_tasks, None, force_off=True)
 
 print("Generating the tasks")
 task_repo.generate_all_tasks(task_probabilities=task_sample_rate)
@@ -61,6 +63,7 @@ if is_valid:
         miner_state, 
         task_repo, 
         miner_docker_client,
+        wandb_logger
     )
     print("Completed epoch")
 

@@ -118,6 +118,7 @@ class ModelState:
 
     def cleanup(self, model_dir: str):
         # Remove the model directory to save space
+        print(model_dir)
         if os.path.exists(model_dir):
             shutil.rmtree(model_dir)
             bt.logging.info(f"Model directory {model_dir} deleted.")

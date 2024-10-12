@@ -122,7 +122,7 @@ class BtEvalResponse(BaseModel):
             "miner_score": self.response.score,
             "miner_mistakes": self.response.mistakes,
             "miner_response_time": self.response.response_time,
-            "uid": self.response.uid,
+            "uid": self.uid,
         }
 
     def __repr__(self):

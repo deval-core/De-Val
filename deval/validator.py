@@ -14,7 +14,7 @@ from deval.agent import HumanAgent
 from deval.protocol import init_request_from_task, BtEvalResponse
 from deval.api.miner_docker_client import MinerDockerClient
 from deval.tasks.task import Task
-from deval.utils.logging import log_event
+from deval.utils.logging import WandBLogger
 
 
 
@@ -58,6 +58,11 @@ class Validator(BaseValidatorNeuron):
 
 
         self.miner_docker_client = MinerDockerClient()
+        self.wandb_logger = WandBLogger(
+            self.wallet.hotkey.ss58_address, 
+            self.metagraph.netuid, 
+            active_tasks,
+            config)
 
         bt.logging.info("load_state()")
         self.load_state()
@@ -108,6 +113,7 @@ class Validator(BaseValidatorNeuron):
                     miner_state, 
                     self.task_repo, 
                     self.miner_docker_client,
+                    self.wandb_logger
                 )
 
             # update contest
@@ -127,7 +133,8 @@ class Validator(BaseValidatorNeuron):
         contest: DeValContest, 
         miner_state: ModelState, 
         task_repo: TaskRepository, 
-        miner_docker_client: MinerDockerClient
+        miner_docker_client: MinerDockerClient,
+        wandb_logger: WandBLogger,
     ):
         #pull model, update contest, and validate model 
         model_dir = HuggingFaceModel.pull_model_and_files(miner_state.get_model_url())
@@ -135,16 +142,23 @@ class Validator(BaseValidatorNeuron):
         if not is_valid:
             return miner_state
 
-        miner_docker_client.start_service(model_dir)
+        miner_docker_client.restart_service()
 
         # run through all tasks
         for task_name, tasks in task_repo.get_all_tasks():
-            miner_state = Validator.run_step(task_name, tasks, miner_docker_client, miner_state, contest)
+            miner_state = Validator.run_step(
+                task_name, 
+                tasks, 
+                miner_docker_client, 
+                miner_state, 
+                contest, 
+                wandb_logger
+            )
 
 
         # cleanup and remove the model 
         miner_state.cleanup(model_dir)
-        miner_docker_client.stop_service()
+        #miner_docker_client.stop_service()
         
         return miner_state
 
@@ -154,7 +168,8 @@ class Validator(BaseValidatorNeuron):
         tasks: list[Task], 
         docker_client: MinerDockerClient,
         miner_state: ModelState,
-        contest: DeValContest
+        contest: DeValContest,
+        wandb_logger: WandBLogger
     ):
         
         responses = []
@@ -182,7 +197,7 @@ class Validator(BaseValidatorNeuron):
             responses=responses,
             device="cpu" # self.device,
         )
-        #log_event(responses, reward_result)
+        wandb_logger.log_event(responses, reward_result)
         
         miner_state.add_reward(task_name, reward_result)
 

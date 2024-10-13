@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /Users/abell/Documents/personal/bittensor/deval/eval_llm:/app/eval_model:ro  # Bind mount the model directory as read-only
+      - eval_llm:/app/eval_llm:ro  # Bind mount the model directory as read-only
     user: "miner"
     security_opt:
       - no-new-privileges  # Prevent privilege escalation
@@ -26,9 +26,11 @@ services:
       dockerfile: dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - eval_llm:/app/eval_llm
     networks:
       - internal_net
       - default
+    command: ["poetry", "run", "python3", "neurons/validator.py"]
     
 
 
@@ -36,3 +38,6 @@ networks:
   internal_net:
     driver: bridge
     internal: true
+
+volumes:
+  eval_llm:

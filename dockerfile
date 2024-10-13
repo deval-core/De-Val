@@ -30,10 +30,11 @@ ENV PATH="${PATH}:/root/.local/bin" \
 
 # Copy all of deval over and initialize
 WORKDIR /app
+RUN mkdir /app/eval_llm
 
-COPY --chown=miner:miner . ./
+COPY . ./
 RUN pip install poetry 
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
 
-#CMD ["poetry", "run", "python3", "neurons/validator.py"]
-CMD ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]
+
+#CMD ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]

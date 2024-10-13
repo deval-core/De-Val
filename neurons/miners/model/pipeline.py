@@ -78,7 +78,7 @@ class DeValPipeline(Pipeline):
             print("score ", score)
             return float(score.strip()) if score != "" else -1.0
         else:
-            print("Unable to parse response")
+            print("Unable to parse eval score using regex")
             return -1.0
 
     def _parse_mistakes_response(self, response: str) -> list[str]:
@@ -166,14 +166,12 @@ class DeValPipeline(Pipeline):
 
         # decode and parse score
         score_decoded = self.tokenizer.decode(score_response, skip_special_tokens=True)
-        print(score_decoded)
         score_completion = self._parse_score_response(score_decoded)
 
         # decode and parse mistakes
         mistakes_completion = None
         if mistakes_response is not None:
             mistakes_decoded = self.tokenizer.decode(mistakes_response, skip_special_tokens = True)
-            print(mistakes_decoded)
             mistakes_completion = self._parse_mistakes_response(mistakes_decoded)
 
         return {
@@ -190,10 +188,10 @@ if __name__ == "__main__":
 
     model_dir = "../model"
 
-    tasks = ['hallucination']
+    tasks = ['relevancy']
     rag_context = "The earth is round. The sky is Blue."
     llm_response = "The earth is flat."
-    query = ""
+    query = "What color is the sky"
 
     pipe = DeValPipeline("de_val", model_dir = model_dir)
     print(pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response))

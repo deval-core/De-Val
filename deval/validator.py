@@ -142,18 +142,19 @@ class Validator(BaseValidatorNeuron):
         if not is_valid:
             return miner_state
 
-        miner_docker_client.restart_service()
+        valid_connection = miner_docker_client.initialize_miner_api()
 
-        # run through all tasks
-        for task_name, tasks in task_repo.get_all_tasks():
-            miner_state = Validator.run_step(
-                task_name, 
-                tasks, 
-                miner_docker_client, 
-                miner_state, 
-                contest, 
-                wandb_logger
-            )
+        # run through all tasks if we can connect, otherwise skip
+        if valid_connection:
+            for task_name, tasks in task_repo.get_all_tasks():
+                miner_state = Validator.run_step(
+                    task_name, 
+                    tasks, 
+                    miner_docker_client, 
+                    miner_state, 
+                    contest, 
+                    wandb_logger
+                )
 
 
         # cleanup and remove the model 

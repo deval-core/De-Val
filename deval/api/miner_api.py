@@ -6,7 +6,7 @@ import sys
 
 app = FastAPI()
 
-model_dir = "/app/eval_model"
+model_dir = "/app/eval_llm"
 sys.path.append(model_dir) # matches to the location of the mounted directory
 from model.pipeline import DeValPipeline
 
@@ -38,3 +38,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
         response_time = process_time,
     )
 
+
+@app.get("/health")
+async def health()->bool:
+    return True

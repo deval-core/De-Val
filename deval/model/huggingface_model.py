@@ -26,7 +26,7 @@ class HuggingFaceModel:
     def pull_model_and_files(model_url: str) -> str:
         hf_token = HuggingFaceModel.get_hf_token()
 
-        download_dir = "~/eval_llm"
+        download_dir = "eval_llm"
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
 

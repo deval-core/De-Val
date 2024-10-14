@@ -106,8 +106,11 @@ class DeValContest:
         num_rewards = len(self.tiers)
         weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
 
+        # TODO: spread a super small portion of weights across the remaining top 35 to help maintain ordering.
+
         return weights
 
     def clear_state(self):
+        # TODO: 
         # it shouldn't matter, but safe precaution to clear the contest state on next run
         pass

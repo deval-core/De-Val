@@ -1,6 +1,6 @@
 from typing import List
 
-from deval.tasks import TASKS
+from deval.task_repository import TASKS
 
 from deval.rewards.reward import BaseRewardModel
 

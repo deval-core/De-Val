@@ -6,12 +6,12 @@ from functools import partial
 import bittensor as bt
 from deval.forward import run_step
 from deval.base.validator import Validator
-from deval.tasks import Task, QuestionAnsweringTask
+from deval.tasks.task import Task, QuestionAnsweringTask
 from .fixtures.task import WIKI_CONTEXT
 from deval.agent import HumanAgent
 from unittest.mock import patch, Mock
 from deval.protocol import EvalSynapse
-from deval.tasks import TasksEnum
+from deval.tasks.task import TasksEnum
 
 sys.argv = [__file__, "--mock", "--wandb.off", "--neuron.tasks", "qa"]
 mock_neuron = Validator()

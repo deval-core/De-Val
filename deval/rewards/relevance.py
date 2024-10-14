@@ -23,7 +23,7 @@ class RelevanceRewardModel(BaseRewardModel):
             # This line is necessary to pass the model to the device defined at its initialization
             self.model = self.model.cuda()
 
-    def reward(self, reference: list[str], completions: list[list[str]]) -> BatchRewardOutput:
+    def reward(self, reference: list[str], completion: list[str]) -> BatchRewardOutput:
         """Calculates the cosine similarity between sentence embeddings of the reference and completions.
         We subtract a baseline score which is what an empty string would get (a failed completion). This is usually around 0.35
         We also clip the rewards between 0 and 1. The maximum effective score is around 0.65
@@ -39,21 +39,20 @@ class RelevanceRewardModel(BaseRewardModel):
             self.model.encode("", to_numpy=False).reshape(1, -1),
         )
 
-        for completion in completions:
-            t0 = time.time()
-            completion = "\n".join(c for c in completion)
-            emb = self.model.encode(completion, to_numpy=False)
-            
-            # Calculate cosine similarity between reference and completion embeddings, and subtract baseline
-            score = (
-                cosine_similarity(
-                    reference_embedding.reshape(1, -1), emb.reshape(1, -1)
-                )
-                - baseline
+        t0 = time.time()
+        completion = "\n".join(c for c in completion)
+        emb = self.model.encode(completion, to_numpy=False)
+        
+        # Calculate cosine similarity between reference and completion embeddings, and subtract baseline
+        score = (
+            cosine_similarity(
+                reference_embedding.reshape(1, -1), emb.reshape(1, -1)
             )
+            - baseline
+        )
 
-            rewards.append(score)
-            timings.append(time.time() - t0)
+        rewards.append(score)
+        timings.append(time.time() - t0)
 
         output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards).clip(min=0, max=1),

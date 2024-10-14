@@ -1,5 +1,5 @@
 import pytest
-from deval.tasks import Task
+from deval.tasks.task import Task
 from deval.agent import HumanAgent, create_persona
 
 from .fixtures.llm import mock_llm_pipeline

@@ -20,7 +20,7 @@ import argparse
 import asyncio
 import threading
 import bittensor as bt
-from deval.protocol import EvalSynapse
+from deval.protocol import ModelQuerySynapse
 from deval.base.neuron import BaseNeuron
 from deval.utils.config import add_miner_args
 from traceback import print_exception
@@ -191,7 +191,7 @@ class BaseMinerNeuron(BaseNeuron):
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
 
-    def _forward(self, synapse: EvalSynapse) -> EvalSynapse:
+    def _forward(self, synapse: ModelQuerySynapse) -> ModelQuerySynapse:
         """
         A wrapper method around the `forward` method that will be defined by the subclass.
 
@@ -201,10 +201,10 @@ class BaseMinerNeuron(BaseNeuron):
         cache, the subclass `forward` method is called.
 
         Args:
-            synapse (EvalSynapse): The incoming request object encapsulating the details of the request.
+            synapse (ModelQuerySynapse): The incoming request object encapsulating the details of the request.
 
         Returns:
-            EvalSynapse: The response object to be sent back in reply to the incoming request, essentially
+            ModelQuerySynapse: The response object to be sent back in reply to the incoming request, essentially
             the filled synapse request object.
 
         Raises:

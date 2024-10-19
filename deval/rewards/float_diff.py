@@ -3,7 +3,6 @@ import torch
 from typing import List
 from deval.rewards.reward import BaseRewardModel, BatchRewardOutput
 
-# TODO: Improve to normalize scores between 0 and 1 or at least ensure consistency across runs
 class FloatDiffModel(BaseRewardModel):
     @property
     def name(self) -> str:
@@ -33,16 +32,15 @@ class FloatDiffModel(BaseRewardModel):
         except Exception:
             return 0.0
 
-    def reward(self, reference: float, completions: List[float]) -> BatchRewardOutput:
+    def reward(self, reference: float, completion: float) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
 
-        for completion in completions:
-            t0 = time.time()
-            reward = self.numeric_score(reference, completion)
-            timings.append(time.time() - t0)
-            rewards.append(reward)
+        t0 = time.time()
+        reward = self.numeric_score(reference, completion)
+        timings.append(time.time() - t0)
+        rewards.append(reward)
 
         output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards),

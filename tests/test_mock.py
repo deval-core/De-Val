@@ -3,7 +3,7 @@ import asyncio
 import bittensor as bt
 from deval.mock import MockDendrite, MockMetagraph, MockSubtensor
 from deval.protocol import EvalSynapse
-from deval.tasks import TasksEnum
+from deval.tasks.task import TasksEnum
 
 wallet = bt.MockWallet()
 wallet.create(coldkey_use_password=False)

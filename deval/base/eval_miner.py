@@ -21,7 +21,7 @@ import bittensor as bt
 
 # Bittensor Miner Template:
 import deval
-from deval.protocol import EvalSynapse
+from deval.protocol import ModelQuerySynapse
 
 # import base miner class which takes care of most of the boilerplate
 from deval.base.miner import BaseMinerNeuron
@@ -40,7 +40,7 @@ class Miner(BaseMinerNeuron):
         super(Miner, self).__init__(config=config)
         self.identity_tags = None
 
-    async def blacklist(self, synapse: EvalSynapse) -> typing.Tuple[bool, str]:
+    async def blacklist(self, synapse: ModelQuerySynapse) -> typing.Tuple[bool, str]:
         """
         Determines whether an incoming request should be blacklisted and thus ignored. Your implementation should
         define the logic for blacklisting requests based on your needs and desired security parameters.
@@ -82,7 +82,7 @@ class Miner(BaseMinerNeuron):
         )
         return False, "Hotkey recognized!"
 
-    async def priority(self, synapse: EvalSynapse) -> float:
+    async def priority(self, synapse: ModelQuerySynapse) -> float:
         """
         The priority function determines the order in which requests are handled. More valuable or higher-priority
         requests are processed before others. You should design your own priority mechanism with care.
@@ -90,7 +90,7 @@ class Miner(BaseMinerNeuron):
         This implementation assigns priority to incoming requests based on the calling entity's stake in the metagraph.
 
         Args:
-            synapse (EvalSynapse): The synapse object that contains metadata about the incoming request.
+            synapse (ModelQuerySynapse): The synapse object that contains metadata about the incoming request.
 
         Returns:
             float: A priority score derived from the stake of the calling entity.

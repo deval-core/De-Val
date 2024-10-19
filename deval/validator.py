@@ -26,23 +26,17 @@ class Validator(BaseValidatorNeuron):
     def __init__(self, config=None):
         super(Validator, self).__init__(config=config)
 
-
-        self.start_over = True
-
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
 
+        # TODO: turn to config params
         self.num_uids_total = 256
         self.max_model_size_gbs = 18 # allows for 8B models
+        self.miner_incentive_threshold = self.config.neuron.miner_incentive_threshold
         self.queried_uids = set()
 
         # get allowed model ids and init generator
-        allowed_models = self.config.neuron.model_ids.split(",")
-        self.task_repo = TaskRepository(allowed_models=allowed_models)
-
-        # define how often tasks should run 
-        if abs(1-sum(self.config.neuron.task_p)) > 0.001:
-            raise ValueError("Task probabilities do not sum to 1.")
+        self.allowed_models = self.config.neuron.model_ids.split(",")
 
         # Filter out tasks with 0 probability
         self.task_sample_rate = [
@@ -70,7 +64,6 @@ class Validator(BaseValidatorNeuron):
     # TODO: these are only staticmethods to enable early testability while bringing similar components to same place
     # remove staticmethod once we have more mature testing suite
     # because we don't pass self, we have to pass a lot of variables around
-    @staticmethod
     async def forward(self):
         bt.logging.info("🚀 Starting forward loop...")
         forward_start_time = time.time()
@@ -82,10 +75,11 @@ class Validator(BaseValidatorNeuron):
                 forward_start_time, 
                 self.config.neuron.timeout
             )
+            self.task_repo = TaskRepository(allowed_models=self.allowed_models)
         
             # collect the top incentive uids
             top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
-            available_uids = get_candidate_uids(k = self.num_uids_total)
+            available_uids = get_candidate_uids(self, k = self.num_uids_total)
 
             # generate all tasks for miners to be evaluated on
             self.task_repo.generate_all_tasks(task_probabilities=self.task_sample_rate)
@@ -97,7 +91,7 @@ class Validator(BaseValidatorNeuron):
 
         for uid in available_uids:
             # get the model metadata information from miner
-            responses = get_metadata_from_miner(self, uid)
+            responses = await get_metadata_from_miner(self, uid)
             response_event = DendriteModelQueryEvent(responses)
             bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 

@@ -14,7 +14,6 @@ import sys
 # initialize
 _ = load_dotenv(find_dotenv())
 
-allowed_models = ["gpt-4o-mini"]
 
 repo_id = "deval-core"
 model_id = "base-eval-test"

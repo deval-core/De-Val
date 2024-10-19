@@ -19,36 +19,45 @@ TASKS = {
     TasksEnum.RELEVANCY.value: {
         "task_function": RelevancyTask,
         "dataset": WikiDataset,
-        "task_p": 0.25,
+        "task_p": 1,
     },
     TasksEnum.HALLUCINATION.value: {
         "task_function": HallucinationTask,
         "dataset": GenericDataset,
-        "task_p": 0.25,
+        "task_p": 1,
     },
     TasksEnum.COMPLETENESS.value: {
         "task_function": CompletenessTask,
         "dataset": GenericDataset,
-        "task_p": 0.25,
+        "task_p": 1,
     },
     TasksEnum.ATTRIBUTION.value: {
         "task_function": AttributionTask,
         "dataset": AttributionDataset,
-        "task_p": 0.25,
+        "task_p": 1,
     }
 }
 
 class TaskRepository:
 
-    tasks: dict[TasksEnum, list[Task]] = {} 
-
     def __init__(self, allowed_models: list[str] | None = None):
+        self.tasks: dict[TasksEnum, list[Task]] = {} 
+
         # initialize available models 
         self.supported_models = SUPPORTED_MODELS
 
         if allowed_models is not None:
             self.supported_models = self.filter_to_allowed_models(allowed_models)
 
+        self.available_models = self.get_available_models()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['available_models']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
         self.available_models = self.get_available_models()
 
     def filter_to_allowed_models(self, allowed_models: list[str] | None) -> dict:

@@ -63,14 +63,16 @@ class BaseValidatorNeuron(BaseNeuron):
 
         # TODO: ensure that  substrate and keypair are getting actual values from config
         self.substrate = get_substrate(
-            subtensor_network=self.config["subtensor.network"],
-            subtensor_address=self.config["subtensor.chain_endpoint"]
+            subtensor_network=self.config.subtensor.network,
+            subtensor_address=self.config.subtensor.chain_endpoint
         )
 
         self.keypair = load_hotkey_keypair(
-            wallet_name=self.config["wallet.name"],
-            hotkey_name=self.config["wallet.hotkey"],
+            wallet_name=self.config.wallet.name,
+            hotkey_name=self.config.wallet.hotkey,
         )
+        hotkey = self.keypair.ss58_address
+        self.uid = self.hotkeys.index(hotkey)
 
         # Init sync with the network. Updates the metagraph.
         self.sync()
@@ -242,7 +244,7 @@ class BaseValidatorNeuron(BaseNeuron):
         """
 
         # Check if self.weights contains any NaN values and log a warning if it does.
-        if torch.isnan(self.weights).any():
+        if np.isnan(self.weights).any():
             bt.logging.warning(
                 "Weights contain NaN values. This may be due to a lack of responses from miners, or a bug in your reward functions."
             )
@@ -255,7 +257,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
 
         # split our uids and weights 
-        final_weights = np.zeros(len(self.metagraph.nodes))
+        final_weights = np.zeros(self.metagraph.n.item())
         for uid, weight in self.weights:
             final_weights[uid] = weight
 
@@ -266,6 +268,7 @@ class BaseValidatorNeuron(BaseNeuron):
             self.keypair,
             node_ids=uids,
             node_weights=final_weights,
+            validator_node_id=self.uid,
             netuid=self.metagraph.netuid,
         )
 
@@ -319,21 +322,31 @@ class BaseValidatorNeuron(BaseNeuron):
         # Load the state of the validator from file.
         load_path = self.config.neuron.full_path 
 
-        state = torch.load(os.path.join(load_path, "/state.pt"))
+        state_path = os.path.join(load_path, "/state.pt")
+        contest_path = os.path.join(load_path, "contest.pkl")
+        task_repo_path = os.path.join(load_path, "task_repo.pkl")
+        if (
+            not os.path.exists(state_path) or 
+            not os.path.exists(contest_path) or
+            not os.path.exists(task_repo_path)
+        ):
+            return None
+
+        state = torch.load(state_path)
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
 
         try:
 
-            with open(os.path.join(load_path, "contest.pkl"), "wb") as f: 
+            with open(contest_path, "wb") as f: 
                 self.contest = pickle.load(f)
 
             # we put a time lock on how long a contest will take 
             max_time = 12
             now = datetime.now()
             if now - timedelta(hours=max_time) <= self.contest.forward_start_time:
-                with open(os.path.join(load_path, "task_repo.pkl"), "wb") as f: 
+                with open(task_repo_path, "wb") as f: 
                     self.task_repo = pickle.load(f)
             else:
                 # if we exceed the max time then we opt to start

@@ -1,5 +1,4 @@
 import time
-import bittensor as bt
 from abc import ABC
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -69,7 +68,6 @@ class Task(ABC):
     def generate_input(self, llm_pipeline: BaseLLM, prompt: str, system_prompt: str, tool_schema: dict) -> str:
         """Generates a query to be used for generating the challenge"""
         t0 = time.time()
-        bt.logging.info("🤖 Generating query...")
         input = llm_pipeline.query(
             prompt=prompt,
             system_prompt=system_prompt,

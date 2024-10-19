@@ -37,7 +37,7 @@ async def execute_dendrite_call(dendrite_call):
 
 async def get_metadata_from_miner(validator, uid: int) -> list[bt.synapse]:
     axons = [validator.metagraph.axons[uid]]
-    dendrite_call_task = execute_dendrite_call(validator.dendrite(axons=axons, synapse=ModelQuerySynapse, timeout=5))
+    dendrite_call_task = execute_dendrite_call(validator.dendrite(axons=axons, synapse=ModelQuerySynapse(), timeout=5))
     responses = await dendrite_call_task 
 
     return responses
@@ -71,14 +71,14 @@ class ModelQuerySynapse(bt.Synapse):
 
 
     repo_id: str = Field(
-        ...,
+        "",
         title="HuggingFace Repo ID",
         description="The miner's repo name for HuggingFace. Mutable",
         allow_mutation=True,
     )
 
     model_id: str = Field(
-        ...,
+        "",
         title="HuggingFace Model ID",
         description="The miner's model name for HuggingFace. Mutable",
         allow_mutation=True,

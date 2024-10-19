@@ -30,8 +30,15 @@ services:
     networks:
       - internal_net
       - default
-    command: ["poetry", "run", "python3", "neurons/validator.py"]
-    
+    env_file:
+      - .env
+    command: >
+      poetry run python3 neurons/validator.py
+      --netuid ${NETUID:-15}
+      --subtensor.chain_endpoint ${CHAIN_ENDPOINT}
+      --wallet.name ${WALLET_NAME}
+      --wallet.hotkey ${HOTKEY}
+      --subtensor.network ${SUBTENSOR_NETWORK}
 
 
 networks:

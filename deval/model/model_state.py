@@ -18,8 +18,15 @@ class ModelState:
         self.model_id = model_id 
         self.uid = uid
 
-        self.last_commit_date: datetime | None = self.get_last_commit_date()
-        self.last_safetensor_update: datetime | None = self.get_last_model_update_date()
+        try:
+            _ = self.api.model_info(self.get_model_url())
+            self.is_valid_repo = True
+        except Exception as e:
+            self.is_valid_repo = False
+
+        if self.is_valid_repo:
+            self.last_commit_date: datetime | None = self.get_last_commit_date()
+            self.last_safetensor_update: datetime | None = self.get_last_model_update_date()
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -89,7 +96,12 @@ class ModelState:
         - check if the miner is in the top incentive UIDs
         - last updated file is from the last 48 hours
         """
+        if not self.is_valid_repo:
+            bt.logging.info(f"Unable to access repository - skipping evaluation")
+            return False
+
         if self._get_model_size() > max_model_size_gbs:
+            bt.logging.info(f"Model size is too large - skipping evaluation")
             return False
 
         if uid in top_incentive_uids:
@@ -99,6 +111,7 @@ class ModelState:
         if (start_time_datetime - timedelta(hours=48)) <= self.get_last_commit_date:
             return True
         
+        bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")
         return False
 
     def compute_model_hash(self, model_dir):

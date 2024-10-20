@@ -26,6 +26,7 @@ import numpy as np
 from fiber.chain.weights import set_node_weights
 from fiber.chain.chain_utils import load_hotkey_keypair
 from fiber.chain.interface import get_substrate
+import pytz
 
 from traceback import print_exception
 
@@ -61,10 +62,9 @@ class BaseValidatorNeuron(BaseNeuron):
             self.dendrite = bt.dendrite(wallet=self.wallet)
         bt.logging.info(f"Dendrite: {self.dendrite}")
 
-        # TODO: ensure that  substrate and keypair are getting actual values from config
         self.substrate = get_substrate(
-            subtensor_network=self.config.subtensor.network,
-            subtensor_address=self.config.subtensor.chain_endpoint
+            subtensor_network=self.config.neuron.network,
+            subtensor_address=self.config.neuron.chain_endpoint
         )
 
         self.keypair = load_hotkey_keypair(
@@ -322,7 +322,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Load the state of the validator from file.
         load_path = self.config.neuron.full_path 
 
-        state_path = os.path.join(load_path, "/state.pt")
+        state_path = os.path.join(load_path, "state.pt")
         contest_path = os.path.join(load_path, "contest.pkl")
         task_repo_path = os.path.join(load_path, "task_repo.pkl")
         if (
@@ -330,6 +330,7 @@ class BaseValidatorNeuron(BaseNeuron):
             not os.path.exists(contest_path) or
             not os.path.exists(task_repo_path)
         ):
+            bt.logging.info("one of the key components are unavailable. Skipping load")
             return None
 
         state = torch.load(state_path)
@@ -339,22 +340,22 @@ class BaseValidatorNeuron(BaseNeuron):
 
         try:
 
-            with open(contest_path, "wb") as f: 
+            with open(contest_path, "rb") as f: 
                 self.contest = pickle.load(f)
 
             # we put a time lock on how long a contest will take 
             max_time = 12
-            now = datetime.now()
-            if now - timedelta(hours=max_time) <= self.contest.forward_start_time:
-                with open(task_repo_path, "wb") as f: 
+            now = datetime.now(tz=pytz.UTC)
+            if now - timedelta(hours=max_time) <= self.contest.start_time_datetime:
+                with open(task_repo_path, "rb") as f: 
                     self.task_repo = pickle.load(f)
             else:
                 # if we exceed the max time then we opt to start
                 self.start_over = True
                 self.queried_uids = set()
 
-        except:
-            bt.logging.warning("Unable to load the task repository or contest state, restarting contest")
+        except Exception as e:
+            bt.logging.warning(f"Unable to load the task repository or contest state, restarting contest: {e}")
             self.start_over = True
 
     def reset(self):

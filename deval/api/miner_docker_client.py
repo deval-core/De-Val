@@ -10,7 +10,7 @@ class MinerDockerClient:
 
     def __init__(self):
         self.service_name = "miner-api"
-        self.host = f"http://{self.service_name}" 
+        self.host = f"http://0.0.0.0" 
         self.port = 8000
         self.api_url = f"{self.host}:{self.port}"
 

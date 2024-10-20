@@ -23,10 +23,12 @@ import bittensor as bt
 import logging
 from deval.task_repository import TASKS
 from deval.llms.config import SUPPORTED_MODELS
+from fiber.constants import FINNEY_NETWORK
 
 from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
 
 logger = logging.getLogger(BITTENSOR_LOGGER_NAME)
+
 
 
 def check_config(cls, config: "bt.Config"):
@@ -409,7 +411,23 @@ def add_validator_args(cls, parser):
         "--neuron.forward_max_time",
         type=int,
         help="Max time to wait for a forward call to complete in seconds.",
-        default=120,
+        default=43200,
+    )
+
+    parser.add_argument(
+        "--neuron.chain_endpoint",
+        type=str,
+        required=False,
+        help="Chain address",
+        default=None,
+    )
+
+    parser.add_argument(
+        "--neuron.network",
+        type=str,
+        required=False,
+        help="Chain network",
+        default=FINNEY_NETWORK,
     )
 
 

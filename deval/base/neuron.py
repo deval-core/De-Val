@@ -148,7 +148,7 @@ class BaseNeuron(ABC):
 
     def should_set_weights(self) -> bool:
         # Don't set weights on initialization.
-        if self.start_over:
+        if self.start_over or len(self.weights) == 0:
             return False
 
         # Check if enough epoch blocks have elapsed since the last epoch.

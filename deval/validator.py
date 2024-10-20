@@ -60,6 +60,7 @@ class Validator(BaseValidatorNeuron):
 
         bt.logging.info("load_state()")
         self.load_state()
+        self.weights = []
 
     # TODO: these are only staticmethods to enable early testability while bringing similar components to same place
     # remove staticmethod once we have more mature testing suite
@@ -84,36 +85,43 @@ class Validator(BaseValidatorNeuron):
             # generate all tasks for miners to be evaluated on
             self.task_repo.generate_all_tasks(task_probabilities=self.task_sample_rate)
 
+            
+
             # reset complete
             self.start_over = False
         else:
+            available_uids = get_candidate_uids(self, k = self.num_uids_total)
             available_uids = [uid for uid in available_uids if uid not in self.queried_uids]
 
         for uid in available_uids:
-            # get the model metadata information from miner
-            responses = await get_metadata_from_miner(self, uid)
-            response_event = DendriteModelQueryEvent(responses)
-            bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
+            try:
+                # get the model metadata information from miner
+                responses = await get_metadata_from_miner(self, uid)
+                response_event = DendriteModelQueryEvent(responses)
+                bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
-            miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
+                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
 
-            is_valid = miner_state.should_run_evaluation(
-                uid, self.max_model_size_gbs, forward_start_time, top_incentive_uids
-            )
-
-            if is_valid:
-                miner_state = Validator.run_epoch(
-                    self.contest,
-                    miner_state, 
-                    self.task_repo, 
-                    self.miner_docker_client,
-                    self.wandb_logger
+                is_valid = miner_state.should_run_evaluation(
+                    uid, self.max_model_size_gbs, forward_start_time, top_incentive_uids
                 )
 
-            # update contest
-            self.contest.update_model_state_with_rewards(miner_state) 
-            self.queried_uids.add(uid)
-            self.save_state()
+                if is_valid:
+                    miner_state = Validator.run_epoch(
+                        self.contest,
+                        miner_state, 
+                        self.task_repo, 
+                        self.miner_docker_client,
+                        self.wandb_logger
+                    )
+
+                # update contest
+                self.contest.update_model_state_with_rewards(miner_state) 
+                self.queried_uids.add(uid)
+                self.save_state()
+            except Exception as e:
+                self.queried_uids.add(uid)
+                bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}")
 
         
         self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
@@ -153,7 +161,6 @@ class Validator(BaseValidatorNeuron):
 
         # cleanup and remove the model 
         miner_state.cleanup(model_dir)
-        #miner_docker_client.stop_service()
         
         return miner_state
 

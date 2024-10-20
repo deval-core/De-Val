@@ -24,22 +24,27 @@ class HuggingFaceModel:
 
     @staticmethod
     def pull_model_and_files(model_url: str) -> str:
+        api = HfApi()
         hf_token = HuggingFaceModel.get_hf_token()
 
-        download_dir = "eval_llm"
+        download_dir = f"{os.get_env('HOME')}/eval_llm"
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
 
         bt.logging.info(f"Beggining the download of model data at {model_url}")
-        local_dir = snapshot_download(
-            repo_id=model_url, 
-            repo_type="model", 
-            revision="main", 
-            token = hf_token,
-            local_dir = download_dir,
-        )
-        bt.logging.info(f"Downloaded model and files to {local_dir}")
-        return local_dir
+        files = api.list_repo_files(repo_id=model_url)
+
+        # Download specific files manually
+        for file in files:
+            api.hf_hub_download(
+                repo_id=model_url,
+                filename=file,
+                token = hf_token,
+                local_dir = download_dir,
+                repo_type = "model"
+            )
+        bt.logging.info(f"Downloaded model and files to {download_dir}")
+        return download_dir
 
     @staticmethod
     def submit_model(

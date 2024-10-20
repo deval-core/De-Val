@@ -97,7 +97,8 @@ class DeValContest:
             print(f"UID: {uid} with scores: {scores}")
             total_scores = [i for values in scores.values() for i in values]
             avg_score = sum(total_scores) / denom
-            avg_rewards.append((uid, avg_score))
+            if avg_score > 0:
+                avg_rewards.append((uid, avg_score))
 
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1])

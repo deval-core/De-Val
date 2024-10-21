@@ -70,6 +70,9 @@ class Validator(BaseValidatorNeuron):
         forward_start_time = time.time()
 
         # init this rounds contest 
+        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
+        available_uids = get_candidate_uids(self, k = self.num_uids_total)
+
         if self.start_over:
             self.contest = DeValContest(
                 self.reward_pipeline, 
@@ -77,10 +80,6 @@ class Validator(BaseValidatorNeuron):
                 self.config.neuron.timeout
             )
             self.task_repo = TaskRepository(allowed_models=self.allowed_models)
-        
-            # collect the top incentive uids
-            top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
-            available_uids = get_candidate_uids(self, k = self.num_uids_total)
 
             # generate all tasks for miners to be evaluated on
             self.task_repo.generate_all_tasks(task_probabilities=self.task_sample_rate)
@@ -119,6 +118,8 @@ class Validator(BaseValidatorNeuron):
                 self.contest.update_model_state_with_rewards(miner_state) 
                 self.queried_uids.add(uid)
                 self.save_state()
+                del miner_state
+
             except Exception as e:
                 self.queried_uids.add(uid)
                 bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}")
@@ -142,6 +143,7 @@ class Validator(BaseValidatorNeuron):
         model_dir = HuggingFaceModel.pull_model_and_files(miner_state.get_model_url())
         is_valid = contest.validate_model(miner_state, model_dir)
         if not is_valid:
+            miner_state.cleanup(model_dir)
             return miner_state
 
         valid_connection = miner_docker_client.initialize_miner_api()

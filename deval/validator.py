@@ -7,7 +7,6 @@ from deval.task_repository import TaskRepository
 from dotenv import load_dotenv, find_dotenv
 from deval.utils.uids import get_top_incentive_uids, get_candidate_uids
 from deval.model.model_state import ModelState
-from deval.model.huggingface_model import HuggingFaceModel
 from deval.contest import DeValContest
 from deval.protocol import get_metadata_from_miner, DendriteModelQueryEvent
 from deval.agent import HumanAgent
@@ -62,9 +61,6 @@ class Validator(BaseValidatorNeuron):
         self.load_state()
         self.weights = []
 
-    # TODO: these are only staticmethods to enable early testability while bringing similar components to same place
-    # remove staticmethod once we have more mature testing suite
-    # because we don't pass self, we have to pass a lot of variables around
     async def forward(self):
         bt.logging.info("🚀 Starting forward loop...")
         forward_start_time = time.time()
@@ -139,14 +135,11 @@ class Validator(BaseValidatorNeuron):
         miner_docker_client: MinerDockerClient,
         wandb_logger: WandBLogger,
     ):
-        #pull model, update contest, and validate model 
-        model_dir = HuggingFaceModel.pull_model_and_files(miner_state.get_model_url())
-        is_valid = contest.validate_model(miner_state, model_dir)
+        valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
+        model_hash = miner_docker_client.get_model_hash()
+        is_valid = contest.validate_model(miner_state, model_hash)
         if not is_valid:
-            miner_state.cleanup(model_dir)
             return miner_state
-
-        valid_connection = miner_docker_client.initialize_miner_api()
 
         # run through all tasks if we can connect, otherwise skip
         if valid_connection:
@@ -160,9 +153,6 @@ class Validator(BaseValidatorNeuron):
                     wandb_logger
                 )
 
-
-        # cleanup and remove the model 
-        miner_state.cleanup(model_dir)
         
         return miner_state
 

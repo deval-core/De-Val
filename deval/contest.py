@@ -21,7 +21,7 @@ class DeValContest:
             4 : 0.025
         }
 
-    def validate_model(self, miner_state: ModelState, model_dir: str) -> bool:
+    def validate_model(self, miner_state: ModelState, model_hash: str) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
@@ -30,11 +30,10 @@ class DeValContest:
             return True
         
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
-        miner_state.compute_model_hash(model_dir)
-        duplicated_model = self.model_hashes.get(miner_state.model_hash, None)
+        duplicated_model = self.model_hashes.get(model_hash, None)
 
         if duplicated_model is None:
-            self.model_hashes[miner_state.model_hash] = miner_state
+            self.model_hashes[model_hash] = miner_state
             return True
 
         else:
@@ -52,7 +51,7 @@ class DeValContest:
                 # if the current model is actually the real one, then we need to update
                 # the model that the hash points to and zero out the duplicate rewards 
                 # update the model associated 
-                self.model_hashes[miner_state.model_hash] = miner_state
+                self.model_hashes[model_hash] = miner_state
                 self.model_rewards.pop(duplicated_model_uid, None)
                 return True
 
@@ -103,7 +102,12 @@ class DeValContest:
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1])
 
-        self._adjust_tiers(len(ranked_rewards))
+        try:
+            self._adjust_tiers(len(ranked_rewards))
+        except ZeroDivisionError as e:
+            print(f"No correct answers were given. Unable to divide by zero - returning no weights: {e}")
+            return []
+
         num_rewards = len(self.tiers)
         weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
 

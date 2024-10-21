@@ -4,7 +4,8 @@ from deval.api.models import EvalRequest, EvalResponse
 import time
 import subprocess
 import bittensor as bt
-import docker
+import os
+from dotenv import set_key
 
 class MinerDockerClient:
 
@@ -53,17 +54,20 @@ class MinerDockerClient:
         bt.logging.info(f"Starting {self.service_name} service...")
         subprocess.run(["docker-compose", "up", "--build", "--timeout", "300", "-d", self.service_name], check=True)
 
-    def restart_service(self):
+    def restart_service(self, model_url: str):
         try:
             # Restart the miner-api container
-            subprocess.run(["docker", "restart",  self.service_name], check=True)
+            my_env = os.environ.copy()
+            my_env["MODEL_URL"] = model_url
+            subprocess.run(["docker-compose", "up", "--force-recreate", "-d", self.service_name], env=my_env)
+
             bt.logging.info("miner-api container restarted successfully.")
         except subprocess.CalledProcessError as e:
             bt.logging.warning(f"Error restarting miner-api: {e}")
 
-    def initialize_miner_api(self) -> bool:
+    def initialize_miner_api(self, model_url: str) -> bool:
         # determines if container is already running. If it is then restarts it otherwise starts it
-        self.restart_service()
+        self.restart_service(model_url)
         
         max_wait_time = 300
         return self._poll_service_for_readiness(max_wait_time)
@@ -111,6 +115,19 @@ class MinerDockerClient:
                 mistakes = [],
                 response_time = timeout + 1
             )
+    
+    def get_model_hash(self)->str:
+        try:
+            response = requests.get(
+                f"{self.api_url}/get_model_hash",
+                timeout=30
+            )
+            resp = response.json()
+            return resp.get("hash")
+
+        except Exception as e:
+            bt.logging.error(f"Failed to get hash: {e}")
+            return ""
 
         
 

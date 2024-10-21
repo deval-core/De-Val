@@ -12,7 +12,8 @@ class EvalResponse(BaseModel):
     response_time: float
     
 
-
+class ModelHashResponse(BaseModel):
+    hash: str
     
 
 

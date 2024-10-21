@@ -33,10 +33,16 @@ COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
 RUN pip install poetry 
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
 
-# Use read-only filesystem and no root privileges (with write logs and tmp)
-RUN mkdir /app/logs && chmod -R 555 /app && chmod 777 /app/logs
+
+# grant access only to working directory and temp directory
+RUN mkdir /app/logs 
 RUN mkdir -p /tmp && chmod 1777 /tmp 
+RUN mkdir -p /app/eval_llm 
+RUN chmod -R 777 /app
+
 ENV TMPDIR=/tmp
+ENV HF_HOME=/app/eval_llm/.cache/huggingface
+
 
 # switch to non-root user
 USER miner

@@ -8,8 +8,10 @@ services:
     container_name: miner-api
     ports:
       - "8000:8000"
-    volumes:
-      - eval_llm:/app/eval_llm:ro  # Bind mount the model directory as read-only
+    environment:
+      - MODEL_URL=${MODEL_URL}
+    #volumes:
+    #  - eval_llm:/app/eval_llm:ro  # Bind mount the model directory as read-only
     user: "miner"
     security_opt:
       - no-new-privileges  # Prevent privilege escalation

@@ -1,7 +1,6 @@
 from huggingface_hub import HfApi, HfFileSystem
 from datetime import datetime, timedelta
 import bittensor as bt
-import hashlib
 import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
@@ -113,20 +112,6 @@ class ModelState:
         
         bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")
         return False
-
-    def compute_model_hash(self, model_dir):
-        sha256_hash = hashlib.sha256()
-        safetensor_files = self._get_safetensor_files(model_dir)
-
-        # Open the file in binary mode
-        for model_path in safetensor_files:
-            with open(os.path.join(model_dir, model_path), "rb") as f:
-                # Read the file in chunks to handle large files efficiently
-                for byte_block in iter(lambda: f.read(4096), b""):
-                    sha256_hash.update(byte_block)
-
-        # Return the hex digest of the file
-        self.model_hash = sha256_hash.hexdigest()
 
 
     def cleanup(self, model_dir: str):

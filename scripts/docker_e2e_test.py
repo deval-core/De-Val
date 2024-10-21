@@ -25,8 +25,8 @@ print("Initializing tasks and contest")
 task_repo = TaskRepository(allowed_models=allowed_models)
 
 task_sample_rate = [
-    #(TasksEnum.RELEVANCY.value, 1),
-    (TasksEnum.HALLUCINATION.value, 1),
+    (TasksEnum.RELEVANCY.value, 1),
+    #(TasksEnum.HALLUCINATION.value, 1),
     #(TasksEnum.ATTRIBUTION.value, 1),
     #(TasksEnum.COMPLETENESS.value, 1)
 ]

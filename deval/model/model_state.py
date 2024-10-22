@@ -5,6 +5,7 @@ import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
+import requests
 
 
 class ModelState:
@@ -79,7 +80,6 @@ class ModelState:
             sizes.append(sz_in_gb)
 
         return sum(sizes)
-
 
 
     def should_run_evaluation(

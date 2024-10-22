@@ -362,3 +362,11 @@ class BaseValidatorNeuron(BaseNeuron):
         self.weights = None
         self.task_repo = None
         self.queried_uids = set()
+        
+        # delete save states 
+        load_path = self.config.neuron.full_path 
+        files = os.listdir(load_path)
+        for f in files:
+            file_path = os.path.join(load_path, f)
+            if os.path.isfile(file_path):
+                os.remove(file_path)

@@ -59,7 +59,7 @@ class MinerDockerClient:
             # Restart the miner-api container
             my_env = os.environ.copy()
             my_env["MODEL_URL"] = model_url
-            subprocess.run(["docker-compose", "up", "--force-recreate", "-d", self.service_name], env=my_env)
+            subprocess.run(["docker", "compose", "up", "--force-recreate", "-d", self.service_name], env=my_env)
 
             bt.logging.info("miner-api container restarted successfully.")
         except subprocess.CalledProcessError as e:

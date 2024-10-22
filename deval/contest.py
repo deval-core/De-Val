@@ -37,10 +37,10 @@ class DeValContest:
             return True
 
         else:
-            # Start here
-            # check which one has the most recent date
-            # if current one then that is the duplicate and we return that it is an invalid model
-            # if previous one then we zero out the previous model's scores and return this as a valid model
+            # if duplicates:
+            # check which model has the most recent date
+            # if current model then that is the duplicate and we return that it is an invalid model
+            # if previous model then we zero out the previous model's scores and return this as a valid model
             duplicated_model_uid = duplicated_model.uid
             duplicated_model_date = duplicated_model.last_safetensor_update
 

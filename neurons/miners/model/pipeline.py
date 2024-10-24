@@ -1,5 +1,7 @@
 from transformers import Pipeline, AutoTokenizer, AutoModelForCausalLM
+import torch
 import re
+from contextlib import nullcontext
 from neurons.miners.model.prompts import (
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
@@ -21,8 +23,13 @@ class DeValPipeline(Pipeline):
         self.system_prompt = "You are an evaluation LLM. Your job is generate a score demonstrating how well the LLM you are evaluating responded and to identify its mistakes."
 
         # init tokenizer and model then attach
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        model = AutoModelForCausalLM.from_pretrained(model_dir, device_map="cpu")
+        model = AutoModelForCausalLM.from_pretrained(
+            model_dir, 
+            device_map=self.device,
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
+        )
         super().__init__(model=model, tokenizer=tokenizer, **kwargs)
 
     def _sanitize_parameters(self, **kwargs):
@@ -41,7 +48,7 @@ class DeValPipeline(Pipeline):
             messages,
             add_generation_prompt=True,
             return_tensors="pt"
-        ).to(self.model.device)
+        ).to(self.device)
 
         return input_ids
 
@@ -129,30 +136,31 @@ class DeValPipeline(Pipeline):
             self.tokenizer.eos_token_id,
             self.tokenizer.convert_tokens_to_ids("<|eot_id|>")
         ]
+        with torch.cuda.amp.autocast() if self.device == "cuda" else nullcontext():
 
-        # run eval score
-        score_outputs = self.model.generate(
-            input_ids=score_input_ids,
-            max_new_tokens=self.max_tokens,
-            eos_token_id=terminators,
-            do_sample=True,
-            temperature=self.temperature,
-            top_p=self.top_p,
-        )
-        score_response = score_outputs[0][score_input_ids.shape[-1]:]
-
-        # run mistakes eval score
-        mistakes_response = None
-        if mistake_input_ids is not None:
-            mistakes_outputs = self.model.generate(
-                input_ids=mistake_input_ids,
+            # run eval score
+            score_outputs = self.model.generate(
+                input_ids=score_input_ids,
                 max_new_tokens=self.max_tokens,
                 eos_token_id=terminators,
                 do_sample=True,
                 temperature=self.temperature,
                 top_p=self.top_p,
             )
-            mistakes_response = mistakes_outputs[0][score_input_ids.shape[-1]:]
+            score_response = score_outputs[0][score_input_ids.shape[-1]:]
+
+            # run mistakes eval score
+            mistakes_response = None
+            if mistake_input_ids is not None:
+                mistakes_outputs = self.model.generate(
+                    input_ids=mistake_input_ids,
+                    max_new_tokens=self.max_tokens,
+                    eos_token_id=terminators,
+                    do_sample=True,
+                    temperature=self.temperature,
+                    top_p=self.top_p,
+                )
+                mistakes_response = mistakes_outputs[0][score_input_ids.shape[-1]:]
 
 
         return {

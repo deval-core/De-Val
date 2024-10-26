@@ -67,7 +67,7 @@ class HallucinationTask(Task):
     name = TasksEnum.HALLUCINATION.value
     desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
     goal = "Estimates the number of hallucination in a response given a RAG context"
-    max_paragraphs = 5
+    max_paragraphs = 20
     properties = {
         "context": {
             "type": "string",

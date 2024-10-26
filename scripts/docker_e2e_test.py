@@ -26,9 +26,9 @@ task_repo = TaskRepository(allowed_models=allowed_models)
 
 task_sample_rate = [
     (TasksEnum.RELEVANCY.value, 1),
-    #(TasksEnum.HALLUCINATION.value, 1),
-    #(TasksEnum.ATTRIBUTION.value, 1),
-    #(TasksEnum.COMPLETENESS.value, 1)
+    (TasksEnum.HALLUCINATION.value, 1),
+    (TasksEnum.ATTRIBUTION.value, 1),
+    (TasksEnum.COMPLETENESS.value, 1)
 ]
 active_tasks = [t[0] for t in task_sample_rate]
 reward_pipeline = RewardPipeline(

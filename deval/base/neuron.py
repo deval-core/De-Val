@@ -151,7 +151,6 @@ class BaseNeuron(ABC):
         if self.start_over or len(self.weights) == 0:
             return False
 
-        # Check if enough epoch blocks have elapsed since the last epoch.
         if self.config.neuron.disable_set_weights:
             return False
 

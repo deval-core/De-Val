@@ -55,7 +55,7 @@ class CompletenessTask(Task):
     desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
     goal = "Estimates the comprehensiveness of a summary"
 
-    max_paragraphs = 5
+    max_paragraphs = 20
     properties = {
         "context": {
             "type": "string",

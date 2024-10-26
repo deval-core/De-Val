@@ -64,18 +64,14 @@ class DeValContest:
         # Sum of original tiers
         total_tiers_sum = sum(self.tiers.values())
         
-        # Adjust tier proportions based on number of participants
-        if num_participants < len(self.tiers):
-            # Get total rewards of the missing tiers
-            missing_rewards_sum = sum(self.tiers[rank] for rank in range(num_participants, len(self.tiers)))
-            
-            # Calculate the ratio for adjusting remaining tiers
-            adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
-            
-            # Adjust the remaining tiers proportionally
-            adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
-        else:
-            adjusted_tiers = self.tiers
+        # Get total rewards of the missing tiers
+        missing_rewards_sum = sum(self.tiers[rank] for rank in range(num_participants, len(self.tiers)))
+        
+        # Calculate the ratio for adjusting remaining tiers
+        adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
+        
+        # Adjust the remaining tiers proportionally
+        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
         
         # Normalize adjusted tiers to ensure they sum up to 1
         adjusted_tiers_sum = sum(adjusted_tiers.values())
@@ -102,16 +98,15 @@ class DeValContest:
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1])
 
-        try:
-            self._adjust_tiers(len(ranked_rewards))
-        except ZeroDivisionError as e:
-            print(f"No correct answers were given. Unable to divide by zero - returning no weights: {e}")
-            return []
-
+        num_rewards = len(ranked_rewards) 
+        if len(self.tiers) > num_rewards and num_rewards > 0:
+            self._adjust_tiers(num_rewards)
+           
         num_rewards = len(self.tiers)
         weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
 
-        # TODO: spread a super small portion of weights across the remaining top 35 to help maintain ordering.
+        # TODO: spread a super small portion of weights across the remaining top incentive miners that had correct answers 
+        # to maintain ordering
 
         return weights
 

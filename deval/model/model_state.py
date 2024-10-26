@@ -5,7 +5,7 @@ import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
-import requests
+import pytz
 
 
 class ModelState:
@@ -106,8 +106,8 @@ class ModelState:
         if uid in top_incentive_uids:
             return True
 
-        start_time_datetime = datetime.fromtimestamp(forward_start_time)
-        if (start_time_datetime - timedelta(hours=48)) <= self.get_last_commit_date:
+        start_time_datetime = datetime.fromtimestamp(forward_start_time, tz=pytz.UTC)
+        if (start_time_datetime - timedelta(hours=48)) <= self.get_last_commit_date():
             return True
         
         bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")

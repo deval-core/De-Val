@@ -71,7 +71,7 @@ class AttributionTask(Task):
     desc = "Generate a context and associated action items for a misattribution evaluation task"
     goal = "Estimates the number of correctly attributed action items in a response given a RAG context"
 
-    max_particpants = 5
+    max_particpants = 20
     max_paragraphs = 5
 
     properties = {

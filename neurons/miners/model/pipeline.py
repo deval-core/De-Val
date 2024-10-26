@@ -11,6 +11,7 @@ from neurons.miners.model.prompts import (
     SUMMARY_COMPLETENESS_PROMPT,
     SUMMARY_MISTAKES_PROMPT
 )
+import time
 
 class DeValPipeline(Pipeline):
 
@@ -30,6 +31,7 @@ class DeValPipeline(Pipeline):
             device_map=self.device,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
         )
+        print(f"putting model to {self.device}")
         super().__init__(model=model, tokenizer=tokenizer, **kwargs)
 
     def _sanitize_parameters(self, **kwargs):
@@ -138,6 +140,7 @@ class DeValPipeline(Pipeline):
         ]
         with torch.cuda.amp.autocast() if self.device == "cuda" else nullcontext():
 
+            start_score_time = time.time()
             # run eval score
             score_outputs = self.model.generate(
                 input_ids=score_input_ids,
@@ -148,8 +151,10 @@ class DeValPipeline(Pipeline):
                 top_p=self.top_p,
             )
             score_response = score_outputs[0][score_input_ids.shape[-1]:]
+            print(f"Score generation time: {time.time()-start_score_time}")
 
             # run mistakes eval score
+            start_mistakes_time = time.time()
             mistakes_response = None
             if mistake_input_ids is not None:
                 mistakes_outputs = self.model.generate(
@@ -161,6 +166,7 @@ class DeValPipeline(Pipeline):
                     top_p=self.top_p,
                 )
                 mistakes_response = mistakes_outputs[0][score_input_ids.shape[-1]:]
+                print(f"Mistakes generation time: {time.time()-start_mistakes_time}")
 
 
         return {

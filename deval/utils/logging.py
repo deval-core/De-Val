@@ -100,7 +100,7 @@ class WandBLogger:
         self.wandb = wandb.init(
             anonymous="allow",
             reinit=reinit,
-            project=self.config.wandb.project_name,
+            project="subnet",
             entity=self.config.wandb.entity,
             config=wandb_config,
             mode="offline" if self.config.wandb.offline else "online",

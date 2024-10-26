@@ -1,4 +1,10 @@
 from pydantic import BaseModel
+from enum import Enum
+
+class APIStatus(str, Enum):
+    SUCCESS = "success"
+    TIMEOUT = "timeout"
+    ERROR = "error"
 
 class EvalRequest(BaseModel):
     tasks: list[str]
@@ -9,7 +15,8 @@ class EvalRequest(BaseModel):
 class EvalResponse(BaseModel):
     score: float 
     mistakes: list[str] | None
-    response_time: float
+    response_time: float | None
+    status_message: APIStatus
     
 
 class ModelHashResponse(BaseModel):

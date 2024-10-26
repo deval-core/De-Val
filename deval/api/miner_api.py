@@ -31,21 +31,29 @@ async def query_model(request: EvalRequest) -> EvalResponse:
     llm_response = request.llm_response
 
     completion = pipe("", tasks=tasks, rag_context=rag_context, query=query, llm_response=llm_response)
-    print(f"Completion: {completion}")
-    score = completion.get("score_completion", None)
-    if not score:
-        score = -1
-
-    mistakes = completion.get("mistakes_completion", None)
-    
     process_time = time.time() - start_time
+    try:
+        print(f"Completion: {completion}")
+        score = completion.get("score_completion", None)
+        if not score:
+            score = -1
 
-    
-    return EvalResponse(
-        score = score,
-        mistakes = mistakes,
-        response_time = process_time,
-    )
+        mistakes = completion.get("mistakes_completion", None)
+
+        
+        return EvalResponse(
+            score = score,
+            mistakes = mistakes,
+            response_time = process_time,
+        )
+    except Exception as e:
+        print(f"Failed with error: {e}")
+        return EvalResponse(
+            score = -1.0,
+            mistakes = [],
+            response_time = process_time,
+        )
+        
 
 
 @app.get("/get_model_hash")
@@ -66,8 +74,6 @@ async def get_model_hash()-> ModelHashResponse:
     hash_value = sha256_hash.hexdigest()
     print(f"Hash of model: {hash_value}")
     return ModelHashResponse(hash =hash_value)
-
-
 
 
 @app.get("/health")

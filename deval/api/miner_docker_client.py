@@ -1,11 +1,11 @@
 import requests
 from deval.protocol import init_request_from_task
-from deval.api.models import EvalRequest, EvalResponse
+from deval.api.models import EvalRequest, EvalResponse, APIStatus
 import time
 import subprocess
 import bittensor as bt
 import os
-from dotenv import set_key
+from requests.exceptions import Timeout
 
 class MinerDockerClient:
 
@@ -16,7 +16,8 @@ class MinerDockerClient:
         self.api_url = f"{self.host}:{self.port}"
 
     def _poll_service_for_readiness(self, max_wait_time: int) -> bool:
-        num_checks = 10
+        #TODO: check for errors to stop polling when we know we failed 
+        num_checks = 50
         sleep_interval = int(max_wait_time/num_checks)
 
         for _ in range(num_checks):
@@ -69,7 +70,7 @@ class MinerDockerClient:
         # determines if container is already running. If it is then restarts it otherwise starts it
         self.restart_service(model_url)
         
-        max_wait_time = 300
+        max_wait_time = 1000
         return self._poll_service_for_readiness(max_wait_time)
 
     def stop_service(self):
@@ -106,21 +107,36 @@ class MinerDockerClient:
                 timeout=timeout
             )
             resp = response.json()
-            return EvalResponse(**resp)
+            return EvalResponse(
+                score = resp.get("score"),
+                mistakes = resp.get("mistakes"),
+                response_time = resp.get("response_time"),
+                status_message = APIStatus.SUCCESS
+            )
+        
+        except Timeout as e:
+            bt.logging.error(f"Timed out API request: {e}")
+            return EvalResponse(
+                score = -1, 
+                mistakes = [],
+                response_time = None,
+                status_message = APIStatus.TIMEOUT
+            )
 
         except Exception as e:
             bt.logging.error(f"Failed to query API: {e}")
             return EvalResponse(
                 score = -1, 
                 mistakes = [],
-                response_time = timeout + 1
+                response_time = None,
+                status_message = APIStatus.ERROR
             )
     
     def get_model_hash(self)->str:
         try:
             response = requests.get(
                 f"{self.api_url}/get_model_hash",
-                timeout=30
+                timeout=60
             )
             resp = response.json()
             return resp.get("hash")

@@ -26,7 +26,7 @@ class RougeRewardModel(BaseRewardModel):
             self.ngram
         ][self.metric]
 
-    def reward(self, reference: list[str], completions: list[str]) -> BatchRewardOutput:
+    def reward(self, reference: list[str], completion: list[str]) -> BatchRewardOutput:
         """Compute ROUGE scores given a completion and reference pair."""
         rewards = []
         timings = []

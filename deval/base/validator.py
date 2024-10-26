@@ -23,9 +23,6 @@ import argparse
 import threading
 import bittensor as bt
 import numpy as np
-from fiber.chain.weights import set_node_weights
-from fiber.chain.chain_utils import load_hotkey_keypair
-from fiber.chain.interface import get_substrate
 import pytz
 
 from traceback import print_exception
@@ -62,17 +59,6 @@ class BaseValidatorNeuron(BaseNeuron):
             self.dendrite = bt.dendrite(wallet=self.wallet)
         bt.logging.info(f"Dendrite: {self.dendrite}")
 
-        self.substrate = get_substrate(
-            subtensor_network=self.config.neuron.network,
-            subtensor_address=self.config.neuron.chain_endpoint
-        )
-
-        self.keypair = load_hotkey_keypair(
-            wallet_name=self.config.wallet.name,
-            hotkey_name=self.config.wallet.hotkey,
-        )
-        hotkey = self.keypair.ss58_address
-        self.uid = self.hotkeys.index(hotkey)
 
         # Init sync with the network. Updates the metagraph.
         self.sync()
@@ -175,9 +161,6 @@ class BaseValidatorNeuron(BaseNeuron):
                 # Sync metagraph and potentially set weights.
                 self.sync()
 
-                # TODO: limit to testnet
-                # time.sleep(20) 
-
         # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:
             self.axon.stop()
@@ -263,14 +246,47 @@ class BaseValidatorNeuron(BaseNeuron):
 
         uids = np.indices(final_weights.shape)[0]
 
-        set_node_weights(
-            self.substrate,
-            self.keypair,
-            node_ids=uids,
-            node_weights=final_weights,
-            validator_node_id=self.uid,
+        bt.logging.info("raw_weights", final_weights)
+        bt.logging.info("raw_weight_uids", uids)
+        # Process the raw weights to final_weights via subtensor limitations.
+        (
+            processed_weight_uids,
+            processed_weights,
+        ) = bt.utils.weight_utils.process_weights_for_netuid(
+            uids=uids,
+            weights=final_weights,
             netuid=self.metagraph.netuid,
+            subtensor=self.subtensor,
+            metagraph=self.metagraph,
         )
+        bt.logging.info("processed_weights", processed_weights)
+        bt.logging.info("processed_weight_uids", processed_weight_uids)
+
+        # Convert to uint16 weights and uids.
+        (
+            uint_uids,
+            uint_weights,
+        ) = bt.utils.weight_utils.convert_weights_and_uids_for_emit(
+            uids=processed_weight_uids, weights=processed_weights
+        )
+        bt.logging.info("uint_weights", uint_weights)
+        bt.logging.info("uint_uids", uint_uids)
+
+        # Set the weights on chain via our subtensor connection.
+        result, reason = self.subtensor.set_weights(
+            wallet=self.wallet,
+            netuid=self.metagraph.netuid,
+            uids=uint_uids,
+            weights=uint_weights,
+            wait_for_finalization=False,
+            wait_for_inclusion=False,
+            version_key=self.spec_version,
+        )
+        if result is True:
+            bt.logging.info("set_weights on chain successfully!")
+        else:
+            bt.logging.error(f"set_weights failed with reason: {reason}")
+
 
 
     def resync_metagraph(self):

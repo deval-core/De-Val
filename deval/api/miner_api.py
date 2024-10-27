@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import os
 import time
-from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse
+from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APIStatus
 from deval.model.huggingface_model import HuggingFaceModel
 import sys
 import hashlib
@@ -45,6 +45,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
             score = score,
             mistakes = mistakes,
             response_time = process_time,
+            status_message = APIStatus.SUCCESS
         )
     except Exception as e:
         print(f"Failed with error: {e}")
@@ -52,6 +53,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
             score = -1.0,
             mistakes = [],
             response_time = process_time,
+            status_message = APIStatus.ERROR
         )
         
 

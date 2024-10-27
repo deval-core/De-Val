@@ -96,7 +96,7 @@ class DeValContest:
                 avg_rewards.append((uid, avg_score))
 
         # rank our rewards and apply weights according to tiers
-        ranked_rewards = sorted(avg_rewards, key=lambda x: x[1])
+        ranked_rewards = sorted(avg_rewards, key=lambda x: x[1], reverse=True)
 
         num_rewards = len(ranked_rewards) 
         if len(self.tiers) > num_rewards and num_rewards > 0:

@@ -16,7 +16,7 @@ class EvalResponse(BaseModel):
     score: float 
     mistakes: list[str] | None
     response_time: float | None
-    status_message: APIStatus
+    status_message: APIStatus | None = None
     
 
 class ModelHashResponse(BaseModel):

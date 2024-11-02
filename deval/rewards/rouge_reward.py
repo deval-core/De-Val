@@ -30,11 +30,14 @@ class RougeRewardModel(BaseRewardModel):
         """Compute ROUGE scores given a completion and reference pair."""
         rewards = []
         timings = []
-        reference = "\n".join(r for r in reference)
 
         t0 = time.time()
-        completion = "\n".join(c for c in completion)
-        rewards.append(self.rouge_score(reference, completion))
+        if reference == completion:
+            rewards.append(1)
+        else:
+            reference = "\n".join(r for r in reference)
+            completion = "\n".join(c for c in completion)
+            rewards.append(self.rouge_score(reference, completion))
         timings.append(time.time() - t0)
 
         output = BatchRewardOutput(

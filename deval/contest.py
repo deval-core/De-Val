@@ -26,9 +26,14 @@ class DeValContest:
         if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
  
+        # allow base repo
         if miner_state.repo_id == "deval-core" and miner_state.model_id == "base-eval-test":
             return True
         
+        # allow llama3 8B hash always
+        if model_hash == "9e6aeb175fd9ef8d6fe12315136fc34977aaac178a3b4aefd6d453682d9a05dc":
+            return True
+
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
         duplicated_model = self.model_hashes.get(model_hash, None)
 
@@ -105,8 +110,8 @@ class DeValContest:
         num_rewards = len(self.tiers)
         weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
 
-        # TODO: spread a super small portion of weights across the remaining top incentive miners that had correct answers 
-        # to maintain ordering
+        # spread a small portion of weights across the remaining top incentive miners that had correct answers to maintain ordering
+        weights += [(uid, .001) for (uid, _) in ranked_rewards[num_rewards:20]]
 
         return weights
 

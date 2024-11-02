@@ -273,19 +273,23 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("uint_uids", uint_uids)
 
         # Set the weights on chain via our subtensor connection.
-        result, reason = self.subtensor.set_weights(
-            wallet=self.wallet,
-            netuid=self.metagraph.netuid,
-            uids=uint_uids,
-            weights=uint_weights,
-            wait_for_finalization=False,
-            wait_for_inclusion=False,
-            version_key=self.spec_version,
-        )
-        if result is True:
-            bt.logging.info("set_weights on chain successfully!")
-        else:
-            bt.logging.error(f"set_weights failed with reason: {reason}")
+        num_attempts = 0
+        result = False
+        while result is False and num_attempts < 3:
+            num_attempts += 1
+            result, reason = self.subtensor.set_weights(
+                wallet=self.wallet,
+                netuid=self.metagraph.netuid,
+                uids=uint_uids,
+                weights=uint_weights,
+                wait_for_finalization=False,
+                wait_for_inclusion=False,
+                version_key=self.spec_version,
+            )
+            if result is True:
+                bt.logging.info("set_weights on chain successfully!")
+            else:
+                bt.logging.error(f"set_weights failed with reason: {reason}")
 
 
 

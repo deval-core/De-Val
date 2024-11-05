@@ -32,25 +32,26 @@ HALLUCINATION_PROMPT_TEMPLATE = """\
 Below, I provide you a context extracted from Wikipedia. Your goal is to generate a response to the provided query that is True or False based on the context. \
 You must return the response in a JSON format according to the provided tool schema.
 
-I will give you five inputs: a query, a wikipedia context, whether the response should be true or false, a difficulty rating, and past responses that you generated.\
+I will give you four inputs: a wikipedia context, whether the response should be true or false, a difficulty rating, and past responses that you generated.\
 
-The query is a human generated question that can be answered by the context, your responses should include relevant details responding to this query. 
-
+I will define the validity of the response as either True, False, or Neither. \
 If the response should be true, then a reader should be able to determine if that is the case by reading the provided context. The response should be directly derived from the context. \
 The same applies if it should be false, where the reader can identify that it is false given just the information from the provided context. Do not give a false response to the query that cannot be determined to be untrue from the context. \
-The generated claim should range from 1 to 3 sentences long. 
+If the validity of the response is neither then this should just be additional text to help form a good narrative in the response, but they should not be facts which can be mixed up with the claim. 
+
+The generated response should range from 1 to 3 sentences long. 
 
 I will give a difficulty rating - this rating should decide how difficult it should be for the reader to identify \
-if the claim is a hallucination or not.  If the difficulty is hard then it should be very difficult for the reader to catch hallucinations, \
+if the response is a hallucination or not.  If the difficulty is hard then it should be very difficult for the reader to catch hallucinations, \
 but if the difficulty is easy then it should be easy for the reader. 
 
 Lastly, I will give you past responses that you generated for this same context. Your next response should be unique, but also flow nicely with previously generated claims to form a single coherent response to the query. \
-Do not repeat yourself in text. These responses will be combined and should form a consistent summary to the original query. 
+Do not repeat yourself in text. These responses will be combined and should form a consistent summary to the original query. \
+However, it is more important to generate true or false responses based on the context
 
 #Parameters:
-- query: {query}
 - Context: {context}
-- Validity of the claim: {hallucination_or_not}
+- Validity of the response: {hallucination_or_not}
 - Difficulty rating: {difficulty_rating}
 - Past responses: {past_responses}
 
@@ -66,9 +67,9 @@ Return the requested informat as dictated by the provided tool schema. Do not re
 class Config(BaseModel):
     context: str
     claim: str
-    true_or_false: bool
+    true_or_false: str | bool
 
-#TODO: All
+
 @dataclass
 class HallucinationWikipediaTask(Task):
     name = TasksEnum.HALLUCINATION.value
@@ -105,8 +106,8 @@ class HallucinationWikipediaTask(Task):
         query_prompt = QUERY_PROMPT_TEMPLATE.format(
             context = full_content
         )
-        query = self.generate_input(llm_pipeline, query_prompt, QUERY_SYSTEM_PROMPT, None)
-        print(f"QUERY: {query}")
+        #query = self.generate_input(llm_pipeline, query_prompt, QUERY_SYSTEM_PROMPT, None)
+        #print(f"QUERY: {query}")
 
         
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
@@ -116,15 +117,15 @@ class HallucinationWikipediaTask(Task):
         for header, section in sections:
             print("SECTION: ", section)
 
-            num_claims_per_section = random.randint(1, 2)
+            num_claims_per_section = random.randint(1, 3)
             past_responses = []
             for _ in range(num_claims_per_section):
-                true_or_false = True if random.random() <= probability_true else False
+                values = [True, False, 'Neither']
+                true_or_false = random.choices(values, weights = [probability_true, 1-probability_true, 0.5])[0]
                 print("TRUE or False prob: ", true_or_false)
 
 
                 query_prompt = HALLUCINATION_PROMPT_TEMPLATE.format(
-                    query=query,
                     context=section,
                     hallucination_or_not=true_or_false, 
                     difficulty_rating=context.difficulty,
@@ -157,7 +158,6 @@ class HallucinationWikipediaTask(Task):
         self.tags = context.tags
         self.api = llm_pipeline.api.value
         self.model_id = llm_pipeline.model_id
-        self.query = query
 
     def generate_reference(self, responses: list[Config], num_claims: int, content: str):
         # context input 

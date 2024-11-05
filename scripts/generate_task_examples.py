@@ -7,7 +7,7 @@ import numpy as np
 _ = load_dotenv(find_dotenv())
 
 # INIT Variables
-task_name = TasksEnum.RELEVANCY.value
+task_name = TasksEnum.HALLUCINATION.value
 num_to_generate = 3
 data_path = "./exports"
 
@@ -16,12 +16,13 @@ def extractTaskToRow(task, llm_pipeline):
     rag_context = task.rag_context
     query = task.query
     llm_response = task.llm_response
-    reference = task.reference
+    reference_score = task.reference
     api = llm_pipeline.api
     model_id = llm_pipeline.model_id
+    reference_mistakes = task.reference_mistakes
+    reference_true_values = task.reference_true_values
 
-
-    return [name, api, model_id, rag_context, query, llm_response, reference]
+    return [name, api, model_id, rag_context, query, llm_response, reference_score, reference_mistakes, reference_true_values]
 
 
 allowed_models = ["gpt-4o-mini"]
@@ -43,5 +44,5 @@ for i in range(num_to_generate):
     row = extractTaskToRow(task, llm_pipeline)
     rows.append(row)
 
-df = pd.DataFrame(rows, columns= ['task', "api", "model_id", 'rag_context', 'query', 'llm_response', 'reference'])
+df = pd.DataFrame(rows, columns= ['task', "api", "model_id", 'rag_context', 'query', 'llm_response', 'reference', "reference_mistakes", "reference_true_values"])
 df.to_csv(f"./scripts/exports/task_{task_name}.csv", index = False)

@@ -131,6 +131,7 @@ class TaskRepository:
         for task_name, n in task_probabilities:
             self.tasks[task_name] = []
             for i in range(n):
+                print(f"Generating Task Name: {task_name}, iteration: {i}")
                 llm_pipeline = self.get_random_llm()
                 task = self.create_task(llm_pipeline, task_name)
                 self.tasks[task_name].append(task)

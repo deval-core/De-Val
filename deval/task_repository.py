@@ -3,8 +3,9 @@ from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
 from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
-from deval.tasks.hallucination import HallucinationTask
-from deval.tasks.summary_completeness import CompletenessTask
+from deval.tasks.hallucination.hallucination_generation import HallucinatioGenerationTask
+from deval.tasks.hallucination.hallucination_wikipedia import HallucinationWikipediaTask
+from deval.tasks.summary_completeness.summary_generation import CompletenessGenerationTask
 from deval.tasks.attribution import AttributionTask
 from deval.tasks.relevancy import RelevancyTask
 from deval.tasks.task import Task, TasksEnum
@@ -13,29 +14,43 @@ from deval.tools import (
 )
 import os 
 import numpy as np
+import random 
 
 
 TASKS = {
-    TasksEnum.RELEVANCY.value: {
-        "task_function": RelevancyTask,
-        "dataset": WikiDataset,
-        "task_p": 1,
-    },
-    TasksEnum.HALLUCINATION.value: {
-        "task_function": HallucinationTask,
-        "dataset": GenericDataset,
-        "task_p": 1,
-    },
-    TasksEnum.COMPLETENESS.value: {
-        "task_function": CompletenessTask,
-        "dataset": GenericDataset,
-        "task_p": 1,
-    },
-    TasksEnum.ATTRIBUTION.value: {
-        "task_function": AttributionTask,
-        "dataset": AttributionDataset,
-        "task_p": 1,
-    }
+    TasksEnum.RELEVANCY.value: [
+        {
+            "task_function": RelevancyTask,
+            "dataset": WikiDataset,
+            "task_p": 1,
+        }
+    ],
+    TasksEnum.HALLUCINATION.value: [
+        #{
+        #    "task_function": HallucinatioGenerationTask,
+        #    "dataset": GenericDataset,
+        #    "task_p": 1,
+        #},
+        {
+            "task_function": HallucinationWikipediaTask,
+            "dataset": WikiDataset,
+            "task_p": 1,
+        }
+    ],
+    TasksEnum.COMPLETENESS.value: [
+        {
+            "task_function": CompletenessGenerationTask,
+            "dataset": GenericDataset,
+            "task_p": 1,
+        }
+    ],
+    TasksEnum.ATTRIBUTION.value: [
+        {
+            "task_function": AttributionTask,
+            "dataset": AttributionDataset,
+            "task_p": 1,
+        }
+    ],
 }
 
 class TaskRepository:
@@ -113,8 +128,9 @@ class TaskRepository:
         if task_extract is None:
             raise ValueError(f"Task {task_name} not supported. Please choose a valid task")
 
-        task_function = task_extract['task_function']
-        dataset = task_extract['dataset']()
+        selected_task = random.sample(task_extract, k = 1)[0]
+        task_function = selected_task['task_function']
+        dataset = selected_task['dataset']()
 
         task = task_function(
             llm_pipeline=llm_pipeline, 
@@ -148,9 +164,9 @@ if __name__ == "__main__":
     _ = load_dotenv(find_dotenv())
 
     task_sample_rate = [
-        (TasksEnum.RELEVANCY.value, 1),
+        #(TasksEnum.RELEVANCY.value, 1),
         (TasksEnum.HALLUCINATION.value, 1),
-        (TasksEnum.ATTRIBUTION.value, 1),
+        #(TasksEnum.ATTRIBUTION.value, 1),
     ]
 
     allowed_models = ["gpt-4o-mini"]

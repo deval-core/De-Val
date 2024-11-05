@@ -26,6 +26,7 @@ angle-emb = "^0.5.0"
 openai = "^1.51.0"
 bittensor = "7.3.1"
 docker = "^7.1.0"
+beautifulsoup4 = "^4.12.3"
 
 
 [build-system]

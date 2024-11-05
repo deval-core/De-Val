@@ -27,11 +27,12 @@ from queue import Queue, Full
 from functools import lru_cache
 from .base import Dataset
 from ..selector import Selector
+import requests
+from bs4 import BeautifulSoup
 
 
 # Create a queue called CACHED_ARTICLES to store wikipedia articles that have been fetched
 CACHED_ARTICLES = Queue(maxsize=300)
-
 
 # speed up page loading
 @lru_cache(maxsize=1000)
@@ -81,10 +82,27 @@ def _wiki_search(name, results) -> List:
     """Cached Wikipedia search."""
     return wiki.search(name, results=results)
 
+def get_article_sections(title: str) -> dict[str, str]:
+    # Fetch the HTML content of the Wikipedia article
+    url = f"https://en.wikipedia.org/wiki/{title}"
+    response = requests.get(url)
+    html_content = response.text
+
+    # Parse the HTML using BeautifulSoup
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    sections = {}
+    for section in soup.find_all("h2"):
+        if (p_tag := section.find_next("p")) is not None:
+            sections[section.text] = p_tag.text
+
+    return sections
 
 def process_page(
-    page, valid_header: callable = None, valid_content: callable = None
-) -> Dict:
+    page, 
+    exclude_sections: list | None = None, 
+    valid_section: callable = None
+):
     """Process a Wikipedia page and return a dictionary of sections with their content.
 
     Args:
@@ -94,31 +112,24 @@ def process_page(
     Returns:
         dict: dictionary of sections and their content. Note that keys are tuples (header, section_title)
     """
-    header = ""
-    sections = {}
+    title = page.title
+    sections = get_article_sections(title)
 
-    sections_list = page.sections
+    # Filter out the section keys that are in the exclude list
+    if exclude_sections:
+        sections = {k: v for k, v in sections.items() if k not in exclude_sections}
 
-    if len(sections) > 0:
-        for section_title in sections_list:
-            content = page.section(section_title)
-            if not content:
-                header = section_title
-                continue
+    valid_sections = [
+        (key, value) for key, value in sections.items() if not valid_section or valid_section(sections[key])
+    ]
 
-            # Filter out sections that don't match the headers and/or are not valid
-            if (valid_header and not valid_header(header)) or (
-                valid_content and not valid_content(content)
-            ):
-                continue
-
-            key = (header, section_title)
-            sections[key] = content.splitlines()
+    if len(valid_sections) > 0:
+        sections = valid_sections
     else:
-        sections[("wiki", "whole_page")] = page.content.splitlines()
+        sections = None
 
     if not sections:
-        bt.logging.debug(f"No valid sections found in page {page.title!r} ({page.url})")
+        bt.logging.info(f"No valid sections found in page {page.title!r} ({page.url})")
 
     return sections
 
@@ -180,8 +191,6 @@ class WikiDataset(Dataset):
     def get(
         self,
         name: str,
-        selector: Selector = None,
-        full_page: bool = True,
         include: List = None,
         exclude: List = None,
         **kwargs,
@@ -193,7 +202,6 @@ class WikiDataset(Dataset):
             pageid (_type_, optional): _description_. Defaults to None.
             auto_suggest (bool, optional): _description_. Defaults to True.
             redirect (bool, optional): _description_. Defaults to True.
-            selector (Selector, optional): _description_. Defaults to None.
             include (List, optional): _description_. Defaults to None.
             exclude (List, optional): _description_. Defaults to None.
 
@@ -209,28 +217,23 @@ class WikiDataset(Dataset):
         exclude = (exclude or []) + list(self.EXCLUDE_HEADERS)
         sections = process_page(
             page,
-            valid_header=lambda x: x not in exclude and (not include or x in include),
-            valid_content=lambda x: len(x.split()) >= self.min_length_words,
+            exclude_sections=exclude,
+            valid_section=lambda x: len(x.split()) >= self.min_length_words,
         )
+        if not sections:
+            return None
         
-        if full_page:
-            content = "\n".join(["\n".join(section) for section in sections.values()])
-            section_length = len(content.split())
-            topic = "All Sections"
-            section_title = None
-        else:
-            if not sections:
-                return None
-            key = header, section_title = selector(list(sections.keys()))
-            content = "\n".join(sections[key])
-            section_length = len(content.split())
-            topic = header or section_title
+        topic = "All Sections"
+        content = "\n".join([s for _, s in sections])
+        section_length = len(content.split())
+        section_title = None
 
         context = {
             "title": name,  # title of wiki article
             "topic": topic,  # title of wiki section
             "subtopic": section_title,
             "content": content,
+            "sections": sections,
             "internal_links": list(filter(lambda x: x not in exclude, page.sections)),
             "external_links": most_relevant_links(page, num_links=self.max_links),
             "tags": filter_categories(page.categories, exclude=self.EXCLUDE_CATEGORIES),
@@ -250,7 +253,7 @@ class WikiDataset(Dataset):
     def search(self, name, results=3, selector: Selector = None) -> Dict:
         titles = _wiki_search(name, results=results)
         title = selector(titles)
-        return self.get(title, selector=selector)
+        return self.get(title)
 
     def random(self, pages=10, seed=None, selector: Selector = None, **kwargs) -> Dict:
         titles = (
@@ -259,6 +262,6 @@ class WikiDataset(Dataset):
             else _get_random_titles(pages=pages, seed=seed)
         )
         title = selector(titles)
-        return self.get(title, selector=selector)
+        return self.get(title)
 
 

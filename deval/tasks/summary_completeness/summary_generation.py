@@ -50,7 +50,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class CompletenessTask(Task):
+class CompletenessGenerationTask(Task):
     name = TasksEnum.COMPLETENESS.value
     desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
     goal = "Estimates the comprehensiveness of a summary"

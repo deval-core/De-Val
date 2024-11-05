@@ -26,10 +26,6 @@ class DeValContest:
         if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
  
-        # allow base repo
-        if miner_state.repo_id == "deval-core" and miner_state.model_id == "base-eval-test":
-            return True
-        
         # allow llama3 8B hash always
         if model_hash == "9e6aeb175fd9ef8d6fe12315136fc34977aaac178a3b4aefd6d453682d9a05dc":
             return True

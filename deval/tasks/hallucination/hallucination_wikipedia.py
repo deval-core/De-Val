@@ -7,25 +7,10 @@ from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 from deval.rewards.reward import RewardReferenceType
 
-# Used to Generate a query 
-QUERY_SYSTEM_PROMPT = """\
-You are a question-generating expert, focusing on delivering comprehensive and accurate questions with depth and clarity. The questions you generate should be based on the context that is provided.
-You will maintain a neutral tone in your questions.
-You will adhere to a word limit of 50 words for each question.
-"""
-
-# Used to obtain the query (which is a question about the context)
-QUERY_PROMPT_TEMPLATE = """\
-Ask a specific question about the following context:
-
-#Context:
-{context}
-"""
 
 # Used to obtain the set of contexts and claims 
 HALLUCINATION_SYSTEM_PROMPT = """\
-You are an expert at generating responses to a query that can be either true or false given the provided context. 
-Your objective is to generate a response no longer than 100 words to the query. 
+You are an expert at generating responses to a query that can be either true or false given the provided context.  
 """
 
 HALLUCINATION_PROMPT_TEMPLATE = """\
@@ -34,12 +19,11 @@ You must return the response in a JSON format according to the provided tool sch
 
 I will give you four inputs: a wikipedia context, whether the response should be true or false, a difficulty rating, and past responses that you generated.\
 
-I will define the validity of the response as either True, False, or Neither. \
+I will define the validity of the response as either True or False. \
 If the response should be true, then a reader should be able to determine if that is the case by reading the provided context. The response should be directly derived from the context. \
-The same applies if it should be false, where the reader can identify that it is false given just the information from the provided context. Do not give a false response to the query that cannot be determined to be untrue from the context. \
-If the validity of the response is neither then this should just be additional text to help form a good narrative in the response, but they should not be facts which can be mixed up with the claim. 
+The same applies if it should be false, where the reader can identify that it is false given just the information from the provided context. Do not give a false response to the query that cannot be determined to be untrue from the context. 
 
-The generated response should range from 1 to 3 sentences long. 
+The generated response should be between 2 to 3 sentences long and between 30 to 60 words long, but only contain a single fact.  
 
 I will give a difficulty rating - this rating should decide how difficult it should be for the reader to identify \
 if the response is a hallucination or not.  If the difficulty is hard then it should be very difficult for the reader to catch hallucinations, \
@@ -67,7 +51,7 @@ Return the requested informat as dictated by the provided tool schema. Do not re
 class Config(BaseModel):
     context: str
     claim: str
-    true_or_false: str | bool
+    true_or_false: bool
 
 
 @dataclass
@@ -102,26 +86,20 @@ class HallucinationWikipediaTask(Task):
         responses = []
         probability_true = random.random()
 
-        # generate our query
-        query_prompt = QUERY_PROMPT_TEMPLATE.format(
-            context = full_content
-        )
-        #query = self.generate_input(llm_pipeline, query_prompt, QUERY_SYSTEM_PROMPT, None)
-        #print(f"QUERY: {query}")
-
         
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
         tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
-        for header, section in sections:
+        for header, section in sections.items():
+            section = "\n".join([s for s in section])
             print("SECTION: ", section)
 
             num_claims_per_section = random.randint(1, 3)
             past_responses = []
             for _ in range(num_claims_per_section):
-                values = [True, False, 'Neither']
-                true_or_false = random.choices(values, weights = [probability_true, 1-probability_true, 0.5])[0]
+                values = [True, False]
+                true_or_false = random.choices(values, weights = [probability_true, 1-probability_true])[0]
                 print("TRUE or False prob: ", true_or_false)
 
 
@@ -165,7 +143,7 @@ class HallucinationWikipediaTask(Task):
 
         # reference and responses  
         subset_claims = random.sample(responses, max(num_claims, 1)) # we must always have at least 1 claim
-        num_true = len([claim for claim in subset_claims if claim.true_or_false == True])
+        num_true = len([claim for claim in subset_claims if claim.true_or_false in [True, 'Neither']])
         self.reference = round(num_true / (len(subset_claims) + 1e-10), 2) 
 
         claims = [r.claim for r in subset_claims]

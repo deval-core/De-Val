@@ -6,6 +6,7 @@ from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
 from deval.tasks.hallucination.hallucination_generation import HallucinatioGenerationTask
 from deval.tasks.hallucination.hallucination_wikipedia import HallucinationWikipediaTask
 from deval.tasks.summary_completeness.summary_generation import CompletenessGenerationTask
+from deval.tasks.summary_completeness.summary_wikipedia import CompletenessWikipediaTask
 from deval.tasks.attribution import AttributionTask
 from deval.tasks.relevancy import RelevancyTask
 from deval.tasks.task import Task, TasksEnum
@@ -26,11 +27,11 @@ TASKS = {
         }
     ],
     TasksEnum.HALLUCINATION.value: [
-        #{
-        #    "task_function": HallucinatioGenerationTask,
-        #    "dataset": GenericDataset,
-        #    "task_p": 1,
-        #},
+        {
+            "task_function": HallucinatioGenerationTask,
+            "dataset": GenericDataset,
+            "task_p": 1,
+        },
         {
             "task_function": HallucinationWikipediaTask,
             "dataset": WikiDataset,
@@ -39,10 +40,15 @@ TASKS = {
     ],
     TasksEnum.COMPLETENESS.value: [
         {
-            "task_function": CompletenessGenerationTask,
-            "dataset": GenericDataset,
+            "task_function": CompletenessWikipediaTask,
+            "dataset": WikiDataset,
             "task_p": 1,
-        }
+        },
+        #{
+        #    "task_function": CompletenessGenerationTask,
+        #    "dataset": GenericDataset,
+        #    "task_p": 1,
+        #}
     ],
     TasksEnum.ATTRIBUTION.value: [
         {

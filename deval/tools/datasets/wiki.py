@@ -82,27 +82,9 @@ def _wiki_search(name, results) -> List:
     """Cached Wikipedia search."""
     return wiki.search(name, results=results)
 
-def get_article_sections(title: str) -> dict[str, str]:
-    # Fetch the HTML content of the Wikipedia article
-    url = f"https://en.wikipedia.org/wiki/{title}"
-    response = requests.get(url)
-    html_content = response.text
-
-    # Parse the HTML using BeautifulSoup
-    soup = BeautifulSoup(html_content, "html.parser")
-
-    sections = {}
-    for section in soup.find_all("h2"):
-        if (p_tag := section.find_next("p")) is not None:
-            sections[section.text] = p_tag.text
-
-    return sections
-
 def process_page(
-    page, 
-    exclude_sections: list | None = None, 
-    valid_section: callable = None
-):
+    page, valid_header: callable = None, valid_content: callable = None
+) -> Dict:
     """Process a Wikipedia page and return a dictionary of sections with their content.
 
     Args:
@@ -112,21 +94,23 @@ def process_page(
     Returns:
         dict: dictionary of sections and their content. Note that keys are tuples (header, section_title)
     """
-    title = page.title
-    sections = get_article_sections(title)
+    header = ""
+    sections = {}
 
-    # Filter out the section keys that are in the exclude list
-    if exclude_sections:
-        sections = {k: v for k, v in sections.items() if k not in exclude_sections}
+    for section_title in page.sections:
+        content = page.section(section_title)
+        if not content:
+            header = section_title
+            continue
 
-    valid_sections = [
-        (key, value) for key, value in sections.items() if not valid_section or valid_section(sections[key])
-    ]
+        # Filter out sections that don't match the headers and/or are not valid
+        if (valid_header and not valid_header(header)) or (
+            valid_content and not valid_content(content)
+        ):
+            continue
 
-    if len(valid_sections) > 0:
-        sections = valid_sections
-    else:
-        sections = None
+        key = (header, section_title)
+        sections[key] = content.splitlines()
 
     if not sections:
         bt.logging.info(f"No valid sections found in page {page.title!r} ({page.url})")
@@ -217,14 +201,14 @@ class WikiDataset(Dataset):
         exclude = (exclude or []) + list(self.EXCLUDE_HEADERS)
         sections = process_page(
             page,
-            exclude_sections=exclude,
-            valid_section=lambda x: len(x.split()) >= self.min_length_words,
+            valid_header=lambda x: x not in exclude and (not include or x in include),
+            valid_content=lambda x: len(x.split()) >= self.min_length_words,
         )
         if not sections:
             return None
         
         topic = "All Sections"
-        content = "\n".join([s for _, s in sections])
+        content = "\n".join(["\n".join(s) for _, s in sections.items()])
         section_length = len(content.split())
         section_title = None
 

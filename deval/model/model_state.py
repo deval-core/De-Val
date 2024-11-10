@@ -65,13 +65,13 @@ class ModelState:
                 elif tmp_modified_date > last_modified_date:
                     last_modified_date = tmp_modified_date
             except:
-                bt.logging.info(f"Unable to get last modified date for file {f}")
+                bt.logging.info(f"Unable to get last modified date for file {fi}")
 
 
         return last_modified_date
 
-    def _get_model_size(self) -> int:
-        safetensor_files = self._get_safetensor_files(None)
+    def _get_repo_size(self) -> int:
+        safetensor_files = self.fs.glob(f"{self.get_model_url()}/**")
         sizes = []
         for fi in safetensor_files:
             file = self.fs.info(fi)
@@ -99,7 +99,7 @@ class ModelState:
             bt.logging.info(f"Unable to access repository - skipping evaluation")
             return False
 
-        if self._get_model_size() > max_model_size_gbs:
+        if self._get_repo_size() > max_model_size_gbs:
             bt.logging.info(f"Model size is too large - skipping evaluation")
             return False
 

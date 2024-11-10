@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y build-essential \
     docker.io \ 
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose
+#RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+#    && chmod +x /usr/local/bin/docker-compose
 
 # Set environment variables
 ENV PATH="${PATH}:/root/.local/bin" \
@@ -21,12 +21,12 @@ ENV PATH="${PATH}:/root/.local/bin" \
   PYTHONHASHSEED=random \
   PIP_NO_CACHE_DIR=off \
   PIP_DISABLE_PIP_VERSION_CHECK=on \
-  PIP_DEFAULT_TIMEOUT=300 \
+  PIP_DEFAULT_TIMEOUT=300 
   # Poetry's configuration:
-  POETRY_NO_INTERACTION=1 \
-  POETRY_VIRTUALENVS_CREATE=false \
+  #POETRY_NO_INTERACTION=1 \
+  #POETRY_VIRTUALENVS_CREATE=false \
   # HF
-  TRANSFORMERS_CACHE=/tmp
+  #TRANSFORMERS_CACHE=/tmp
 
 # Copy all of deval over and initialize
 WORKDIR /app
@@ -34,7 +34,8 @@ RUN mkdir /app/eval_llm
 
 COPY . ./
 RUN pip install poetry 
-RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
+# POETRY_VIRTUALENVS_CREATE=false
+RUN poetry install --only main
 
 
 #CMD ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]

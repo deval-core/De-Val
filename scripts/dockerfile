@@ -18,18 +18,19 @@ ENV PATH="${PATH}:/root/.local/bin" \
   PYTHONHASHSEED=random \
   PIP_NO_CACHE_DIR=off \
   PIP_DISABLE_PIP_VERSION_CHECK=on \
-  PIP_DEFAULT_TIMEOUT=300 \
+  PIP_DEFAULT_TIMEOUT=300 
   # Poetry's configuration:
-  POETRY_NO_INTERACTION=1 \
-  POETRY_VIRTUALENVS_CREATE=false \
+  #POETRY_NO_INTERACTION=1 \
+  #POETRY_VIRTUALENVS_CREATE=false \
   # HF
-  TRANSFORMERS_CACHE=/tmp
+  #TRANSFORMERS_CACHE=/tmp
 
 # Copy all of deval over and initialize
 WORKDIR /app
 
 COPY . ./
 RUN pip install poetry 
-RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
+# POETRY_VIRTUALENVS_CREATE=false
+RUN  poetry install --only main
 
 CMD ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]

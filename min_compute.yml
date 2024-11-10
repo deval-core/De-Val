@@ -40,9 +40,9 @@ compute_spec:
   validator:
 
     cpu:
-      min_cores: 4            # Minimum number of CPU cores
+      min_cores: 12            # Minimum number of CPU cores
       min_speed: 2.5          # Minimum speed per core (GHz)
-      recommended_cores: 8    # Recommended number of CPU cores
+      recommended_cores: 28    # Recommended number of CPU cores
       recommended_speed: 3.5  # Recommended speed per core (GHz)
       architecture: "x86_64"  # Architecture type (e.g., x86_64, arm64)
 

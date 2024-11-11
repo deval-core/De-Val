@@ -55,7 +55,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinationWikipediaTask(Task):
+class HallucinationWikipediaGenTask(Task):
     name = TasksEnum.HALLUCINATION.value
     desc = "Utilizes wikipedia as a base and generates fake and true claims for a hallucination evaluation task"
     goal = "Estimates the number of hallucination in a response given a RAG context"

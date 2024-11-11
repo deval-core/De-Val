@@ -41,7 +41,7 @@ The new context should follow the past context to generate a consistent story.
     "summary": string
 }}
 
-Return the requested informat as dictated by the provided tool schema. Do not return any other text besides the JSON response.
+Return the requested information as dictated by the provided tool schema. Do not return any other text besides the JSON response.
 """
 
 class Config(BaseModel):
@@ -113,7 +113,7 @@ class CompletenessGenerationTask(Task):
                 responses.append(resp_tmp)
             except (JSONDecodeError, ValidationError) as e:
                 num_summaries -= 1 # we decrease number of claims for each unparseable response
-                bt.logging.debug(f"Experienced {e} in Attribution task")
+                bt.logging.debug(f"Experienced {e} in Summary Completeness Generation task")
                 continue
             
 

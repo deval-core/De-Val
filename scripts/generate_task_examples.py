@@ -8,7 +8,7 @@ _ = load_dotenv(find_dotenv())
 
 # INIT Variables
 task_name = TasksEnum.HALLUCINATION.value
-num_to_generate = 20
+num_to_generate = 15
 data_path = "./exports"
 
 def extractTaskToRow(task, llm_pipeline):

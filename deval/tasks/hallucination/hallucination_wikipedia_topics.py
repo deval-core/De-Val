@@ -32,16 +32,28 @@ Return the requested information as dictated by the provided tool schema. Do not
 
 
 # Used to obtain the set of contexts and claims 
-TOPIC_SUMMARY_SYSTEM_PROMPT = """\
+TOPIC_HALLUCINATION_SYSTEM_PROMPT = """\
 You are an expert summarizer and write in a clear and coherent voice. 
 """
 
-TOPIC_SUMMARY_PROMPT_TEMPLATE = """\
-Your goal is to generate a summary using the provided context based on the provided topic. Your summary should be no more \
-than 100 words and should only summarize the defined topic.  You must return the summary in text format without any other text.   
+TOPIC_HALLUCINATION_PROMPT_TEMPLATE = """\
+Your goal is to generate a summary that is either True or False using the provided context based on the provided topic. Your summary should be no more \
+than 100 words and should only summarize the defined topic.  You must return the summary in text format without any other text. 
 
-I will provide two pieces of information: a context and a topic.  The context represents the entire article and the topic is the key point \
-that we are looking to summarize.  The summary should only summarize information based on the provided context and should not contain extra fluff. 
+I will provide four pieces of information: a context, a topic, whether the summary should be true or false, and a difficulty rating.  
+
+The context represents the entire article and the topic is the key point that we are looking to summarize.  \
+The summary should only summarize information based on the provided context and should not contain extra fluff. 
+
+I will define the validity of the summary as either True or False. \
+If the summary should be true, then a reader should be able to determine if that is the case by reading the provided context. \
+The same applies if it should be false, where the reader can identify that it is false given just the information from the provided context. \
+Do not give a false summary to the query that cannot be determined to be untrue from the context. The entire summary should be false when requested with no true facts.
+
+I will give a difficulty rating - this rating should decide how difficult it should be for the reader to identify \
+if the summary is True or not.  If the difficulty is hard then it should be very difficult for the reader to catch hallucinations, \
+but if the difficulty is easy then it should be easy for the reader. 
+
 
 # Context:
 {context}
@@ -49,17 +61,25 @@ that we are looking to summarize.  The summary should only summarize information
 # Topic:
 {topic}
 
+# Validity of the response: 
+{hallucination_or_not}
+
+# Difficulty rating: 
+{difficulty_rating}
+
 Do not return any other text besides the requested summary. 
 """
 
 class Config(BaseModel):
     topic: str
-    summary: str
+    claim: str
+    true_or_false: bool
+
 
 
 @dataclass
-class CompletenessWikipediaTask(Task):
-    name = TasksEnum.COMPLETENESS.value
+class HallucinationWikipediaTopicTask(Task):
+    name = TasksEnum.HALLUCINATION.value
     desc = "Generates summaries for all identified key topics and filters out randomly to generate a missing information task."
     goal = "Estimates the comprehensiveness of a summary"
 
@@ -92,8 +112,7 @@ class CompletenessWikipediaTask(Task):
         self.context = context
         topics = []
         summaries = []
-
-
+        probability_true = random.random()
         topic_system_prompt = TOPIC_GEN_SYSTEM_PROMPT
         tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
 
@@ -101,7 +120,6 @@ class CompletenessWikipediaTask(Task):
             context = full_content
         )
         response = self.generate_input(llm_pipeline, query_prompt, topic_system_prompt, tool_schema)
-        print("RESPONSE: ", response)
         try:
             json_response = self.parse_llm_query(response)
             topics = json_response['key_topics']
@@ -110,20 +128,22 @@ class CompletenessWikipediaTask(Task):
             bt.logging.debug(f"Experienced {e} in Summary Completeness Wikipedia task")
 
         for topic in topics:
-            print("TOPIC: ", topic)
+            true_or_false = True if random.random() <= probability_true else False
 
-            query_prompt = TOPIC_SUMMARY_PROMPT_TEMPLATE.format(
+            query_prompt = TOPIC_HALLUCINATION_PROMPT_TEMPLATE.format(
                 topic=topic, 
-                context=full_content
+                context=full_content,
+                hallucination_or_not=true_or_false, 
+                difficulty_rating=context.difficulty,
             )
-            summary = self.generate_input(llm_pipeline, query_prompt, TOPIC_GEN_SYSTEM_PROMPT, None)
+            summary = self.generate_input(llm_pipeline, query_prompt, TOPIC_HALLUCINATION_SYSTEM_PROMPT, None)
 
-            print("SUMMARY: ", summary)
             # format 
             summaries.append(
                 Config(
                     topic=topic,
-                    summary=summary
+                    claim=summary,
+                    true_or_false=true_or_false
                 )
             )
                
@@ -135,17 +155,19 @@ class CompletenessWikipediaTask(Task):
         self.api = llm_pipeline.api.value
         self.model_id = llm_pipeline.model_id
 
-    def generate_reference(self, responses: list[Config], num_summaries: int, context: str):
+    def generate_reference(self, responses: list[Config], num_claims: int, context: str):
         # context input 
         self.rag_context = context
 
         # reference and responses  
-        subset_summaries = random.sample(responses, max(num_summaries, 3)) # we must always have at least 3 summary points
-        self.reference = round(num_summaries / (len(responses)+ 1e-10), 2) 
+        subset_claims = random.sample(responses, max(num_claims, 1)) # we must always have at least 1 claim
+        num_true = len([claim for claim in subset_claims if claim.true_or_false in [True, 'Neither']])
+        self.reference = round(num_true / (len(subset_claims) + 1e-10), 2) 
 
-        summaries = [r.summary for r in subset_summaries]
-        self.llm_response = "".join([c + random.choice(self.joiners) for c in summaries])
+        claims = [r.claim for r in subset_claims]
+        random.shuffle(claims)
+        self.llm_response = "".join([c + random.choice(self.joiners) for c in claims])
 
         # store mistakes for comparisons
-        self.reference_mistakes = [s.summary for s in responses if s not in subset_summaries]
-        self.reference_true_values = [s.summary for s in subset_summaries]
+        self.reference_mistakes = [r.claim for r in subset_claims if r.true_or_false == False]
+        self.reference_true_values = [r.claim for r in subset_claims if r.true_or_false == True]

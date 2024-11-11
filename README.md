@@ -13,67 +13,67 @@
 - [Introduction](#introduction)
 - [Key Features](#key-features)
 - [Miner and Validator Functionality](#miner-and-validator-functionality)
-  - [Bittensor Basics](#bittensor)
   - [Miner](#miner)
   - [Validator](#validator)
 - [Roadmap](#roadmap)
 - [Running Miners and Validators](#running-miners-and-validators)
-  - [Bittensor Basics](#bittensor)
-  - [Running a Miner](#running-a-miner)
-  - [Running a Validator](#running-a-validator)
 - [De-Val Community](#community)
 - [License](#license)
 
 ---
 ### Introduction
 
-Welcome to De-Val, the pioneering decentralized evaluation subnet for large language models (LLMs). Built on the robust Bittensor network, De-Val offers unmatched objectivity and reliability in evaluating LLM outputs, tackling challenges such as hallucinations, misattributions, relevancy and summary completeness.
-
-Our unique approach leverages synthetic data for initial training with long-term plans to provide evaluation and monitoring capabilities for businesses looking to improve their own LLM based solutions through A/B testing or offline validation. Our primary focus is evaluation in the context of RAG based scenarios to help businesses answer questions such as:
+Welcome to **de_val**, a pioneering decentralized evaluation subnet for Large Language Models (LLMs). Built on the robust BitTensor network, de_val revolutionizes LLM evaluation by promoting a competitive, community-driven approach that enhances model quality, scalability, and innovation. Tackling challenges such as hallucinations, misattributions, relevancy and summary completeness. Our primary focus is evaluation in the context of RAG based scenarios to help businesses answer questions such as:
 - How accurate is my LLM given the provided context?
 - How comprehensive are our abstractive summaries? Are we missing key details?
 - Can we correctly identify key users and match their names to relevant action items? 
 
-In our first iteration of the subnet, we will release evaluators focused on:
-- Hallucination Detection: Identifying false or nonsensical outputs within LLM summaries given a RAG context.
-- Misattribution Correction: Measuring participant attribution accuracy in LLM summaries from sales calls, meetings, general chat messages, etc.
-- Summary Completeness: Evaluating the thoroughness and reliability of generated summaries.
-- Relevancy: Binary prediction of whether a response is relevant to a user's query or not.
+Our unique framework enables miners to fine-tune their own models and create custom pre-processing and post-processing pipelines, which are securely submitted and evaluated by validators. This approach addresses critical challenges in LLM outputs, such as hallucinations, misattributions, relevancy, and summary completeness, providing businesses with reliable tools to improve their LLM-based solutions.
 
-## Key Features
-🔑 **Unbiased, Decentralized Evaluations**
-- Leveraging the power of decentralization to ensure unbiased and reliable assessments.
-- Community-driven evaluations for continuous improvement.
+### Key Features
+
+🔑 **Decentralized, Competitive Evaluation**
+
+- Contest-based model incentivizes miners to produce high-quality, efficient models.
+- Community-driven innovation fosters continuous improvement.
 
 🔍 **Advanced Evaluation Metrics**
-- Evaluators focused on detecting hallucinations, correcting misattributions, and assessing summary completeness.
-- Continuous addition of new evaluators based on community feedback and evolving needs.
 
-💼 **Cost-Effective Solutions for SMBs**
-- Flexible pay-per-query API model or subscription, providing affordable access to advanced LLM evaluation tools.
-- Tailored solutions for specific business needs.
+- Focus on detecting hallucinations, correcting misattributions, assessing summary completeness, and relevancy.
+- Plans to expand metrics to include citation accuracy, date accuracy, and more.
+
+💼 **Business-Focused Solutions**
+
+- Addresses critical market pain points like LLM inaccuracies.
+- Provides tools for quality assurance, reducing operational costs, and accelerating time-to-market.
 
 📊 **Detailed Feedback and Analytics**
 - Comprehensive scoring from 0 to 1, offering actionable insights for optimizing RAG pipelines.
 - Intuitive dashboards for tracking and analyzing performance metrics.
 
-🔄 **Seamless Integration and Scalability**
+🔄 **Seamless Integration**
+
 - Easy-to-use APIs for integration with existing systems.
-- Scalable solutions designed to grow with your business needs.
+- Support for models like the LLaMA family, with plans to expand.
+
+---
 
 ## Miner and Validator Functionality
 
 ### Miner
 
-- Receives evaluation queries from the Validator containing specific information such as context and LLM responses.
-- Processes these queries using advanced machine learning models to assess factors like hallucination detection and relevancy.
-- Submits detailed evaluation scores back to the Validator for further action and validation.
+- **Model Training and Submission**: Miners train their own models offline using GPU instances and upload the fine-tuned models along with the pipeline code to their Hugging Face repositories.
+- **Model Hosting**: Miners run the `contest_miner.py` script to host their models on the network. This script ensures that the models are available for evaluation and integration.
+- **Continuous Operation**: Miners keep their miners operational by running the `contest_miner.py` script continuously, allowing their models to participate actively in the network.
+- **Model Uniqueness**: Miners are required to imporve upon the base model or eachother's models to ensure uniqueness. They cannot use the same models as other miners without making significant changes.
 
 ### Validator
 
-- Collects evaluation results from Miners, including scores and detailed analysis.
-- Compares these results against set benchmarks and real-world data, ensuring accuracy and reliability.
-- Logs the validation results for auditing and continuous improvement of the evaluation system on the De-Val platform.
+- **Model Retrieval**: Validators download the miners' submitted models and pipeline code from their Hugging Face repositories.
+- **Local Testing in Docker**: Validators test the miners' models locally within a Docker container to maintain security and ensure consistent evaluation environments.
+- **Task Execution**: Validators run evaluation tasks by sending predefined prompts to the miners' models within the Docker environment to generate responses.
+- **Scoring and Evaluation**: Validators assess the performance of each model based on predefined criteria, such as accuracy, relevance, and speed.
+- **Logging and Improvement**: Validators log the validation results for auditing and contribute to de_val's wandb project.
 
 ## Roadmap
 
@@ -88,8 +88,8 @@ Our key goals for this subnet are:
 - [x] Launch on Testnet
 - [x] Launch website
 - [x] Begin marketing for brand awareness and interest
-- [ ] Integrate contest style validation and winner takes most incentive
-- [ ] Develop top-down task generation approach (currently only bottoms up generation)
+- [x] Integrate contest style validation and winner takes most incentive
+- [x] Develop top-down task generation approach (currently only bottoms up generation)
 
 ### Phase 2: Expansion (Q4 2024)
 - [ ] Launch outward-facing API
@@ -108,121 +108,11 @@ Our key goals for this subnet are:
 - [ ] Monetize API access to evaluations and proprietary database
 
 ## Running Miners and Validators
-### Requirements
-- Python 3.10+
-- Poetry
-- CPU only instance
-- OPENAI API key
-- WANDB API key - Optional - Validators only
 
-### Bittensor Setup
+- [Running a Validator](docs/README_validator.md)
 
-Follow the bittensor docs [here](https://docs.bittensor.com/getting-started/installation), or paste the following commands into the terminal.
-```
-sudo apt update && sudo apt install python3-pip
+- [Running a Miner](docs/README_miners.md)
 
-python3 -m pip install bittensor
-```
-
-In order to ease management of the scripts and miners running, we recommend using `PM2` as your process manager. In order to install `PM2`:
-```
-sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
-```
-For guidance on how to set up your local subtensor click [here](https://docs.bittensor.com/subtensor-nodes/subtensor-node-requirements).
-
-Setting up your wallet can be found [here](https://docs.bittensor.com/getting-started/wallets).
-
-#### Installing poetry
-```
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-Once the above steps are completed log out of your instance and log back in to see `bittensor` and `poetry` installed.
-
-### Validator Setup
-We attempted to make everything as easy to run as possible, that is why we went with `poetry` as the package and venv manager.
-
-To set up your validator you will need to follow these steps:
-```
-git clone https://github.com/deval-core/De-Val.git
-cd De-Val
-
-# Adding your OPENAI API and WANDB key to your .env file
-echo -e "OPENAI_API_KEY=<your_openai_key_here>\nWANDB_API_KEY=<your_wandb_key_here>" > .env
-
-
-# Install packages and dependencies using poetry.
-poetry install
-```
-NOTE: While logging on WANDB is optional - we would highly encourage validators to do so.
-
-Once that is done, you can activate your venv with `poetry shell`.
-
-```
-poetry shell
-```
-Now that everyhing ready you are ready to launch your validator after registering to the subnet.
-example command for registering a validator/miner:
-```
-btcli s register --subtensor.network <local/test/finney> --netuid <15> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
-
-```
-
-Running Validator:
-```
-pm2 start neurons/validator.py --name de-val-validator -- \
-    --netuid 15
-    --subtensor.network <finney/local/test>
-    --wallet.name <your coldkey> # Must be created using the bittensor-cli
-    --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
-    --logging.debug # Run in debug mode
-    --logging.trace # For trace mode
-    --axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine
-```
-
-## New: Guide for Choosing Models for Validation
-
-If you'd like to explicitly define which models to run for validation (e.g., OpenAI, Anthropic, Mistral), please refer to our [Validator Model Selection Guide](docs/Validator_AWS_README.md). This guide includes instructions on how to configure your validator to choose specific models using the `--neuron.model_ids` flag.
-
----
-### Miner Setup
-
-Just like the validator setup we attempted to make everything as easy to run as possible, that is why we went with `poetry` as the package and venv manager.
-
-to set up your validator you will need to follow these steps:
-```
-git clone https://github.com/deval-core/De-Val.git
-cd De-Val
-
-# Adding your OPENAI API key to your .env file
-echo "OPENAI_API_KEY=<your_key_here>" > .env
-
-# Install packages and dependencies using poetry.
-poetry install
-```
-Once that is done, you can activate your venv with `poetry shell`.
-
-```
-poetry shell
-```
-Now that everyhing ready you are ready to launch your validator after registering to the subnet.
-example command for registering a validator/miner:
-```
-btcli s register --subtensor.network <local/test/finney> --netuid <15> --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY
-```
-
-Running Miner:
-```
-pm2 start neurons/miners/openai_miner.py --name de-val-miner -- \
-    --netuid 15 
-    --subtensor.network <finney/local/test>
-    --wallet.name <your coldkey> # Must be created using the bittensor-cli
-    --wallet.hotkey <your hotkey> # Must be created using the bittensor-cli
-    --logging.debug # Run in debug mode
-    --logging.trace # For trace mode
-    --axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine
-```
-Currently we are available on mainnet with NETUID: `15` and testnet with NETUID:`202`
 
 ## Community
 

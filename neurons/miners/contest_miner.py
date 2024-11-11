@@ -49,7 +49,7 @@ class ContestMiner(Miner):
         """
         
         synapse.repo_id = "deval-core"
-        synapse.model_id = "base-eval-test"
+        synapse.model_id = "base-eval"
 
         return synapse
             

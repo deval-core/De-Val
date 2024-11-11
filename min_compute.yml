@@ -40,7 +40,7 @@ compute_spec:
   validator:
 
     cpu:
-      min_cores: 12            # Minimum number of CPU cores
+      min_cores: 14            # Minimum number of CPU cores
       min_speed: 2.5          # Minimum speed per core (GHz)
       recommended_cores: 28    # Recommended number of CPU cores
       recommended_speed: 3.5  # Recommended speed per core (GHz)

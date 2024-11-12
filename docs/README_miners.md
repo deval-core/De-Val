@@ -116,7 +116,7 @@ OPENAI_API_KEY=<your_openai_key_here>
 
 To simplify the setup process, we use `poetry` for package management and virtual environments.
 
-To set up your validator, follow these steps:
+To set up your miner, follow these steps:
 
 ```bash
 git clone https://github.com/deval-core/De-Val.git
@@ -197,10 +197,15 @@ Your pipeline must output data in the following format:
 
 ### Testing Your Pipeline
 
-You can test your pipeline's success and whether your model will work using the script:
-
+We have create a set of scripts to help you test your pipeline's success and whether your model will work using the script:
 ```bash
-python scripts/docker_e2e_test.py
+scripts/docker_e2e_test.py 
+```
+```bash
+scripts/e2e_test.py 
+```
+```bash
+scripts/generate_task_examples.py
 ```
 ---
 
@@ -234,7 +239,7 @@ poetry run python3 scripts/submit.py \
   - `--upload_pipeline`: Include this flag to upload the pipeline code.
   - `--upload_model`: Include this flag to upload the model.
   - `--hf_token`: Your Hugging Face token. (You can skip this if you set your HF token in `.env` with `HUGGINGFACE_TOKEN='Your_HF_Token'`)
-
+- Both `--upload-pipeline` and `--upload-model` are optional, but you need to choose at least one.
 ---
 
 ### Running your miner - `contest_miner.py`
@@ -243,7 +248,7 @@ Once you have trained your model, customized your pipeline, and submitted it to 
 
 **Note:** Running your miner can be done on any hardware and does not require a GPU as you would for training the model.
 
-- Modify lines **51-52** of `contest_miner.py` to point at your own model that you submitted using `submit.py`.
+- Modify lines **variables**: `synapse.repo_id` and `synapse.model_id` of `contest_miner.py` to point at your own model that you submitted using `submit.py`.
 - Register a UID as stated above.
 - Run your miner.
 
@@ -280,5 +285,57 @@ pm2 start neurons/contest_miner.py --name de-val-miner -- \
   - We do not evaluate all UIDs every time.
   - We only evaluate the **top 20 models by incentive** or if your model had a commit in the last **48 hours**.
  
- 
+taking a look at the readme for miners:
+you use line numbers to refer to where to change, I would suggest changing that to use the variable names.  Line numbers are very likely to change over time.
+in submit.py, both --upload-pipeline and --upload-model are optional, but you need to choose at least one
+It would probably be good to highlight scripts generate_task_examples.py and docker_e2e_test.py as ways to test their script.  When running the e2e test to make sure they follow all technical specifications otherwise pyarmor may have an issue
+
+To add to FAQ
+required to run pyarmor on correct python version 3.11
+do not change the platform flag on obfuscate.py for pyarmor
+we check for duplicate models based on commit date to the entire repo, be careful when making updates to your HF repo (note to self, we need to change this actually so users can make changes to pipeline more easily)
+
+
+
+## FAQ
+
+#### 1. How do I test my model and pipeline using your scripts?
+
+To conduct tests using our scripts, you need to set up a **validator instance** on a GPU with sufficient VRAM and an **x86 architecture**. Please refer to the **validator's README** for detailed setup instructions and requirements.
+
+#### 2. What Python version is required for running PyArmor?
+
+You must use **Python 3.11** (ideally 3.11.8) when running PyArmor for code obfuscation. Using a different Python version may lead to compatibility issues during the obfuscation process or when validators execute your code.
+
+#### 3. Can I change the `platform` flag in `obfuscate.py` for PyArmor?
+
+No, **do not change the `platform` flag** in the `obfuscate.py` script used for PyArmor. Altering this flag can cause your obfuscated code to be incompatible with the validators' execution environment, leading to errors during evaluation.
+
+#### 4. How do you check for duplicate models?
+
+We check for duplicate models based on the **commit date of the entire repository** on Hugging Face. Be cautious when making updates to your Hugging Face repository:
+
+- **Avoid unnecessary commits**: Only commit significant changes to prevent altering the commit date without reason.
+- **Model Uniqueness**: Ensure that your model has substantial differences from others, except for the base LLaMA 3 8B model, which everyone can use as a starting point.
+
+#### 5. What should I do if my model requires additional packages?
+
+If your model needs additional packages not currently included at runtime:
+
+- **Contact Us**: Let us know the packages you require.
+- **Review Process**: We will review and approve necessary packages for security reasons.
+- **Approval Required**: Do not include unapproved packages in your submission.
+
+#### 6. How can I avoid issues with code obfuscation?
+
+- **Follow Guidelines**: Adhere strictly to the provided instructions for obfuscation.
+- **Do Not Modify Scripts**: Avoid changing any settings in the `obfuscate.py` script unless instructed.
+- **Testing**: Use the provided testing scripts to verify your obfuscated code works as expected before submission.
+
+#### 7. What should I do if I have further questions or need assistance?
+
+Feel free to reach out to us:
+
+- **Support Channel**: Join our [Discord](https://discord.com/channels/799672011265015819/1272557411948957697) channel for support and discussions.
+
 

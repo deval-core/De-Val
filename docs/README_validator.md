@@ -120,3 +120,80 @@ pm2 start neurons/validator.py --name de-val-validator -- \
     --axon.port <port>
     --neuron.model_ids 'gpt-4o,gpt-4o-mini,mistral-7b,claude-3.5,command-r-plus'
 ```
+
+## FAQ 
+
+#### 1. Should I run my validator with root permissions?
+
+
+While it's possible to run your validator without root permissions, we **recommend running it with root permissions** to avoid permission-related issues, especially with Docker. Running as root can prevent errors such as the Docker permission error described in FAQ #3. If you choose not to run as root, be prepared to adjust permissions accordingly to ensure proper functionality.
+
+#### 2. What should I do when I see the error:
+
+```
+Error response from daemon: could not select device driver "nvidia" with capabilities: [[gpu]]
+```
+This error indicates that the **NVIDIA Container Toolkit** is either not installed or not properly configured on your system. Here's how to resolve it:
+
+**Steps to Resolve:**
+
+1. **Check if NVIDIA Container Toolkit is installed:**
+
+   Open a terminal and run:
+
+   ```bash
+   dpkg -l | grep nvidia-container-toolkit
+   ```
+
+   - If the command returns nothing, the toolkit is not installed.
+
+2. **Install NVIDIA Container Toolkit:**
+
+   Install the toolkit by running:
+
+   ```bash
+   sudo apt install nvidia-container-toolkit -y
+   ```
+
+3. **Restart Docker Daemon:**
+
+   After installation, restart the Docker daemon to apply changes:
+
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+4. **Verify Installation:**
+
+   Test if Docker can access your GPU by running:
+
+   ```bash
+   sudo docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+   ```
+
+   - You should see the output of `nvidia-smi`, indicating that Docker can now use your GPU.
+
+#### 3. What should I do when I see the error:
+
+```
+Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.47/containers/json?all=1&filters=%7B%22label%22%3A%7B%22com.docker.compose.config-hash%22%3Atrue%2C%22com.docker.compose.project%3Dde-val%22%3Atrue%7D%7D": dial unix /var/run/docker.sock: connect: permission denied
+```
+This error occurs due to insufficient permissions to access the Docker daemon socket. It typically happens when running Docker commands without root permissions.
+
+**Steps to Resolve:**
+
+1. **Adjust Permissions of Docker Socket:**
+
+   Change the ownership of the Docker socket to your current user:
+
+   ```bash
+   sudo chown $USER /var/run/docker.sock
+   ```
+   **Note:** This change may be reset after a reboot or Docker daemon restart.
+
+
+#### 4. What should I do if I have further questions or need assistance?
+
+Feel free to reach out to us:
+
+- **Support Channel**: Join our [Discord](https://discord.com/channels/799672011265015819/1272557411948957697) channel for support and discussions.

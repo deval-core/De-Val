@@ -106,6 +106,11 @@ AWS_SECRET_ACCESS_KEY=<your_aws_seceret_key_here>
 ```
 docker compose up --build  --timeout 300 miner-api
 ```
+### Testing your validator prior to deployment
+You can test your set-up using ``docker_e2e_test.py` found in `/De-Val/scripts` prior to launching the new validator, its a end to end test where you can observe how the validator creates the tasks, sets up the docker instance, downloads the model and queries it. It is a recommended step to ensure all is working properly 
+
+
+
 This is optional as the code will build the container if not already built. 
 
 ### Running Validator:

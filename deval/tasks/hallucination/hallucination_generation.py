@@ -25,7 +25,8 @@ In response you will return the context in JSON format following the structure d
 The context should be based on a the topic and sub-topic.
 
 If the claim should be true, then a reader should be able to determine if that is the case by reading the preceding context.\
-The same applies if it should be false, where the reader can identify that it is false given just the information from the preceding context.
+The same applies if it should be false, where the reader can identify that it is false given just the information from the preceding context. \
+The generated claim should range from 1 to 3 sentences long. 
 
 The context type parameter should guide the style that you write the context in.  For example, if provided a context type of 'book' \
 then the context should be formatted and written like a book, whereas, if provided the context type 'screenplay' then the context should be formatted like a screenplay.
@@ -63,7 +64,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinationTask(Task):
+class HallucinatioGenerationTask(Task):
     name = TasksEnum.HALLUCINATION.value
     desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
     goal = "Estimates the number of hallucination in a response given a RAG context"

@@ -7,7 +7,7 @@ import numpy as np
 _ = load_dotenv(find_dotenv())
 
 # INIT Variables
-task_name = TasksEnum.RELEVANCY.value
+task_name = TasksEnum.HALLUCINATION.value
 num_to_generate = 3
 data_path = "./exports"
 

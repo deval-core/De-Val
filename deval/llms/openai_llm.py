@@ -47,16 +47,25 @@ class OpenAILLM(BaseLLM):
         max_tokens = model_kwargs.get("max_tokens", 500)
         format = model_kwargs.get("format").value # type: str
 
-        output = self.llm.chat.completions.create(
-                model=self.model_id,
-                messages=messages,
-                temperature = temperature,
-                top_p = top_p,
-                max_tokens = max_tokens,
-                tools = [tool_schema],
-                tool_choice="auto",
-                response_format={ "type": format }
-            )
+        if tool_schema:
+            output = self.llm.chat.completions.create(
+                    model=self.model_id,
+                    messages=messages,
+                    temperature = temperature,
+                    top_p = top_p,
+                    max_tokens = max_tokens,
+                    tools = [tool_schema],
+                    tool_choice="auto",
+                    response_format={ "type": format }
+                )
+        else:
+            output = self.llm.chat.completions.create(
+                    model=self.model_id,
+                    messages=messages,
+                    temperature = temperature,
+                    top_p = top_p,
+                    max_tokens = max_tokens,
+                )
         
         content = self.parse_response(output)
 

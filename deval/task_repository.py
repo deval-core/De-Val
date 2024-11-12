@@ -52,10 +52,10 @@ TASKS = {
                 "task_function": CompletenessWikipediaTask,
                 "dataset": WikiDataset,
             },
-            #{
-            #    "task_function": CompletenessGenerationTask,
-            #    "dataset": GenericDataset,
-            #}
+            {
+                "task_function": CompletenessGenerationTask,
+                "dataset": GenericDataset,
+            }
         ],
         "task_p": 1,
     },

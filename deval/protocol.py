@@ -15,39 +15,37 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import pydantic
+
+from pydantic import BaseModel, Field, ConfigDict
 import bittensor as bt
 
 from typing import List
+from deval.tasks.task import Task
+import bittensor as bt
+from typing import List
+from deval.utils.misc import async_log
+from deval.agent import HumanAgent
+from deval.api.models import EvalResponse, EvalRequest
 
 
 
-class EvalSynapse(bt.Synapse):
-    # TODO: documentation 
+@async_log
+async def execute_dendrite_call(dendrite_call):
+    responses = await dendrite_call
+    return responses
+
+
+async def get_metadata_from_miner(validator, uid: int) -> list[bt.synapse]:
+    axons = [validator.metagraph.axons[uid]]
+    dendrite_call_task = execute_dendrite_call(validator.dendrite(axons=axons, synapse=ModelQuerySynapse(), timeout=5))
+    responses = await dendrite_call_task 
+
+    return responses
+
+
+class ModelQuerySynapse(bt.Synapse):
     """
-    The EvalSynapse subclass of the Synapse class encapsulates the functionalities related to evaluation scenarios.
-
-    It specifies n fields - `tasks`, `rag_context`, `query`, `llm_response` and `completion` - that define the state of the EvalSynapse object.
-    
-
-    The Config inner class specifies that assignment validation should occur on this class (validate_assignment = True),
-    meaning value assignments to the instance fields are checked against their defined types for correctness.
-
-    Attributes:
-        tasks (TaskEnum): The requested task to be completed by the miner. This field is both mandatory and immutable.
-        rag_context (str): A simulated context in the evaluation scenario. This field is both mandatory and immutable.
-        query (str): A simulated user query in a QA system. This field is optional and immutable.
-        llm_response (str): A simulated response in the evaluation scenario. This field is both mandatory and immutable.
-        completion (float): A float that captures completion of the evaluation. This field is mutable.
-        required_hash_fields List[str]: A list of fields that are required for the hash.
-
-    Methods:
-        deserialize() -> "EvalSynapse": Returns the instance of the current object.
-
-
-    The `EvalSynapse` class also overrides the `deserialize` method, returning the
-    instance itself when this method is invoked. Additionally, it provides a `Config`
-    inner class that enforces the validation of assignments (`validate_assignment = True`).
+    A simple synapse to query a miner for specific model metadata
     """
 
     class Config:
@@ -58,64 +56,75 @@ class EvalSynapse(bt.Synapse):
 
         validate_assignment = True
 
-    def deserialize(self) -> "EvalSynapse":
+    def deserialize(self) -> "ModelQuerySynapse":
         """
-        Returns the instance of the current EvalSynapse object.
+        Returns the instance of the current ModelQuerySynapse object.
 
         This method is intended to be potentially overridden by subclasses for custom deserialization logic.
-        In the context of the EvalSynapse class, it simply returns the instance itself. However, for subclasses
+        In the context of the ModelQuerySynapse class, it simply returns the instance itself. However, for subclasses
         inheriting from this class, it might give a custom implementation for deserialization if need be.
 
         Returns:
-            EvalSynapse: The current instance of the EvalSynapse class.
+            ModelQuerySynapse: The current instance of ModelQuerySynapse class.
         """
         return self
 
-    tasks: list[str] = pydantic.Field(
-        ...,
-        title="Tasks",
-        description="A list of tasks in the EvalSynapse scenario. Immuatable.",
-        allow_mutation=False,
-    )
 
-    rag_context: str = pydantic.Field(
-        ...,
-        title="Rag Context",
-        description="Provided RAG context for responses in the EvalSynapse scenario. Immutable.",
-        allow_mutation=False,
-    )
-
-    query: str = pydantic.Field(
+    repo_id: str = Field(
         "",
-        title="Query",
-        description="A user generated query in the EvalSynapse scenario. Immutable.",
-        allow_mutation=False,
+        title="HuggingFace Repo ID",
+        description="The miner's repo name for HuggingFace. Mutable",
+        allow_mutation=True,
     )
 
-    llm_response: str = pydantic.Field(
-        ...,
-        title="LLM Response",
-        description="LLM Responses generated from RAG context in the EvalSynapse scenario. Immutable.",
-        allow_mutation=False,
+    model_id: str = Field(
+        "",
+        title="HuggingFace Model ID",
+        description="The miner's model name for HuggingFace. Mutable",
+        allow_mutation=True,
     )
 
-    completion: float = pydantic.Field(
-        -1.0,
-        title="Completion",
-        description="Scored fields for each task. This attribute is mutable and can be updated.",
-    )
-
-    mistakes: list[str] = pydantic.Field(
-        [""],
-        title="Mistakes",
-        description="Identified hallucinations, misattributions, summaries, etc."
-    )
-
-    required_hash_fields: List[str] = pydantic.Field(
-        ["tasks", "rag_context", "llm_response"],
+    required_hash_fields: List[str] = Field(
+        [],
         title="Required Hash Fields",
         description="A list of required fields for the hash.",
         allow_mutation=False,
     )
 
 
+
+
+def init_request_from_task(task: Task) -> "EvalRequest":
+    return EvalRequest(
+        tasks = [task.name],
+        rag_context = task.rag_context,
+        query = task.query,
+        llm_response = task.llm_response
+    )
+
+class DendriteModelQueryEvent:
+    def __init__(
+        self, responses: list[bt.synapse], 
+    ):
+        for synapse in responses:
+            self.model_id = synapse.model_id
+            self.repo_id = synapse.repo_id
+
+            
+class BtEvalResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    uid: int
+    response: EvalResponse
+    human_agent: HumanAgent
+
+    def __state_dict__(self):
+        return {
+            "miner_score": self.response.score,
+            "miner_mistakes": self.response.mistakes,
+            "miner_response_time": self.response.response_time,
+            "status_message": self.response.status_message,
+            "uid": self.uid,
+        }
+
+    def __repr__(self):
+        return str(self)

@@ -99,6 +99,7 @@ class BaseNeuron(ABC):
         bt.logging.info(
             f"Running neuron on subnet: {self.config.netuid} with uid {self.uid} using network: {self.subtensor.chain_endpoint}"
         )
+        self.start_over = True
         self.step = 0
 
     @abstractmethod
@@ -123,7 +124,7 @@ class BaseNeuron(ABC):
             self.set_weights()
 
         # Always save state.
-        self.save_state()
+        #self.save_state()
 
     def check_registered(self):
         # --- Check for registration.
@@ -147,10 +148,9 @@ class BaseNeuron(ABC):
 
     def should_set_weights(self) -> bool:
         # Don't set weights on initialization.
-        if self.step == 0:
+        if self.start_over or len(self.weights) == 0:
             return False
 
-        # Check if enough epoch blocks have elapsed since the last epoch.
         if self.config.neuron.disable_set_weights:
             return False
 
@@ -160,10 +160,7 @@ class BaseNeuron(ABC):
         ):
             return False
 
-        # Define appropriate logic for when set weights.
-        return (
-            self.block - self.metagraph.last_update[self.uid]
-        ) > self.config.neuron.epoch_length
+        return True
 
     def save_state(self):
         pass

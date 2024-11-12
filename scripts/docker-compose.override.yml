@@ -1,0 +1,5 @@
+version: '3.8'
+
+services:
+  validator:
+    command: ["poetry", "run", "python3", "scripts/docker_e2e_test.py"]

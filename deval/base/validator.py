@@ -22,15 +22,18 @@ import asyncio
 import argparse
 import threading
 import bittensor as bt
+import numpy as np
+import pytz
 
-from typing import List
 from traceback import print_exception
 
 from deval.base.neuron import BaseNeuron
 from deval.mock import MockDendrite
 from deval.utils.config import add_validator_args
 from deval.utils.exceptions import MaxRetryError
-import time
+import pickle
+import os
+from datetime import datetime, timedelta
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -56,11 +59,6 @@ class BaseValidatorNeuron(BaseNeuron):
             self.dendrite = bt.dendrite(wallet=self.wallet)
         bt.logging.info(f"Dendrite: {self.dendrite}")
 
-        # Set up initial scoring weights for validation
-        bt.logging.info("Building validation weights.")
-        self.scores = torch.zeros(
-            self.metagraph.n, dtype=torch.float32, device=self.device
-        )
 
         # Init sync with the network. Updates the metagraph.
         self.sync()
@@ -137,6 +135,7 @@ class BaseValidatorNeuron(BaseNeuron):
             while True:
                 bt.logging.info(f"step({self.step}) block({self.block})")
 
+                # TODO: update to 24 hours?
                 forward_timeout = self.config.neuron.forward_max_time
                 try:
                     task = self.loop.create_task(self.forward())
@@ -161,10 +160,6 @@ class BaseValidatorNeuron(BaseNeuron):
 
                 # Sync metagraph and potentially set weights.
                 self.sync()
-
-                self.step += 1
-                # TODO: limit to testnet
-                # time.sleep(20) 
 
         # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:
@@ -231,26 +226,36 @@ class BaseValidatorNeuron(BaseNeuron):
         Sets the validator weights to the metagraph hotkeys based on the scores it has received from the miners. The weights determine the trust and incentive level the validator assigns to miner nodes on the network.
         """
 
-        # Check if self.scores contains any NaN values and log a warning if it does.
-        if torch.isnan(self.scores).any():
+        # Check if self.weights contains any NaN values and log a warning if it does.
+        if np.isnan(self.weights).any():
             bt.logging.warning(
-                "Scores contain NaN values. This may be due to a lack of responses from miners, or a bug in your reward functions."
+                "Weights contain NaN values. This may be due to a lack of responses from miners, or a bug in your reward functions."
             )
 
-        # Calculate the average reward for each uid across non-zero values.
-        # Replace any NaN values with 0.
-        raw_weights = torch.nn.functional.normalize(self.scores, p=1, dim=0)
+        if not self.weights:
+            bt.logging.warning(
+                "Attempting to set weights, but weights are empty"
+            )
+            return 
 
-        bt.logging.info("raw_weights", raw_weights)
-        bt.logging.info("raw_weight_uids", self.metagraph.uids)
+
+        # split our uids and weights 
+        final_weights = np.zeros(self.metagraph.n.item())
+        for uid, weight in self.weights:
+            final_weights[uid] = weight
+
+        uids = np.indices(final_weights.shape)[0]
+
+        bt.logging.info("raw_weights", final_weights)
+        bt.logging.info("raw_weight_uids", uids)
         # Process the raw weights to final_weights via subtensor limitations.
         (
             processed_weight_uids,
             processed_weights,
         ) = bt.utils.weight_utils.process_weights_for_netuid(
-            uids=self.metagraph.uids,
-            weights=raw_weights.to("cpu").numpy(),
-            netuid=self.config.netuid,
+            uids=uids,
+            weights=final_weights,
+            netuid=self.metagraph.netuid,
             subtensor=self.subtensor,
             metagraph=self.metagraph,
         )
@@ -268,20 +273,25 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("uint_uids", uint_uids)
 
         # Set the weights on chain via our subtensor connection.
-        result, reason = self.subtensor.set_weights(
-            wallet=self.wallet,
-            netuid=self.config.netuid,
-            uids=uint_uids,
-            weights=uint_weights,
-            wait_for_finalization=False,
-            wait_for_inclusion=False,
-            version_key=self.spec_version,
-        )
-        if result is True:
-            print("success with weights")
-            bt.logging.info("set_weights on chain successfully!")
-        else:
-            bt.logging.error(f"set_weights failed: {reason}")
+        num_attempts = 0
+        result = False
+        while result is False and num_attempts < 3:
+            num_attempts += 1
+            result, reason = self.subtensor.set_weights(
+                wallet=self.wallet,
+                netuid=self.metagraph.netuid,
+                uids=uint_uids,
+                weights=uint_weights,
+                wait_for_finalization=False,
+                wait_for_inclusion=False,
+                version_key=self.spec_version,
+            )
+            if result is True:
+                bt.logging.info("set_weights on chain successfully!")
+            else:
+                bt.logging.error(f"set_weights failed with reason: {reason}")
+
+
 
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
@@ -300,58 +310,29 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info(
             "Metagraph updated, re-syncing hotkeys, dendrite pool and moving averages"
         )
-        # Zero out all hotkeys that have been replaced.
-        for uid, hotkey in enumerate(self.hotkeys):
-            if hotkey != self.metagraph.hotkeys[uid]:
-                self.scores[uid] = 0  # hotkey has been replaced
-
-        # Check to see if the metagraph has changed size.
-        # If so, we need to add new hotkeys and moving averages.
-        if len(self.hotkeys) < len(self.metagraph.hotkeys):
-            # Update the size of the moving average scores.
-            new_moving_average = torch.zeros((self.metagraph.n)).to(self.device)
-            min_len = min(len(self.hotkeys), len(self.scores))
-            new_moving_average[:min_len] = self.scores[:min_len]
-            self.scores = new_moving_average
 
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
-
-    def update_scores(self, rewards: torch.FloatTensor, uids: List[int]):
-        """Performs exponential moving average on the scores based on the rewards received from the miners."""
-
-        # Check if rewards contains NaN values.
-        if torch.isnan(rewards).any():
-            bt.logging.warning(f"NaN values detected in rewards: {rewards}")
-            # Replace any NaN values in rewards with 0.
-            rewards = torch.nan_to_num(rewards, 0)
-
-        # Compute forward pass rewards, assumes uids are mutually exclusive.
-        # shape: [ metagraph.n ]
-        step_rewards = self.scores.scatter(
-            0, torch.tensor(uids).to(self.device), rewards.to(self.device)
-        ).to(self.device)
-        bt.logging.debug(f"Scattered rewards: {rewards}")
-
-        # Update scores with rewards produced by this step.
-        # shape: [ metagraph.n ]
-        alpha = self.config.neuron.moving_average_alpha
-        self.scores = alpha * step_rewards + (1 - alpha) * self.scores
-        self.scores = (self.scores - self.config.neuron.decay_alpha).clamp(min=0)
-        bt.logging.debug(f"Updated moving avg scores: {self.scores}")
 
     def save_state(self):
         """Saves the state of the validator to a file."""
         bt.logging.info("Saving validator state.")
 
         # Save the state of the validator to file.
+        save_path = self.config.neuron.full_path 
+        with open(os.path.join(save_path, "contest.pkl"), "wb") as f: 
+            pickle.dump(self.contest, f)
+
+        with open(os.path.join(save_path, "task_repo.pkl"), "wb") as f: 
+            pickle.dump(self.task_repo, f)
+
         torch.save(
             {
-                "step": self.step,
-                "scores": self.scores,
+                "start_over": self.start_over,
+                "queried_uids": self.queried_uids,
                 "hotkeys": self.hotkeys,
             },
-            self.config.neuron.full_path + "/state.pt",
+            os.path.join(save_path, "state.pt"),
         )
 
     def load_state(self):
@@ -359,7 +340,53 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Loading validator state.")
 
         # Load the state of the validator from file.
-        state = torch.load(self.config.neuron.full_path + "/state.pt")
-        self.step = state["step"]
-        self.scores = state["scores"]
+        load_path = self.config.neuron.full_path 
+
+        state_path = os.path.join(load_path, "state.pt")
+        contest_path = os.path.join(load_path, "contest.pkl")
+        task_repo_path = os.path.join(load_path, "task_repo.pkl")
+        if (
+            not os.path.exists(state_path) or 
+            not os.path.exists(contest_path) or
+            not os.path.exists(task_repo_path)
+        ):
+            bt.logging.info("one of the key components are unavailable. Skipping load")
+            return None
+
+        state = torch.load(state_path)
+        self.start_over = state["start_over"]
+        self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
+
+        try:
+
+            with open(contest_path, "rb") as f: 
+                self.contest = pickle.load(f)
+
+            # we put a time lock on how long a contest will take 
+            max_time = 12
+            now = datetime.now(tz=pytz.UTC)
+            if now - timedelta(hours=max_time) <= self.contest.start_time_datetime:
+                with open(task_repo_path, "rb") as f: 
+                    self.task_repo = pickle.load(f)
+            else:
+                # if we exceed the max time then we opt to start
+                self.start_over = True
+                self.queried_uids = set()
+
+        except Exception as e:
+            bt.logging.warning(f"Unable to load the task repository or contest state, restarting contest: {e}")
+            self.start_over = True
+
+    def reset(self):
+        self.weights = None
+        self.task_repo = None
+        self.queried_uids = set()
+        
+        # delete save states 
+        load_path = self.config.neuron.full_path 
+        files = os.listdir(load_path)
+        for f in files:
+            file_path = os.path.join(load_path, f)
+            if os.path.isfile(file_path):
+                os.remove(file_path)

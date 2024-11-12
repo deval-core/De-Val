@@ -20,73 +20,45 @@ import bittensor as bt
 import argparse
 
 # Bittensor Miner Template:
-from deval.protocol import EvalSynapse
-from deval.task_registry import TaskResult
+from deval.protocol import ModelQuerySynapse
 
 # import base miner class which takes care of most of the boilerplate
 from deval.base.eval_miner import Miner
 
 
-class FakeMiner(Miner):
-    """Langchain-based miner which uses OpenAI's API as the LLM.
-
-    You should also install the dependencies for this miner, which can be found in the requirements.txt file in this directory.
-    """
+class ContestMiner(Miner):
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
-        """
-        Adds OpenAI-specific arguments to the command line parser.
-        """
         super().add_args(parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
 
-        bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
 
-
-    async def forward(self, synapse: EvalSynapse) -> EvalSynapse:
+    async def forward(self, synapse: ModelQuerySynapse) -> ModelQuerySynapse:
         """
         Processes the incoming synapse by performing a predefined operation on the input data.
         This method should be replaced with actual logic relevant to the miner's purpose.
 
         Args:
-            synapse (EvalSynapse): The synapse object containing the 'dummy_input' data.
+            synapse (ModelQuerySynapse): The synapse object containing data to point to HF repo.
 
         Returns:
-            EvalSynapse: The synapse object with the 'dummy_output' field set to twice the 'dummy_input' value.
-
-        The 'forward' function is a placeholder and should be overridden with logic that is appropriate for
-        the miner's intended operation. This method demonstrates a basic transformation of input data.
+            ModelQuerySynapse: The synapse object with complete outputs 
         """
-        try:
-            task = synapse.tasks[0]
-            rag_context = synapse.rag_context
-            llm_response = synapse.llm_response
+        
+        synapse.repo_id = "deval-core"
+        synapse.model_id = "base-eval"
 
-            bt.logging.info(f"Tasks include: {task}")
-            bt.logging.info(f"Context input: {rag_context}")
-            bt.logging.info(f"response: {llm_response}")
-            synapse.completion = 0.5
-
-            bt.logging.info("returning synapse", synapse)
-
-            return synapse
+        return synapse
             
-        except Exception as e:
-            bt.logging.error(f"Error in forward: {e}")
-            synapse.completion = 0.0
-            return synapse
-        finally:
-            if self.config.neuron.stop_on_forward_exception:
-                self.should_exit = True
-            return synapse
+        
 
 
 # This is the main function, which runs the miner.
 if __name__ == "__main__":
-    with FakeMiner() as miner:
+    with ContestMiner() as miner:
         while True:
             miner.log_status()
             time.sleep(5)

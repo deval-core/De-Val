@@ -1,21 +1,63 @@
-from deval.tasks import TasksEnum, Task, TASKS
+from deval.tasks.task import TasksEnum, Task
 from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
 from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
+from deval.tasks.hallucination import HallucinationTask
+from deval.tasks.summary_completeness import CompletenessTask
+from deval.tasks.attribution import AttributionTask
+from deval.tasks.relevancy import RelevancyTask
+from deval.tasks.task import Task, TasksEnum
+from deval.tools import (
+    WikiDataset, GenericDataset, AttributionDataset
+)
 import os 
 import numpy as np
 
 
-class TaskGenerator:
+TASKS = {
+    TasksEnum.RELEVANCY.value: {
+        "task_function": RelevancyTask,
+        "dataset": WikiDataset,
+        "task_p": 1,
+    },
+    TasksEnum.HALLUCINATION.value: {
+        "task_function": HallucinationTask,
+        "dataset": GenericDataset,
+        "task_p": 1,
+    },
+    TasksEnum.COMPLETENESS.value: {
+        "task_function": CompletenessTask,
+        "dataset": GenericDataset,
+        "task_p": 1,
+    },
+    TasksEnum.ATTRIBUTION.value: {
+        "task_function": AttributionTask,
+        "dataset": AttributionDataset,
+        "task_p": 1,
+    }
+}
+
+class TaskRepository:
 
     def __init__(self, allowed_models: list[str] | None = None):
+        self.tasks: dict[TasksEnum, list[Task]] = {} 
+
         # initialize available models 
         self.supported_models = SUPPORTED_MODELS
 
         if allowed_models is not None:
             self.supported_models = self.filter_to_allowed_models(allowed_models)
 
+        self.available_models = self.get_available_models()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['available_models']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
         self.available_models = self.get_available_models()
 
     def filter_to_allowed_models(self, allowed_models: list[str] | None) -> dict:
@@ -65,7 +107,7 @@ class TaskGenerator:
     def get_random_llm(self) -> BaseLLM:
         return np.random.choice(self.available_models)
 
-    def create_task(self, llm_pipeline, task_name: str) -> Task:
+    def create_task(self, llm_pipeline: BaseLLM, task_name: str) -> Task:
         
         task_extract = TASKS.get(task_name, None)
         if task_extract is None:
@@ -81,24 +123,40 @@ class TaskGenerator:
 
         return task
 
+    def generate_all_tasks(
+        self, 
+        task_probabilities: list[tuple()],
+    ) -> None:
+        # loops through and stores all tasks to be evaluated against in the epoch 
+        for task_name, n in task_probabilities:
+            self.tasks[task_name] = []
+            for i in range(n):
+                print(f"Generating Task Name: {task_name}, iteration: {i}")
+                llm_pipeline = self.get_random_llm()
+                task = self.create_task(llm_pipeline, task_name)
+                self.tasks[task_name].append(task)
+                    
+
+    def get_all_tasks(self) -> Task:
+        for task_name, tasks in self.tasks.items():
+            yield task_name, tasks
+
 
 
 if __name__ == "__main__":
-    from deval.llms.openai_llm import OpenAILLM
-    from deval.llms.config import LLMArgs, LLMFormatType, LLMAPIs
     from dotenv import load_dotenv, find_dotenv
     
-    task_name = TasksEnum.HALLUCINATION.value
     _ = load_dotenv(find_dotenv())
 
+    task_sample_rate = [
+        (TasksEnum.RELEVANCY.value, 1),
+        (TasksEnum.HALLUCINATION.value, 1),
+        (TasksEnum.ATTRIBUTION.value, 1),
+    ]
 
     allowed_models = ["gpt-4o-mini"]
-    task_generator = TaskGenerator(allowed_models=allowed_models)
+    task_repo = TaskRepository(allowed_models=allowed_models)
 
-    llm_pipeline = [
-        model for model in task_generator.available_models 
-        if model.api == LLMAPIs.OPENAI 
-    ][0]
- 
-    task = task_generator.create_task(llm_pipeline, task_name)
-    print(task)
+    task_repo.generate_all_tasks(task_sample_rate)
+    for task_name, tasks in task_repo.get_all_tasks():
+        print(tasks)

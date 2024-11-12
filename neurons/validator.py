@@ -25,7 +25,7 @@ if __name__ == "__main__":
     with Validator() as v:
         while True:
             bt.logging.info(
-                f"Validator running:: network: {v.subtensor.network} | block: {v.block} | step: {v.step} | uid: {v.uid} | last updated: {v.block-v.metagraph.last_update[v.uid]} | vtrust: {v.metagraph.validator_trust[v.uid]:.3f} | emission {v.metagraph.emission[v.uid]:.3f}"
+                f"Validator running"
             )
             time.sleep(5)
 

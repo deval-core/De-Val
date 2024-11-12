@@ -60,7 +60,7 @@ class OpenAILLM(BaseLLM):
         
         content = self.parse_response(output)
 
-        bt.logging.info(
+        bt.logging.debug(
             f"{self.__class__.__name__} generated the following output:\n{content}"
         )
 

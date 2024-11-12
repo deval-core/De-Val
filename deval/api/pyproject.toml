@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "deval-api"
+version = "0.1.0"
+description = "project to run the eval model api"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11, <3.12"
+transformers = "^4.44.2"
+pyarmor = "8.5.11"
+uvicorn = "^0.30"
+torch = ">=2.0.0, !=2.0.1, !=2.1.0"
+bitsandbytes = "0.42.0"
+python-dotenv = "1.0.1"
+fastapi = "^0.115.0"
+accelerate = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

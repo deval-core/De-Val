@@ -1,7 +1,7 @@
 import pytest
 import inspect
 from inspect import signature
-from deval.tasks import Task
+from deval.tasks.task import Task
 from deval.rewards import REWARD_MODELS
 from .fixtures.task import CONTEXTS, TASKS, TASK_FIELDS
 from .fixtures.llm import mock_llm_pipeline

@@ -25,8 +25,8 @@ class ModelState:
             self.is_valid_repo = False
 
         if self.is_valid_repo:
-            self.last_commit_date: datetime | None = self.get_last_commit_date()
-            self.last_safetensor_update: datetime | None = self.get_last_model_update_date()
+            self.last_commit_date: datetime = self.get_last_commit_date()
+            self.last_safetensor_update: datetime = self.get_last_model_update_date()
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}

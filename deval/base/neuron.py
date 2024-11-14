@@ -160,9 +160,7 @@ class BaseNeuron(ABC):
         ):
             return False
 
-        return (
-            self.block - self.metagraph.last_update[self.uid]
-        ) > self.config.neuron.epoch_length
+        return True
 
     def save_state(self):
         pass

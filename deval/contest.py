@@ -34,7 +34,8 @@ class DeValContest:
         duplicated_model = self.model_hashes.get(model_hash, None)
 
         if duplicated_model is None:
-            self.model_hashes[model_hash] = miner_state
+            if miner_state.uid and miner_state.last_safetensor_update:
+                self.model_hashes[model_hash] = miner_state
             return True
 
         else:
@@ -44,6 +45,11 @@ class DeValContest:
             # if previous model then we zero out the previous model's scores and return this as a valid model
             duplicated_model_uid = duplicated_model.uid
             duplicated_model_date = duplicated_model.last_safetensor_update
+
+            if not duplicated_model_date:
+                if miner_state.uid and miner_state.last_safetensor_update:
+                    self.model_hashes[model_hash] = miner_state
+                return True
 
             if miner_state.last_safetensor_update > duplicated_model_date:
                 return False

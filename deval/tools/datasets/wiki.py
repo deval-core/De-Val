@@ -111,6 +111,7 @@ def process_page(
         sections[key] = content.splitlines()
 
     if not sections:
+        sections['full_content'] = [page.content]
         bt.logging.info(f"No valid sections found in page {page.title!r} ({page.url})")
 
     return sections

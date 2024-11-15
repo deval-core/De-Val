@@ -1,11 +1,12 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 from deval.rewards.reward import RewardReferenceType
+from deval.tasks.hallucination.hallucination_base import HallucinationBaseTask
 
 TOPIC_GEN_SYSTEM_PROMPT = """\
 You are an expert critical reader, adept at pulling out the most salient and key points of any text data
@@ -78,10 +79,10 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinationWikipediaTopicTask(Task):
-    name = TasksEnum.HALLUCINATION.value
-    desc = "Generates summaries for all identified key topics and filters out randomly to generate a missing information task."
-    goal = "Estimates the comprehensiveness of a summary"
+class HallucinationWikipediaTopicTask(HallucinationBaseTask):
+    #name = TasksEnum.HALLUCINATION.value
+    #desc = "Generates summaries for all identified key topics and filters out randomly to generate a missing information task."
+    #goal = "Estimates the comprehensiveness of a summary"
 
     properties = {
         "key_topics": {
@@ -94,18 +95,8 @@ class HallucinationWikipediaTopicTask(Task):
     }
     required_values = ["key_topics"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
+    #tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-    ]
 
     def __init__(self, llm_pipeline, context):
         full_content = context.content
@@ -114,7 +105,9 @@ class HallucinationWikipediaTopicTask(Task):
         summaries = []
         probability_true = random.random()
         topic_system_prompt = TOPIC_GEN_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         query_prompt = TOPIC_GEN_PROMPT.format(
             context = full_content

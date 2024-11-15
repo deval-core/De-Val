@@ -1,11 +1,10 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
-from deval.rewards.reward import RewardReferenceType
+from deval.tasks.summary_completeness.summary_base import CompletenessBaseTask
 
 TOPIC_GEN_SYSTEM_PROMPT = """\
 You are an expert critical reader, adept at pulling out the most salient and key points of any text data
@@ -58,11 +57,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class CompletenessWikipediaTask(Task):
-    name = TasksEnum.COMPLETENESS.value
-    desc = "Generates summaries for all identified key topics and filters out randomly to generate a missing information task."
-    goal = "Estimates the comprehensiveness of a summary"
-
+class CompletenessWikipediaTask(CompletenessBaseTask):
     properties = {
         "key_topics": {
             "type": "array",
@@ -74,18 +69,6 @@ class CompletenessWikipediaTask(Task):
     }
     required_values = ["key_topics"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-    ]
 
     def __init__(self, llm_pipeline, context):
         full_content = context.content
@@ -95,7 +78,9 @@ class CompletenessWikipediaTask(Task):
 
 
         topic_system_prompt = TOPIC_GEN_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         query_prompt = TOPIC_GEN_PROMPT.format(
             context = full_content

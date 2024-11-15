@@ -3,13 +3,25 @@ from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
 from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
-from deval.tasks.hallucination.hallucination_generation import HallucinatioGenerationTask
-from deval.tasks.hallucination.hallucination_wikipedia_topics import HallucinationWikipediaTopicTask
-from deval.tasks.hallucination.hallucination_wikipedia_gen import HallucinationWikipediaGenTask
-from deval.tasks.summary_completeness.summary_generation import CompletenessGenerationTask
-from deval.tasks.summary_completeness.summary_wikipedia import CompletenessWikipediaTask
-from deval.tasks.attribution import AttributionTask
-from deval.tasks.relevancy import RelevancyTask
+from deval.tasks.hallucination import (
+    HallucinationWikipediaTopicTask, 
+    HallucinationBaseTask,
+    HallucinatioGenerationTask,
+    HallucinationWikipediaGenTask
+)
+from deval.tasks.summary_completeness import (
+    CompletenessWikipediaTask,
+    CompletenessBaseTask,
+    CompletenessGenerationTask
+)
+from deval.tasks.attribution import (
+    AttributionGenerationTask,
+    AttributionBaseTask
+)
+from deval.tasks.relevancy import (
+    RelevancyWikipediaTask,
+    RelevancyBaseTask
+)
 from deval.tasks.task import Task, TasksEnum
 from deval.tools import (
     WikiDataset, GenericDataset, AttributionDataset
@@ -21,15 +33,17 @@ import random
 
 TASKS = {
     TasksEnum.RELEVANCY.value: {
+        "base_function": RelevancyBaseTask,
         "tasks": [
             {
-                "task_function": RelevancyTask,
+                "task_function": RelevancyWikipediaTask,
                 "dataset": WikiDataset,
             }
         ],
         "task_p": 1,
     },
     TasksEnum.HALLUCINATION.value: {
+        "base_function": HallucinationBaseTask,
         "tasks": [
             {
                 "task_function": HallucinatioGenerationTask,
@@ -47,6 +61,7 @@ TASKS = {
         "task_p": 1,
     },
     TasksEnum.COMPLETENESS.value: {
+        "base_function": CompletenessBaseTask,
         "tasks": [
             {
                 "task_function": CompletenessWikipediaTask,
@@ -60,9 +75,10 @@ TASKS = {
         "task_p": 1,
     },
     TasksEnum.ATTRIBUTION.value: {
+        'base_function': AttributionBaseTask,
         "tasks": [
             {
-                "task_function": AttributionTask,
+                "task_function": AttributionGenerationTask,
                 "dataset": AttributionDataset,
             }
         ],
@@ -182,10 +198,10 @@ if __name__ == "__main__":
     _ = load_dotenv(find_dotenv())
 
     task_sample_rate = [
-        #(TasksEnum.RELEVANCY.value, 1),
+        (TasksEnum.RELEVANCY.value, 1),
         #(TasksEnum.HALLUCINATION.value, 1),
         #(TasksEnum.ATTRIBUTION.value, 1),
-        (TasksEnum.COMPLETENESS.value, 1),
+        #(TasksEnum.COMPLETENESS.value, 1),
     ]
 
     allowed_models = ["gpt-4o-mini"]

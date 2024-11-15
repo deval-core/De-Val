@@ -1,11 +1,12 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 from deval.rewards.reward import RewardReferenceType
+from deval.tasks.hallucination.hallucination_base import HallucinationBaseTask
 
 
 
@@ -64,10 +65,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinatioGenerationTask(Task):
-    name = TasksEnum.HALLUCINATION.value
-    desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
-    goal = "Estimates the number of hallucination in a response given a RAG context"
+class HallucinatioGenerationTask(HallucinationBaseTask):
     max_paragraphs = 20
     properties = {
         "context": {
@@ -81,28 +79,18 @@ class HallucinatioGenerationTask(Task):
     }
     required_values = ["context", "claim"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
 
     def __init__(self, llm_pipeline, context):
         self.context = context
         responses = []
 
-
         num_pagraphs = random.randint(5, self.max_paragraphs)
         num_claims = random.randint(3, num_pagraphs)
         probability_true = random.random()
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):

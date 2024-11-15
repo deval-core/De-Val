@@ -1,11 +1,11 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
-from deval.rewards.reward import RewardReferenceType
+from deval.tasks.summary_completeness.summary_base import CompletenessBaseTask
 
 
 # Used to obtain the set of contexts and claims 
@@ -50,11 +50,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class CompletenessGenerationTask(Task):
-    name = TasksEnum.COMPLETENESS.value
-    desc = "Generates a fake input context and associated summary for a summary completeness evaluation task"
-    goal = "Estimates the comprehensiveness of a summary"
-
+class CompletenessGenerationTask(CompletenessBaseTask):
     max_paragraphs = 20
     properties = {
         "context": {
@@ -68,19 +64,6 @@ class CompletenessGenerationTask(Task):
     }
     required_values = ["context", "summary"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.25, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="rouge", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-        dict(name="relevance", weight=0.125, reference_type = RewardReferenceType.MISTAKES),
-    ]
-
     def __init__(self, llm_pipeline, context):
         self.context = context
         responses = []
@@ -89,7 +72,9 @@ class CompletenessGenerationTask(Task):
         num_pagraphs = random.randint(5, self.max_paragraphs)
         num_summaries = random.randint(5, num_pagraphs)
         system_prompt = COMPLETENESS_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):

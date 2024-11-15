@@ -1,11 +1,11 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
-from deval.rewards.reward import RewardReferenceType
+from deval.tasks.hallucination.hallucination_base import HallucinationBaseTask
 
 
 # Used to obtain the set of contexts and claims 
@@ -55,10 +55,10 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinationWikipediaGenTask(Task):
-    name = TasksEnum.HALLUCINATION.value
-    desc = "Utilizes wikipedia as a base and generates fake and true claims for a hallucination evaluation task"
-    goal = "Estimates the number of hallucination in a response given a RAG context"
+class HallucinationWikipediaGenTask(HallucinationBaseTask):
+    #name = TasksEnum.HALLUCINATION.value
+    #desc = "Utilizes wikipedia as a base and generates fake and true claims for a hallucination evaluation task"
+    #goal = "Estimates the number of hallucination in a response given a RAG context"
     properties = {
         "response": {
             "type": "string",
@@ -67,17 +67,8 @@ class HallucinationWikipediaGenTask(Task):
     }
     required_values = ["response"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
+    #tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
 
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
 
     def __init__(self, llm_pipeline, context):
         sections = context.sections
@@ -88,7 +79,8 @@ class HallucinationWikipediaGenTask(Task):
 
         
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for header, section in sections.items():

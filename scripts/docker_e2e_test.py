@@ -15,7 +15,7 @@ _ = load_dotenv(find_dotenv())
 allowed_models = ["gpt-4o-mini"]
 
 repo_id = "deval-core"
-model_id = "base-eval-test"
+model_id = "base-eval"
 timeout = 600
 uid = 1
 max_model_size_gbs = 18
@@ -26,9 +26,9 @@ task_repo = TaskRepository(allowed_models=allowed_models)
 
 task_sample_rate = [
     (TasksEnum.RELEVANCY.value, 1),
-    (TasksEnum.HALLUCINATION.value, 1),
-    (TasksEnum.ATTRIBUTION.value, 1),
-    (TasksEnum.COMPLETENESS.value, 1)
+    #(TasksEnum.HALLUCINATION.value, 1),
+    #(TasksEnum.ATTRIBUTION.value, 1),
+    #(TasksEnum.COMPLETENESS.value, 1)
 ]
 active_tasks = [t[0] for t in task_sample_rate]
 reward_pipeline = RewardPipeline(

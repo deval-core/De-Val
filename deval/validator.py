@@ -91,6 +91,7 @@ class Validator(BaseValidatorNeuron):
         for uid in available_uids:
             try:
                 # get the model metadata information from miner
+                bt.logging.info(f"Beginning step for uid: {uid}")
                 responses = await get_metadata_from_miner(self, uid)
                 response_event = DendriteModelQueryEvent(responses)
                 bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
@@ -113,7 +114,9 @@ class Validator(BaseValidatorNeuron):
                 # update contest
                 self.contest.update_model_state_with_rewards(miner_state) 
                 self.queried_uids.add(uid)
-                self.save_state()
+
+                if is_valid:
+                    self.save_state()
                 del miner_state
 
             except Exception as e:
@@ -137,6 +140,7 @@ class Validator(BaseValidatorNeuron):
     ):
         valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
         model_hash = miner_docker_client.get_model_hash()
+        bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid}")
         is_valid = contest.validate_model(miner_state, model_hash)
         if not is_valid:
             return miner_state

@@ -1,0 +1,4 @@
+from deval.tasks.hallucination.hallucination_base import HallucinationBaseTask
+from deval.tasks.hallucination.hallucination_generation import HallucinatioGenerationTask
+from deval.tasks.hallucination.hallucination_wikipedia_gen import HallucinationWikipediaGenTask
+from deval.tasks.hallucination.hallucination_wikipedia_topics import HallucinationWikipediaTopicTask

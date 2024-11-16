@@ -3,37 +3,85 @@ from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
 from deval.llms.base_llm import BaseLLM
 from deval.llms.config import LLMAPIs, LLMArgs, LLMFormatType, SUPPORTED_MODELS
-from deval.tasks.hallucination import HallucinationTask
-from deval.tasks.summary_completeness import CompletenessTask
-from deval.tasks.attribution import AttributionTask
-from deval.tasks.relevancy import RelevancyTask
+from deval.tasks.hallucination import (
+    HallucinationWikipediaTopicTask, 
+    HallucinationBaseTask,
+    HallucinatioGenerationTask,
+    HallucinationWikipediaGenTask
+)
+from deval.tasks.summary_completeness import (
+    CompletenessWikipediaTask,
+    CompletenessBaseTask,
+    CompletenessGenerationTask
+)
+from deval.tasks.attribution import (
+    AttributionGenerationTask,
+    AttributionBaseTask
+)
+from deval.tasks.relevancy import (
+    RelevancyWikipediaTask,
+    RelevancyBaseTask
+)
 from deval.tasks.task import Task, TasksEnum
 from deval.tools import (
     WikiDataset, GenericDataset, AttributionDataset
 )
 import os 
 import numpy as np
+import random 
 
 
 TASKS = {
     TasksEnum.RELEVANCY.value: {
-        "task_function": RelevancyTask,
-        "dataset": WikiDataset,
+        "base_function": RelevancyBaseTask,
+        "tasks": [
+            {
+                "task_function": RelevancyWikipediaTask,
+                "dataset": WikiDataset,
+            }
+        ],
         "task_p": 1,
     },
     TasksEnum.HALLUCINATION.value: {
-        "task_function": HallucinationTask,
-        "dataset": GenericDataset,
+        "base_function": HallucinationBaseTask,
+        "tasks": [
+            {
+                "task_function": HallucinatioGenerationTask,
+                "dataset": GenericDataset,
+            },
+            {
+                "task_function": HallucinationWikipediaTopicTask,
+                "dataset": WikiDataset,
+            },
+            {
+                "task_function": HallucinationWikipediaGenTask,
+                "dataset": WikiDataset,
+            }
+        ],
         "task_p": 1,
     },
     TasksEnum.COMPLETENESS.value: {
-        "task_function": CompletenessTask,
-        "dataset": GenericDataset,
+        "base_function": CompletenessBaseTask,
+        "tasks": [
+            {
+                "task_function": CompletenessWikipediaTask,
+                "dataset": WikiDataset,
+            },
+            {
+                "task_function": CompletenessGenerationTask,
+                "dataset": GenericDataset,
+            }
+        ],
         "task_p": 1,
     },
     TasksEnum.ATTRIBUTION.value: {
-        "task_function": AttributionTask,
-        "dataset": AttributionDataset,
+        'base_function': AttributionBaseTask,
+        "tasks": [
+            {
+                "task_function": AttributionGenerationTask,
+                "dataset": AttributionDataset,
+            }
+        ],
         "task_p": 1,
     }
 }
@@ -109,12 +157,13 @@ class TaskRepository:
 
     def create_task(self, llm_pipeline: BaseLLM, task_name: str) -> Task:
         
-        task_extract = TASKS.get(task_name, None)
+        task_extract = TASKS.get(task_name, {}).get('tasks', None)
         if task_extract is None:
             raise ValueError(f"Task {task_name} not supported. Please choose a valid task")
 
-        task_function = task_extract['task_function']
-        dataset = task_extract['dataset']()
+        selected_task = random.sample(task_extract, k = 1)[0]
+        task_function = selected_task['task_function']
+        dataset = selected_task['dataset']()
 
         task = task_function(
             llm_pipeline=llm_pipeline, 
@@ -150,8 +199,9 @@ if __name__ == "__main__":
 
     task_sample_rate = [
         (TasksEnum.RELEVANCY.value, 1),
-        (TasksEnum.HALLUCINATION.value, 1),
-        (TasksEnum.ATTRIBUTION.value, 1),
+        #(TasksEnum.HALLUCINATION.value, 1),
+        #(TasksEnum.ATTRIBUTION.value, 1),
+        #(TasksEnum.COMPLETENESS.value, 1),
     ]
 
     allowed_models = ["gpt-4o-mini"]

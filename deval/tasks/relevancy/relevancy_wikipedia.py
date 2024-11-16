@@ -1,10 +1,9 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel
-from deval.rewards.reward import RewardReferenceType
+from deval.tasks.relevancy.relevancy_base import RelevancyBaseTask
 
 
 # Used to obtain the set of contexts and QA pairs 
@@ -51,11 +50,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class RelevancyTask(Task):
-    name = TasksEnum.RELEVANCY.value
-    desc = "Estimates the relevancy of an answer to a user query based on a provided context"
-    goal = "to identify whether an answer to a user query is relevant or not"
-
+class RelevancyWikipediaTask(RelevancyBaseTask):
     properties = {
         "query": {
             "type": "string",
@@ -67,14 +62,7 @@ class RelevancyTask(Task):
         },
     }
     required_values = ["query", "answer"]
-
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-
-    reward_definition = [
-        dict(name="ordinal", weight=1.0, reference_type = RewardReferenceType.SCORE),
-    ]
-    penalty_definition = []
+    
 
     def __init__(self, llm_pipeline, context):
         content = context.content
@@ -83,7 +71,9 @@ class RelevancyTask(Task):
         system_prompt = RELEVANCY_SYSTEM_PROMPT
         probability_relevant = random.random()
         relevant_or_not = True if random.random() <= probability_relevant else False
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         query_prompt = RELEVANCY_PROMPT_TEMPLATE.format(
             relevant_or_not = relevant_or_not,

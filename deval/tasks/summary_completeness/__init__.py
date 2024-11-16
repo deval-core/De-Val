@@ -1,0 +1,3 @@
+from deval.tasks.summary_completeness.summary_base import CompletenessBaseTask
+from deval.tasks.summary_completeness.summary_generation import CompletenessGenerationTask
+from deval.tasks.summary_completeness.summary_wikipedia import CompletenessWikipediaTask

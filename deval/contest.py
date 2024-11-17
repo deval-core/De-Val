@@ -127,8 +127,3 @@ class DeValContest:
         weights += [(uid, .001) for (uid, _) in ranked_rewards[num_rewards:20]]
 
         return weights
-
-    def clear_state(self):
-        # TODO: 
-        # it shouldn't matter, but safe precaution to clear the contest state on next run
-        pass

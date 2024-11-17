@@ -55,7 +55,7 @@ class Validator(BaseValidatorNeuron):
             self.wallet.hotkey.ss58_address, 
             self.metagraph.netuid, 
             active_tasks,
-            config)
+            self.config)
 
         bt.logging.info("load_state()")
         self.load_state()

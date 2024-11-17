@@ -89,7 +89,7 @@ class DeValContest:
         adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
         
         # Adjust the remaining tiers proportionally
-        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
+        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants-1}
         
         # Normalize adjusted tiers to ensure they sum up to 1
         adjusted_tiers_sum = sum(adjusted_tiers.values())

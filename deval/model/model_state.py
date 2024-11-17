@@ -31,7 +31,7 @@ class ModelState:
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
-        
+
 
     def _get_safetensor_files(self, model_dir: str | None):
         """Get a sorted list of .safetensors files from the specified directory."""
@@ -39,7 +39,7 @@ class ModelState:
             files = [f for f in os.listdir(model_dir) if f.endswith('.safetensors')]
             return sorted(files)
         else:
-            return self.fs.glob(f"{self.get_model_url()}/*.safetensors")
+            return self.fs.glob(f"{self.get_model_url()}/**.safetensors")
 
     def add_miner_coldkey(self, coldkey: str):
         self.coldkey = coldkey

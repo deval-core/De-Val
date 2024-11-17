@@ -42,7 +42,7 @@ class DeValContest:
 
         if duplicated_model is None:
             print("No Duplicated model. This is a valid model")
-            if miner_state.uid and miner_state.last_safetensor_update:
+            if miner_state.uid is not None and miner_state.last_safetensor_update:
                 self.model_hashes[model_hash] = miner_state
             return True
 
@@ -55,7 +55,7 @@ class DeValContest:
             duplicated_model_date = duplicated_model.last_safetensor_update
 
             if not duplicated_model_date:
-                if miner_state.uid and miner_state.last_safetensor_update:
+                if miner_state.uid is not None and miner_state.last_safetensor_update:
                     self.model_hashes[model_hash] = miner_state
                 print("Found a duplicate model, but unable to find the duplicated date. Weird state. Valid model")
                 return True

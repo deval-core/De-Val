@@ -74,10 +74,11 @@ class HuggingFaceModel:
 
 
         # Run the obfuscator on the pipeline directory
-        print("Running PyArmor obfuscation on pipeline directory...")
-        Obfuscator.obfuscate(pipeline_dir)
-
+        
         if upload_pipeline:
+            print("Running PyArmor obfuscation on pipeline directory...")
+            Obfuscator.obfuscate(pipeline_dir)
+
             print("Starting Pipeline upload")
             api.upload_folder(
                 folder_path=os.path.join(pipeline_dir, '../obfuscated_pipeline'),

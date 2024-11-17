@@ -39,7 +39,7 @@ class ModelState:
             files = [f for f in os.listdir(model_dir) if f.endswith('.safetensors')]
             return sorted(files)
         else:
-            return self.fs.glob(f"{self.get_model_url()}/**.safetensors")
+            return self.fs.glob(f"{self.get_model_url()}/*.safetensors")
 
     def add_miner_coldkey(self, coldkey: str):
         self.coldkey = coldkey

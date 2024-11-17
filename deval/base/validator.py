@@ -390,3 +390,6 @@ class BaseValidatorNeuron(BaseNeuron):
             file_path = os.path.join(load_path, f)
             if os.path.isfile(file_path):
                 os.remove(file_path)
+
+    def get_uid_coldkey(self, uid: int) -> str:
+        return self.metagraph.axons[uid].coldkey

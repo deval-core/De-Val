@@ -97,6 +97,7 @@ class Validator(BaseValidatorNeuron):
                 bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
                 miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
+                miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
                 is_valid = miner_state.should_run_evaluation(
                     uid, self.max_model_size_gbs, forward_start_time, top_incentive_uids
@@ -140,8 +141,9 @@ class Validator(BaseValidatorNeuron):
     ):
         valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
         model_hash = miner_docker_client.get_model_hash()
-        bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid}")
-        is_valid = contest.validate_model(miner_state, model_hash)
+        model_coldkey = miner_docker_client.get_model_coldkey()
+        bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid} with coldkey: {model_coldkey}")
+        is_valid = contest.validate_model(miner_state, model_hash, model_coldkey)
         if not is_valid:
             return miner_state
 

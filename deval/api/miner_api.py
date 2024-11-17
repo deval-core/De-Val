@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import os
 import time
-from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APIStatus
+from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APIStatus, ModelColdkeyResponse
 from deval.model.huggingface_model import HuggingFaceModel
 import sys
 import hashlib
@@ -77,6 +77,19 @@ async def get_model_hash()-> ModelHashResponse:
     print(f"Hash of model: {hash_value}")
     return ModelHashResponse(hash =hash_value)
 
+
+@app.get("/get_model_coldkey")
+async def get_model_coldkey() -> ModelColdkeyResponse:
+    print("pulling coldkey")
+    try:
+        coldkey = open(os.path.join(model_dir, "coldkey.txt"), "r").read()
+    except:
+        coldkey = None
+    
+    print(f"Returning coldkey as: {coldkey}")
+    return ModelColdkeyResponse(
+        coldkey=coldkey
+    )
 
 @app.get("/health")
 async def health()->bool:

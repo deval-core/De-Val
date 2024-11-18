@@ -89,7 +89,7 @@ class DeValContest:
         adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
         
         # Adjust the remaining tiers proportionally
-        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
+        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants-1}
         
         # Normalize adjusted tiers to ensure they sum up to 1
         adjusted_tiers_sum = sum(adjusted_tiers.values())
@@ -127,8 +127,3 @@ class DeValContest:
         weights += [(uid, .001) for (uid, _) in ranked_rewards[num_rewards:20]]
 
         return weights
-
-    def clear_state(self):
-        # TODO: 
-        # it shouldn't matter, but safe precaution to clear the contest state on next run
-        pass

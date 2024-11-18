@@ -101,7 +101,7 @@ class WandBLogger:
             anonymous="allow",
             reinit=reinit,
             project="subnet",
-            entity=self.config.wandb.entity,
+            entity="deval-ai",
             config=wandb_config,
             mode="offline" if self.config.wandb.offline else "online",
             dir=self.config.neuron.full_path,

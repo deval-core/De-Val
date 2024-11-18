@@ -3,7 +3,10 @@
 ### Requirements
 - Python 3.11
 - Poetry
-- GPU with at least 24GB vram, please see the min_compute.yml for additional details such as CUDA version.
+- Docker
+- GPU with at least 40GB vram, please see the min_compute.
+- NVIDIA drivers  including CUDA
+- NVIDIA container-toolkit [please refer to FAQ #3]
 - OPENAI API key or AWS Bedrock
 - HUGGINGFACE token
 - WANDB API key 
@@ -100,14 +103,25 @@ OPENAI_API_KEY=<your_openai_key_here>
 AWS_ACCESS_KEY_ID=<your_aws_access_key_here>
 AWS_SECRET_ACCESS_KEY=<your_aws_seceret_key_here>
 ```
+*Note: the `.env` file should be stored in `~/De-Val/` directory.*
 
-### Build docker container for miner API [optional]
+### Build docker container for miner API 
 
 ```
-docker compose up --build  --timeout 300 miner-api
+docker compose up --build  --timeout 300 miner-api -d
 ```
 This is optional as the code will build the container if not already built. 
 
+Make sure everything in working properly prior to starting your validator using:
+```bash
+scripts/docker_e2e_test.py 
+```
+Using `docker_e2e_test.py` you should be able to observe the following:
+   - Docker container initializing
+   - Task(s) being generated
+   - Error logs while attempting to connect to `miner-api` while the model is still loading. 
+   - Model being queried successfully.
+*Note: You can confirm the model was successfully uploaded and queried using `docker logs miner-api` after running `docker_e2e_test.py`.*
 ### Running Validator:
 ```
 pm2 start neurons/validator.py --name de-val-validator -- \
@@ -117,18 +131,31 @@ pm2 start neurons/validator.py --name de-val-validator -- \
     --wallet.hotkey <your hotkey> 
     --logging.debug 
     --logging.trace 
-    --axon.port <port>
+    --axon.port <port> 
     --neuron.model_ids 'gpt-4o,gpt-4o-mini,mistral-7b,claude-3.5,command-r-plus'
 ```
 
 ## FAQ 
 
-#### 1. Should I run my validator with root permissions?
+#### 1. Why is `Poetry` in not being installed correctly with the `curl` command?
+
+There are certain system which do not behave as expected when installing `Poetry` with the `curl` command posted in the guide, alternatively you can install `Poetry` with `pipx` using:
+```
+if [ "$USER" = "root" ]; then
+  apt install pipx
+else
+  sudo apt install pipx
+fi
+
+pipx ensurepath
+pipx install poetry
+```
+#### 2. Should I run my validator with root permissions?
 
 
 While it's possible to run your validator without root permissions, we **recommend running it with root permissions** to avoid permission-related issues, especially with Docker. Running as root can prevent errors such as the Docker permission error described in FAQ #3. If you choose not to run as root, be prepared to adjust permissions accordingly to ensure proper functionality.
 
-#### 2. What should I do when I see the error:
+#### 3. What should I do when I see the error:
 
 ```
 Error response from daemon: could not select device driver "nvidia" with capabilities: [[gpu]]
@@ -173,7 +200,7 @@ This error indicates that the **NVIDIA Container Toolkit** is either not install
 
    - You should see the output of `nvidia-smi`, indicating that Docker can now use your GPU.
 
-#### 3. What should I do when I see the error:
+#### 4. What should I do when I see the error **or** running `pm2` without root privileges:
 
 ```
 Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.47/containers/json?all=1&filters=%7B%22label%22%3A%7B%22com.docker.compose.config-hash%22%3Atrue%2C%22com.docker.compose.project%3Dde-val%22%3Atrue%7D%7D": dial unix /var/run/docker.sock: connect: permission denied
@@ -192,7 +219,7 @@ This error occurs due to insufficient permissions to access the Docker daemon so
    **Note:** This change may be reset after a reboot or Docker daemon restart.
 
 
-#### 4. What should I do if I have further questions or need assistance?
+#### 5. What should I do if I have further questions or need assistance?
 
 Feel free to reach out to us:
 

@@ -77,27 +77,10 @@ Before proceeding, make sure you have:
 
 ---
 
-## Step 4: Restart Your Validator
-
-You can now explicitly define the model IDs you want to run using the `--neuron.model_ids` flag and a comma-separated list of models.
-
-- The `default` setting would be using all available models.
-- Format the list as a comma-separated string with **no spaces** (e.g., `'gpt-4o,gpt-4o-mini'`).
-
-### Example Command:
-
-```
-pm2 start neurons/validator.py --name de-val-validator -- \
-    --netuid 15
-    --subtensor.network <finney/local/test>
-    --wallet.name <your coldkey> 
-    --wallet.hotkey <your hotkey> 
-    --logging.debug 
-    --logging.trace 
-    --axon.port <port>
-    --neuron.model_ids 'gpt-4o,gpt-4o-mini,mistral-7b,claude-3.5,command-r-plus'
-```
-
+## Step 4: Alternative - create dedicated user (more secure)
+- Navigate to IAM
+- Create New User - name the user `sn-15` 
+- Attach `AmazonBedrockFullAccess` policy to the user. 
 ---
 
 ### Key Updates

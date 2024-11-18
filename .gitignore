@@ -167,3 +167,7 @@ testing/
 
 # temporary and exported files
 scripts/exports/
+
+
+# ignore pyarmor updates
+neurons/miners/model/obfuscated/

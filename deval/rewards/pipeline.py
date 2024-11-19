@@ -49,7 +49,7 @@ class RewardPipeline:
     def _check_weights(self, task, definition, expected_weight):
         total_weight = 0
 
-        model_infos = getattr(TASKS[task].get("task_function"), definition)
+        model_infos = getattr(TASKS[task].get("base_function"), definition)
 
         for model_info in model_infos:
             if not isinstance(model_info, dict):
@@ -87,8 +87,8 @@ class RewardPipeline:
         active_reward_models = []
 
         for task in self.selected_tasks:
-            active_reward_models += TASKS[task].get("task_function").reward_definition
-            active_reward_models += TASKS[task].get("task_function").penalty_definition
+            active_reward_models += TASKS[task].get("base_function").reward_definition
+            active_reward_models += TASKS[task].get("base_function").penalty_definition
 
         # Instantiate only the required reward models
         reward_models = {}

@@ -17,6 +17,7 @@ class ModelState:
         self.repo_id = repo_id
         self.model_id = model_id 
         self.uid = uid
+        self.coldkey = None
 
         try:
             _ = self.api.model_info(self.get_model_url())
@@ -30,7 +31,7 @@ class ModelState:
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
-        
+
 
     def _get_safetensor_files(self, model_dir: str | None):
         """Get a sorted list of .safetensors files from the specified directory."""
@@ -39,6 +40,9 @@ class ModelState:
             return sorted(files)
         else:
             return self.fs.glob(f"{self.get_model_url()}/*.safetensors")
+
+    def add_miner_coldkey(self, coldkey: str):
+        self.coldkey = coldkey
 
     def get_model_url(self):
         return self.repo_id + "/" + self.model_id

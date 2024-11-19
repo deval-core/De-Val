@@ -143,7 +143,20 @@ class MinerDockerClient:
 
         except Exception as e:
             bt.logging.error(f"Failed to get hash: {e}")
-            return ""
+            return None
+
+    def get_model_coldkey(self)->str:
+        try:
+            response = requests.get(
+                f"{self.api_url}/get_model_coldkey",
+                timeout=60
+            )
+            resp = response.json()
+            return resp.get("coldkey")
+
+        except Exception as e:
+            bt.logging.error(f"Failed to get Coldkey: {e}")
+            return None
 
         
 

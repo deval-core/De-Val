@@ -3,6 +3,9 @@ from datetime import datetime
 from deval.rewards.pipeline import RewardPipeline
 import pytz
 
+
+# Note to help with serialization during save, we do not have bittensor package here
+# TODO: add a better logger 
 class DeValContest:
 
     def __init__(self, reward_pipeline: RewardPipeline, forward_start_time: int, timeout: int):
@@ -21,20 +24,25 @@ class DeValContest:
             4 : 0.025
         }
 
-    def validate_model(self, miner_state: ModelState, model_hash: str) -> bool:
+    def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
- 
-        # allow llama3 8B hash always
-        if model_hash == "9e6aeb175fd9ef8d6fe12315136fc34977aaac178a3b4aefd6d453682d9a05dc":
-            return True
+
+        if not model_hash or not model_coldkey:
+            print("Unable to generate model hash or model coldkey, INVALID Model")
+            return False
+
+        if model_coldkey != miner_state.coldkey:
+            print("Mismatch between the Miner's coldkey and the Model's Coldkey. INVALID Model")
+            return False
 
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
         duplicated_model = self.model_hashes.get(model_hash, None)
 
         if duplicated_model is None:
-            if miner_state.uid and miner_state.last_safetensor_update:
+            print("No Duplicated model. This is a valid model")
+            if miner_state.uid is not None and miner_state.last_safetensor_update:
                 self.model_hashes[model_hash] = miner_state
             return True
 
@@ -47,11 +55,13 @@ class DeValContest:
             duplicated_model_date = duplicated_model.last_safetensor_update
 
             if not duplicated_model_date:
-                if miner_state.uid and miner_state.last_safetensor_update:
+                if miner_state.uid is not None and miner_state.last_safetensor_update:
                     self.model_hashes[model_hash] = miner_state
+                print("Found a duplicate model, but unable to find the duplicated date. Weird state. Valid model")
                 return True
 
             if miner_state.last_safetensor_update > duplicated_model_date:
+                print("Found a duplicate model and this has a later date. This is an INVALID Model")
                 return False
 
             else: 
@@ -60,6 +70,7 @@ class DeValContest:
                 # update the model associated 
                 self.model_hashes[model_hash] = miner_state
                 self.model_rewards.pop(duplicated_model_uid, None)
+                print("Found a duplicate model, but this has an earlier commit date and is treated as the valid model")
                 return True
 
                 
@@ -78,7 +89,7 @@ class DeValContest:
         adjustment_ratio = (total_tiers_sum - missing_rewards_sum) / total_tiers_sum
         
         # Adjust the remaining tiers proportionally
-        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants}
+        adjusted_tiers = {rank: reward * adjustment_ratio for rank, reward in self.tiers.items() if rank <= num_participants-1}
         
         # Normalize adjusted tiers to ensure they sum up to 1
         adjusted_tiers_sum = sum(adjusted_tiers.values())
@@ -116,8 +127,3 @@ class DeValContest:
         weights += [(uid, .001) for (uid, _) in ranked_rewards[num_rewards:20]]
 
         return weights
-
-    def clear_state(self):
-        # TODO: 
-        # it shouldn't matter, but safe precaution to clear the contest state on next run
-        pass

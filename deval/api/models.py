@@ -21,8 +21,9 @@ class EvalResponse(BaseModel):
 
 class ModelHashResponse(BaseModel):
     hash: str
-    
 
+class ModelColdkeyResponse(BaseModel):
+    coldkey: str | None
 
 
 

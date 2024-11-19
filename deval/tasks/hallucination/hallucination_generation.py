@@ -1,11 +1,12 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
+from deval.tasks.task import TasksEnum
 from deval.tasks.tool_schema import ToolSchemaGenerator
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 from deval.rewards.reward import RewardReferenceType
+from deval.tasks.hallucination.hallucination_base import HallucinationBaseTask
 
 
 
@@ -25,7 +26,8 @@ In response you will return the context in JSON format following the structure d
 The context should be based on a the topic and sub-topic.
 
 If the claim should be true, then a reader should be able to determine if that is the case by reading the preceding context.\
-The same applies if it should be false, where the reader can identify that it is false given just the information from the preceding context.
+The same applies if it should be false, where the reader can identify that it is false given just the information from the preceding context. \
+The generated claim should range from 1 to 3 sentences long. 
 
 The context type parameter should guide the style that you write the context in.  For example, if provided a context type of 'book' \
 then the context should be formatted and written like a book, whereas, if provided the context type 'screenplay' then the context should be formatted like a screenplay.
@@ -63,10 +65,7 @@ class Config(BaseModel):
 
 
 @dataclass
-class HallucinationTask(Task):
-    name = TasksEnum.HALLUCINATION.value
-    desc = "Generates a fake input context and associated claims for a hallucination evaluation task"
-    goal = "Estimates the number of hallucination in a response given a RAG context"
+class HallucinatioGenerationTask(HallucinationBaseTask):
     max_paragraphs = 20
     properties = {
         "context": {
@@ -80,28 +79,18 @@ class HallucinationTask(Task):
     }
     required_values = ["context", "claim"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
 
     def __init__(self, llm_pipeline, context):
         self.context = context
         responses = []
 
-
         num_pagraphs = random.randint(5, self.max_paragraphs)
         num_claims = random.randint(3, num_pagraphs)
         probability_true = random.random()
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):

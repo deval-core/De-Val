@@ -24,28 +24,3 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-
-#  validator:
-#    build:
-#      context: .
-#      dockerfile: dockerfile
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
-#      - eval_llm:/app/eval_llm
-#    networks:
-#      - internal_net
-#      - default
-#    env_file:
-#      - .env
-#    command: >
-#      poetry run python3 neurons/validator.py
-#      --netuid ${NETUID:-15}
-#      --wallet.name ${WALLET_NAME}
-#      --wallet.hotkey ${HOTKEY}
-#      --subtensor.network ${SUBTENSOR_NETWORK}
-
-
-#networks:
-#  internal_net:
-#    driver: bridge
-#    internal: true

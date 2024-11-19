@@ -1,11 +1,10 @@
 import bittensor as bt
 from dataclasses import dataclass
-from deval.tasks.task import Task, TasksEnum
 import random
 from pydantic import BaseModel, ValidationError
 from json.decoder import JSONDecodeError
 from deval.tasks.tool_schema import ToolSchemaGenerator
-from deval.rewards.reward import RewardReferenceType
+from deval.tasks.attribution.attribution_base import AttributionBaseTask
 
 
 
@@ -66,11 +65,8 @@ class Config(BaseModel):
 
 
 @dataclass
-class AttributionTask(Task):
-    name = TasksEnum.ATTRIBUTION.value
-    desc = "Generate a context and associated action items for a misattribution evaluation task"
-    goal = "Estimates the number of correctly attributed action items in a response given a RAG context"
-
+class AttributionGenerationTask(AttributionBaseTask):
+    
     max_particpants = 20
     max_paragraphs = 5
 
@@ -86,16 +82,8 @@ class AttributionTask(Task):
     }
     required_values = ["context", "action_item"]
 
-    tool_schema_generator = ToolSchemaGenerator(name, desc, properties, required_values)
-
-    reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
-    penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
-    ]
+    
+    
 
     def __init__(self, llm_pipeline, context):
         self.context = context
@@ -107,7 +95,9 @@ class AttributionTask(Task):
         num_participants = random.randint(2, self.max_particpants)
         probability_true = random.random()
         system_prompt = ATTRIBUTION_SYSTEM_PROMPT
-        tool_schema = self.tool_schema_generator.get_schema(llm_pipeline)
+
+        tool_schema_generator = ToolSchemaGenerator(self.name, self.desc, self.properties, self.required_values)
+        tool_schema = tool_schema_generator.get_schema(llm_pipeline)
 
         resp_tmp = None
         for _ in range(num_pagraphs):

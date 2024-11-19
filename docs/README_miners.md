@@ -5,7 +5,7 @@
 - **Python 3.11** - important for compatibility with PyArmor
 - **Poetry**
 - **CPU-only instance** for running your miner
-- **GPU instance** for training your models offline
+- **GPU instance** for training your models offline / testing your models
 
 ---
 
@@ -14,6 +14,8 @@
 1. **Submission to Hugging Face**
    - **Requirements**: Miners must submit their models and pipeline code to Hugging Face.
    - **Repository Size Limit**: The entire Hugging Face repository must not exceed **18GB**. Ensure that your combined model files and pipeline code stay within this limit.
+   - **`Coldkey.txt`**: All model repo's need to contain a `.txt` file with the coldkey miners will use to upload their models. Please refer to our base model here for the example of `coldkey.txt`:[deval-core/base-eval/tree/main](https://huggingface.co/deval-core/base-eval/tree/main).
+    -**Verification:** We will match this coldkey with your miner UID’s coldkey. Submissions without a matching coldkey will be ignored.
    - **Supported Model Formats**: We currently **only support models in the SafeTensors format**. If you require support for other formats, please let us know—we're open to adding them based on your needs.
 
 2. **Supported Models**
@@ -27,8 +29,8 @@
    - **Protection**: We allow obfuscation of your code using **PyArmor** to ensure your competitive edge.
 
 5. **Model Duplication Checks**
-   - **Base Model Usage**: **Everyone can use the LLaMA 8B model as a starting point**. Our base model is available here: [deval-core/base-eval](https://huggingface.co/deval-core/base-eval).
-   - **Uniqueness Requirement**: We will check for any duplicated models **besides the base model**. You need to make at least one modification to the base model to ensure its uniqueness.
+   - **Base Model Usage**: We will no longer accept submissions that use the base model without any improvements. Only miners who have made improvements(fine-tuning) on the base models will earn rewards. Our base model is available here: [deval-core/base-eval](https://huggingface.co/deval-core/base-eval).
+   - **Uniqueness Requirement**: We will check for any duplicated models based on the model's hash and the upload date to huggingface.
 
 6. **Evaluation Process**
    - **Methodology**: We run **30 examples of each task** per iteration.
@@ -157,7 +159,7 @@ As a miner, you are required to complete the following two primary tasks:
    - **Procedure**:
      - **Script Configuration**:
        - Open the `contest_miner.py` script located in `neurons/miners`.
-       - Navigate to **lines 51-52** of the script.
+       - You would need to manually modify the variables `repo_id` and `model_id`.
        - Input your **Repository ID** and **Model ID** corresponding to your Hugging Face submission.
      - **Running the Miner**:
        - Execute the `contest_miner.py` script to start the miner.
@@ -197,7 +199,9 @@ Your pipeline must output data in the following format:
 
 ### Testing Your Pipeline
 
-We have create a set of scripts to help you test your pipeline's success and whether your model will work using the script:
+To test your model and see if everything is uploaded as intended you will need to run run on the same architecture required by validators to ensure your pipeline works correctly before submitting. You can find out how to set up the validator using the [Validator's guide](docs/README_validator.md).
+
+ We have create a set of scripts to help you test your pipeline's success and whether your model will work using the script:
 ```bash
 scripts/docker_e2e_test.py 
 ```
@@ -230,6 +234,7 @@ poetry run python3 scripts/submit.py \
     --upload_model \
     --hf_token # can be skipped if you have it in your .env file
 ```
+*note: Do not obfuscate your code unless you are actually uploading a pipeline.*
 
 - **Replace** `your-username/your-model` with your actual Hugging Face repository ID.
 - **Flags**:
@@ -280,22 +285,10 @@ pm2 start neurons/contest_miner.py --name de-val-miner -- \
 - **Model Uniqueness**:
   - We do not allow miners to use the same models as one another.
   - We verify uniqueness through **hashes**, but you may use other miners' models to further train your own.
-
+  - We will match this coldkey with your miner UID’s coldkey. Submissions without a matching coldkey will be ignored.
 - **Evaluation Frequency**:
   - We do not evaluate all UIDs every time.
   - We only evaluate the **top 20 models by incentive** or if your model had a commit in the last **48 hours**.
- 
-taking a look at the readme for miners:
-you use line numbers to refer to where to change, I would suggest changing that to use the variable names.  Line numbers are very likely to change over time.
-in submit.py, both --upload-pipeline and --upload-model are optional, but you need to choose at least one
-It would probably be good to highlight scripts generate_task_examples.py and docker_e2e_test.py as ways to test their script.  When running the e2e test to make sure they follow all technical specifications otherwise pyarmor may have an issue
-
-To add to FAQ
-required to run pyarmor on correct python version 3.11
-do not change the platform flag on obfuscate.py for pyarmor
-we check for duplicate models based on commit date to the entire repo, be careful when making updates to your HF repo (note to self, we need to change this actually so users can make changes to pipeline more easily)
-
-
 
 ## FAQ
 

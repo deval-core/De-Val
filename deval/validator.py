@@ -197,7 +197,7 @@ class Validator(BaseValidatorNeuron):
             responses=responses,
             device="cpu" # self.device,
         )
-        wandb_logger.log_event(responses, reward_result)
+        wandb_logger.log_event(responses, reward_result, miner_state)
         
         miner_state.add_reward(task_name, reward_result)
 

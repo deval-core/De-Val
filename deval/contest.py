@@ -120,7 +120,8 @@ class DeValContest:
         
     def _get_miner_sort_order(self) -> dict[int, datetime]:
         date_dict = {}
-        for uid, model_state in self.model_hashes.items():
+        for _, model_state in self.model_hashes.items():
+            uid = model_state.uid
             date_dict[uid] = model_state.last_safetensor_update
         return date_dict
 

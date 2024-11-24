@@ -91,7 +91,6 @@ class DeValContest:
         for contestant in miner_rewards:
             uid, score = contestant
 
-            print(last_tier_score, score * self.tier_improvement_threshold)
             if last_tier_score > score * self.tier_improvement_threshold:
                 # New tier
                 last_tier_score = score
@@ -159,8 +158,10 @@ class DeValContest:
         modified_tiers = [
             sorted(tier, key=get_submit_date) for tier in modified_tiers
         ]
+
+        print(f"Final Tiers: {modified_tiers}")
         
-        scores = [0.0] * node_count
+        scores = []
 
         for index, tier in enumerate(modified_tiers):
             incentive_pool = self.tiers.get(index, 0)
@@ -171,8 +172,8 @@ class DeValContest:
             normalized_weights = decay_weights / decay_weights.sum()
 
             # Distribute rewards within the group
-            for participant, weight in zip(tier, normalized_weights):
-                scores[participant] = incentive_pool * weight
+            for uid, weight in zip(tier, normalized_weights):
+                scores.append((uid, incentive_pool * weight))
 
         return scores
 
@@ -195,9 +196,11 @@ class DeValContest:
 
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1], reverse=True)
+        print(f"Generated Rewards: {ranked_rewards}")
 
         # group miners based on min score improvement
         tiered_rewards = self._get_miner_tiers(ranked_rewards)
+        print(f"Tiered Rewards: {tiered_rewards}")
 
         # adjust the weights we assign each tier
         num_rewards = len(tiered_rewards) 
@@ -206,5 +209,6 @@ class DeValContest:
            
         uid_submit_date = self._get_miner_sort_order()
         weights = self._get_weights(tiered_rewards, uid_submit_date, len(ranked_rewards))
+        print(f"Computed Weights: {weights}")
 
         return weights

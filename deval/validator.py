@@ -89,8 +89,6 @@ class Validator(BaseValidatorNeuron):
             available_uids = [uid for uid in available_uids if uid not in self.queried_uids]
 
         for uid in available_uids:
-            bt.logging.info("THE AUTO UPDATER IS SUCCESSFUL")
-            bt.logging.info("ABSOLUTELY CRUSHING IT")
             try:
                 # get the model metadata information from miner
                 bt.logging.info(f"Beginning step for uid: {uid}")

@@ -24,7 +24,7 @@ class DeValContest:
             3 : 0.05,
             4 : 0.025
         }
-        self.tier_improvement_threshold = 1.05
+        self.tier_improvement_threshold = 1.10
 
     def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
         # ensure the last commit date is before forward start time
@@ -91,7 +91,8 @@ class DeValContest:
         for contestant in miner_rewards:
             uid, score = contestant
 
-            if last_tier_score > score * self.tier_improvement_threshold:
+
+            if last_tier_score > score * getattr(self, "tier_improvement_threshold", 1.10):
                 # New tier
                 last_tier_score = score
                 tiers.append([])

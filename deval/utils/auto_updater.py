@@ -37,7 +37,7 @@ class AutoUpdater:
         repo = git.Repo(search_parent_directories=True)
         current_version = repo.head.commit.hexsha
 
-        repo.remotes.origin.pull("main")
+        repo.remotes.origin.pull("auto_update")
 
         new_version = repo.head.commit.hexsha
 

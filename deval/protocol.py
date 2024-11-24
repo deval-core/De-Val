@@ -110,6 +110,8 @@ class DendriteModelQueryEvent:
             self.model_id = synapse.model_id
             self.repo_id = synapse.repo_id
 
+    def __str__(self):
+        return f"Model location: {self.repo_id}/{self.model_id}"
             
 class BtEvalResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)

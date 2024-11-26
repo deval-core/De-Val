@@ -12,6 +12,7 @@ from deval.protocol import BtEvalResponse
 from deval.rewards.reward import RewardResult
 from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
 from deval.utils.config import config as get_config, add_args
+from deval.model.model_state import ModelState
 
 logger = logging.getLogger(BITTENSOR_LOGGER_NAME)
 
@@ -117,7 +118,12 @@ class WandBLogger:
         self.init_wandb(reinit=True)
 
 
-    def log_event(self, responses: list[BtEvalResponse], reward_result: RewardResult):
+    def log_event(
+        self, 
+        responses: list[BtEvalResponse], 
+        reward_result: RewardResult,
+        miner_state: ModelState
+    ) -> None:
         reward_dict = reward_result.__state_dict__()
         for i, response in enumerate(responses):
             agent = response.human_agent
@@ -126,6 +132,7 @@ class WandBLogger:
                 **agent.__state_dict__(),
                 **response.__state_dict__(),
                 **reward_dict[i],
+                #"model_repo": miner_state.get_model_url()
             }
         
             if not self.config.neuron.dont_save_events:

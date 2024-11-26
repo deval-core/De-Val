@@ -2,6 +2,7 @@ from deval.model.model_state import ModelState
 from datetime import datetime
 from deval.rewards.pipeline import RewardPipeline
 import pytz
+import numpy as np
 
 
 # Note to help with serialization during save, we do not have bittensor package here
@@ -23,6 +24,7 @@ class DeValContest:
             3 : 0.05,
             4 : 0.025
         }
+        self.tier_improvement_threshold = 1.10
 
     def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
         # ensure the last commit date is before forward start time
@@ -78,6 +80,27 @@ class DeValContest:
     def update_model_state_with_rewards(self, miner_state: ModelState) -> None:
         self.model_rewards[miner_state.uid] = miner_state.rewards 
 
+    def _get_miner_tiers(self, miner_rewards: list[tuple[int, float]]) -> list[list[int]]:
+        if not miner_rewards:
+            return []
+
+        _, last_tier_score = miner_rewards[0]
+
+        tiers = [[]]
+
+        for contestant in miner_rewards:
+            uid, score = contestant
+
+
+            if last_tier_score > score * getattr(self, "tier_improvement_threshold", 1.10):
+                # New tier
+                last_tier_score = score
+                tiers.append([])
+
+            tiers[-1].append(uid)
+
+        return list(reversed(tiers))
+
     def _adjust_tiers(self, num_participants: int) -> None:
         # Sum of original tiers
         total_tiers_sum = sum(self.tiers.values())
@@ -95,10 +118,70 @@ class DeValContest:
         adjusted_tiers_sum = sum(adjusted_tiers.values())
         self.tiers = {rank: reward / adjusted_tiers_sum for rank, reward in adjusted_tiers.items()}
         
+    def _get_miner_sort_order(self) -> dict[int, datetime]:
+        date_dict = {}
+        for _, model_state in self.model_hashes.items():
+            uid = model_state.uid
+            date_dict[uid] = model_state.last_safetensor_update
+        return date_dict
+
+    def _get_weights(
+        self, 
+        reward_tiers: list[list[int]], 
+        uid_submit_date: list[int | None], 
+        node_count: int
+    ) -> list[float]:
+        if not reward_tiers:
+            return [1.0] * node_count
+        
+        def get_submit_date(uid):
+            return uid_submit_date.get(uid)
+
+        ordered_tiers = [
+            sorted(tier, key=get_submit_date) for tier in reward_tiers
+        ]
+
+        modified_tiers = []
+
+        last_tier = None
+
+        for tier in reversed(ordered_tiers):
+            if last_tier:
+                modified_tiers.append([tier[0], *last_tier[1:]])
+            else:
+                modified_tiers.append([tier[0]])
+
+            last_tier = tier
+
+        if len(last_tier) > 1:
+            modified_tiers.append(last_tier[1:])
+
+        # reorder again after modification
+        modified_tiers = [
+            sorted(tier, key=get_submit_date) for tier in modified_tiers
+        ]
+
+        print(f"Final Tiers: {modified_tiers}")
+        
+        scores = []
+
+        for index, tier in enumerate(modified_tiers):
+            incentive_pool = self.tiers.get(index, 0)
+            
+            num_participants = len(tier)
+            # Exponential decay applied based on submit date
+            decay_weights = np.exp(-np.arange(num_participants))
+            normalized_weights = decay_weights / decay_weights.sum()
+
+            # Distribute rewards within the group
+            for uid, weight in zip(tier, normalized_weights):
+                scores.append((uid, incentive_pool * weight))
+
+        return scores
 
     def rank_and_select_winners(
         self, 
-        task_probabilities: list[tuple()],
+        task_probabilities: list[tuple[str, float]],
     ) -> list[(int, float)]: # (uid, weight)
         """
             takes all the model rewards, ranks them
@@ -115,15 +198,19 @@ class DeValContest:
 
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1], reverse=True)
+        print(f"Generated Rewards: {ranked_rewards}")
 
-        num_rewards = len(ranked_rewards) 
+        # group miners based on min score improvement
+        tiered_rewards = self._get_miner_tiers(ranked_rewards)
+        print(f"Tiered Rewards: {tiered_rewards}")
+
+        # adjust the weights we assign each tier
+        num_rewards = len(tiered_rewards) 
         if len(self.tiers) > num_rewards and num_rewards > 0:
             self._adjust_tiers(num_rewards)
            
-        num_rewards = len(self.tiers)
-        weights = [(uid, self.tiers[i]) for i, (uid, _) in enumerate(ranked_rewards[:num_rewards])]
-
-        # spread a small portion of weights across the remaining top incentive miners that had correct answers to maintain ordering
-        weights += [(uid, .001) for (uid, _) in ranked_rewards[num_rewards:20]]
+        uid_submit_date = self._get_miner_sort_order()
+        weights = self._get_weights(tiered_rewards, uid_submit_date, len(ranked_rewards))
+        print(f"Computed Weights: {weights}")
 
         return weights

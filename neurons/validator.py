@@ -17,11 +17,13 @@
 import time
 import bittensor as bt
 from deval.validator import Validator
+from deval.utils.auto_updater import AutoUpdater
 
 
 
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
+    AutoUpdater()
     with Validator() as v:
         while True:
             bt.logging.info(

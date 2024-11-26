@@ -182,8 +182,11 @@ class TaskRepository:
             for i in range(n):
                 print(f"Generating Task Name: {task_name}, iteration: {i}")
                 llm_pipeline = self.get_random_llm()
-                task = self.create_task(llm_pipeline, task_name)
-                self.tasks[task_name].append(task)
+                try:
+                    task = self.create_task(llm_pipeline, task_name)
+                    self.tasks[task_name].append(task)
+                except:
+                    continue
                     
 
     def get_all_tasks(self) -> Task:

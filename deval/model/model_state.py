@@ -6,19 +6,20 @@ from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
 import pytz
-import json
+from deval.model.chain_metadata import ChainModelMetadataParsed
 
 
 class ModelState:
 
-    def __init__(self, repo_id: str, model_id: str, uid: int):
+    def __init__(self, repo_id: str, model_id: str, uid: int, chain_metadata: ChainModelMetadataParsed):
         self.api = HfApi()
         self.fs = HfFileSystem()
 
         self.repo_id = repo_id
         self.model_id = model_id 
         self.uid = uid
-        self.coldkey = None
+        self.block = chain_metadata.block
+        self.chain_model_hash = chain_metadata.model_hash
 
         try:
             _ = self.api.model_info(self.get_model_url())
@@ -26,9 +27,15 @@ class ModelState:
         except Exception as e:
             self.is_valid_repo = False
 
+        # the on chain submission must match the miner's model URL
+        if chain_metadata.model_url != self.get_model_url():
+            self.is_valid_repo = False
+
         if self.is_valid_repo:
             self.last_commit_date: datetime = self.get_last_commit_date()
             self.last_safetensor_update: datetime = self.get_last_model_update_date()
+
+        # pull the last submission commit for this hotkey
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -110,6 +117,10 @@ class ModelState:
 
         if not self.last_commit_date or not self.last_safetensor_update:
             bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
+            return False
+        
+        if not self.chain_model_hash or not self.block:
+            bt.logging.info(f"Unable to get chain commit data including model hash: {self.chain_model_hash} or block: {self.block}")
             return False
 
         if uid in top_incentive_uids:

@@ -1,5 +1,4 @@
-import asyncio
-import functools
+from pydantic import BaseModel
 import bittensor as bt
 import os
 from deval.utils.constants import constants
@@ -7,6 +6,10 @@ from typing import Optional
 import json
 
 
+class ChainModelMetadataParsed(BaseModel):
+    model_url: str
+    model_hash: str
+    block: int
 
 class ChainModelMetadataStore:
     """Chain based implementation for storing and retrieving metadata about a model."""
@@ -41,7 +44,7 @@ class ChainModelMetadataStore:
 
         self.subtensor.commit(self.wallet,self.subnet_uid,commit_msg)
 
-    def retrieve_model_metadata(self, hotkey: str):
+    def retrieve_model_metadata(self, hotkey: str) -> ChainModelMetadataParsed:
         """Retrieves model metadata on this subnet for specific hotkey"""
         metadata = bt.extrinsics.serving.get_metadata(self.subtensor, self.subnet_uid, hotkey)
 
@@ -50,7 +53,7 @@ class ChainModelMetadataStore:
         else:
             return self.parse_chain_data(metadata)
 
-    def parse_chain_data(self, metadata):
+    def parse_chain_data(self, metadata) -> ChainModelMetadataParsed:
         # decode the encoded string
         commitment = metadata["info"]["fields"][0]
         hex_data = commitment[list(commitment.keys())[0]][2:]

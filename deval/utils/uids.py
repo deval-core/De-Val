@@ -56,9 +56,13 @@ def get_candidate_uids(self, k: int, exclude: List[int] = None) -> list[int]:
     candidate_uids = []
     coldkeys = set()
     ips = set()
+    hotkeys = getattr(self.metagraph, 'hotkeys')
+
     for uid in range(self.metagraph.n.item()):
         if uid == self.uid:
             continue
+
+        uid_hotkey = hotkeys[uid]
 
         uid_is_available = check_uid_availability(
             self.metagraph,
@@ -77,7 +81,7 @@ def get_candidate_uids(self, k: int, exclude: List[int] = None) -> list[int]:
             ips.add(self.metagraph.axons[uid].ip)
 
         if exclude is None or uid not in exclude:
-            candidate_uids.append(uid)
+            candidate_uids.append((uid, uid_hotkey))
 
     # Check if candidate_uids contain enough for querying, if not grab all avaliable uids
     if 0 < len(candidate_uids) < k:

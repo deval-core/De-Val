@@ -39,12 +39,16 @@ class DeValContest:
             print("Mismatch between the Miner's coldkey and the Model's Coldkey. INVALID Model")
             return False
 
+        if miner_state.chain_model_hash != model_hash:
+            print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
+            return False
+
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update
         duplicated_model = self.model_hashes.get(model_hash, None)
 
         if duplicated_model is None:
             print("No Duplicated model. This is a valid model")
-            if miner_state.uid is not None and miner_state.last_safetensor_update:
+            if miner_state.uid is not None and miner_state.block:
                 self.model_hashes[model_hash] = miner_state
             return True
 
@@ -54,16 +58,16 @@ class DeValContest:
             # if current model then that is the duplicate and we return that it is an invalid model
             # if previous model then we zero out the previous model's scores and return this as a valid model
             duplicated_model_uid = duplicated_model.uid
-            duplicated_model_date = duplicated_model.last_safetensor_update
+            duplicated_model_block = duplicated_model.block
 
-            if not duplicated_model_date:
-                if miner_state.uid is not None and miner_state.last_safetensor_update:
+            if not duplicated_model_block:
+                if miner_state.uid is not None and miner_state.block:
                     self.model_hashes[model_hash] = miner_state
                 print("Found a duplicate model, but unable to find the duplicated date. Weird state. Valid model")
                 return True
 
-            if miner_state.last_safetensor_update > duplicated_model_date:
-                print("Found a duplicate model and this has a later date. This is an INVALID Model")
+            if miner_state.block > duplicated_model_block:
+                print("Found a duplicate model and this has a commit date. This is an INVALID Model")
                 return False
 
             else: 
@@ -118,11 +122,11 @@ class DeValContest:
         adjusted_tiers_sum = sum(adjusted_tiers.values())
         self.tiers = {rank: reward / adjusted_tiers_sum for rank, reward in adjusted_tiers.items()}
         
-    def _get_miner_sort_order(self) -> dict[int, datetime]:
+    def _get_miner_sort_order(self) -> dict[int, int]:
         date_dict = {}
         for _, model_state in self.model_hashes.items():
             uid = model_state.uid
-            date_dict[uid] = model_state.last_safetensor_update
+            date_dict[uid] = model_state.block
         return date_dict
 
     def _get_weights(

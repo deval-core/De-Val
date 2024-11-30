@@ -6,6 +6,7 @@ from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
 import pytz
+import json
 
 
 class ModelState:

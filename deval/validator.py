@@ -15,7 +15,7 @@ from deval.api.miner_docker_client import MinerDockerClient
 from deval.tasks.task import Task
 from deval.utils.logging import WandBLogger
 
-
+from deval.utils.constants import constants
 
 class Validator(BaseValidatorNeuron):
     """
@@ -28,9 +28,6 @@ class Validator(BaseValidatorNeuron):
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
 
-        # TODO: turn to config params
-        self.num_uids_total = 256
-        self.max_model_size_gbs = 18 # allows for 8B models
         self.miner_incentive_threshold = self.config.neuron.miner_incentive_threshold
         self.queried_uids = set()
 
@@ -66,8 +63,8 @@ class Validator(BaseValidatorNeuron):
         forward_start_time = time.time()
 
         # init this rounds contest 
-        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
-        available_uids = get_candidate_uids(self, k = self.num_uids_total)
+        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=constants.num_uids_total).to(self.device)
+        available_uids = get_candidate_uids(self, k = constants.num_uids_total)
 
         if self.start_over:
             self.contest = DeValContest(

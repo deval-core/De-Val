@@ -5,6 +5,7 @@ from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APISt
 from deval.model.huggingface_model import HuggingFaceModel
 import sys
 import hashlib
+from deval.model.utils import get_model_hash
 
 app = FastAPI()
 
@@ -60,20 +61,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
 
 @app.get("/get_model_hash")
 async def get_model_hash()-> ModelHashResponse:
-    print("Computing Hash of model")
-    sha256_hash = hashlib.sha256()
-    safetensor_files =  [f for f in os.listdir(model_dir) if f.endswith('.safetensors')]
-    safetensor_files = sorted(safetensor_files)
-
-    # Open the file in binary mode
-    for model_path in safetensor_files:
-        with open(os.path.join(model_dir, model_path), "rb") as f:
-            # Read the file in chunks to handle large files efficiently
-            for byte_block in iter(lambda: f.read(4096), b""):
-                sha256_hash.update(byte_block)
-
-    # Return the hex digest of the file
-    hash_value = sha256_hash.hexdigest()
+    hash_value = get_model_hash(model_dir)
     print(f"Hash of model: {hash_value}")
     return ModelHashResponse(hash =hash_value)
 

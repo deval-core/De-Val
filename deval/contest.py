@@ -3,6 +3,7 @@ from datetime import datetime
 from deval.rewards.pipeline import RewardPipeline
 import pytz
 import numpy as np
+from deval.utils.constants import constants
 
 
 # Note to help with serialization during save, we do not have bittensor package here
@@ -24,7 +25,6 @@ class DeValContest:
             3 : 0.05,
             4 : 0.025
         }
-        self.tier_improvement_threshold = 1.10
 
     def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
         # ensure the last commit date is before forward start time
@@ -92,7 +92,7 @@ class DeValContest:
             uid, score = contestant
 
 
-            if last_tier_score > score * getattr(self, "tier_improvement_threshold", 1.10):
+            if last_tier_score > score * getattr(constants, "tier_improvement_threshold", 1.10):
                 # New tier
                 last_tier_score = score
                 tiers.append([])

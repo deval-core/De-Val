@@ -5,6 +5,9 @@ from dotenv import load_dotenv, find_dotenv
 from transformers import pipeline
 from deval.api.models import EvalRequest, EvalResponse
 import time
+import bittensor as bt
+from deval.model.chain_metadata import ChainModelMetadataStore
+from deval.model.utils import get_model_hash
 
 class HuggingFaceModel:
 
@@ -42,8 +45,11 @@ class HuggingFaceModel:
         model_dir: str, 
         pipeline_dir: str, 
         repo_id: str, 
+        wallet_name: str,
+        hotkey_name: str,
         upload_model: bool = False,
-        upload_pipeline: bool = True
+        upload_pipeline: bool = True,
+        test_network: bool = False,
     ):
         """
         Obfuscates the pipeline code and uploads the pipeline and model to your Huggingface repo
@@ -88,6 +94,25 @@ class HuggingFaceModel:
             print("Completed pipeline upload")
         
         if upload_model:
+            print("Compute Hash")
+            model_hash = get_model_hash(model_dir)
+
+            print("Generating on chain commit")
+            if test_network:
+                netuid = 202
+                subtensor = bt.subtensor(network = 'test')
+            else:
+                netuid = 15
+                subtensor = bt.subtensor()
+
+            wallet = bt.wallet(name=wallet_name, hotkey=hotkey_name)
+
+            metadata_store = ChainModelMetadataStore(
+                subtensor=subtensor, wallet=wallet, subnet_uid=netuid
+            )
+
+            metadata_store.store_model_metadata(model_url=repo_id, model_hash=model_hash)
+
             print("Starting model upload")
             api.upload_large_folder(
                 folder_path=model_dir,

@@ -19,6 +19,12 @@ class ModelState:
         self.model_id = model_id 
         self.uid = uid
 
+        try:
+            _ = self.api.model_info(self.get_model_url())
+            self.is_valid_repo = True
+        except Exception as e:
+            self.is_valid_repo = False
+
         if chain_metadata is not None:
             self.block = chain_metadata.block
             self.chain_model_hash = chain_metadata.model_hash
@@ -27,12 +33,6 @@ class ModelState:
             if chain_metadata.model_url != self.get_model_url():
                 self.is_valid_repo = False
         else:
-            self.is_valid_repo = False
-
-        try:
-            _ = self.api.model_info(self.get_model_url())
-            self.is_valid_repo = True
-        except Exception as e:
             self.is_valid_repo = False
 
 

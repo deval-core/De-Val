@@ -31,8 +31,10 @@ class ModelState:
 
             # the on chain submission must match the miner's model URL
             if chain_metadata.model_url != self.get_model_url():
+                bt.logging.info("Chain commit found, but model URL does not match miner")
                 self.is_valid_repo = False
         else:
+            bt.logging.info("No Chain commit found")
             self.is_valid_repo = False
 
 
@@ -113,7 +115,7 @@ class ModelState:
         - last updated file is from the last 48 hours
         """
         if not self.is_valid_repo:
-            bt.logging.info(f"Unable to access repository - skipping evaluation")
+            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
             return False
 
         if self._get_repo_size() > max_model_size_gbs:

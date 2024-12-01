@@ -62,7 +62,7 @@ class ChainModelMetadataStore:
         # format our output
         parsed_metadata = json.loads(chain_str)
         parsed_metadata['block'] = metadata["block"]
-        return parsed_metadata
+        return ChainModelMetadataParsed(**parsed_metadata)
 
 
 # Can only commit data every ~20 minutes.

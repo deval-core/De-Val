@@ -103,7 +103,7 @@ class Validator(BaseValidatorNeuron):
                 miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
                 is_valid = miner_state.should_run_evaluation(
-                    uid, self.max_model_size_gbs, forward_start_time, top_incentive_uids
+                    uid, constants.max_model_size_gbs, forward_start_time, top_incentive_uids
                 )
 
                 if is_valid:

@@ -96,7 +96,7 @@ class Validator(BaseValidatorNeuron):
                 bt.logging.info(f"Beginning step for uid: {uid}")
                 responses = await get_metadata_from_miner(self, uid)
                 response_event = DendriteModelQueryEvent(responses)
-                #bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
+                bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
                 chain_metadata = self.metadata_store.retrieve_model_metadata(hotkey)
                 miner_state = ModelState(response_event.repo_id, response_event.model_id, uid, chain_metadata)

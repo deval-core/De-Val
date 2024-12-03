@@ -14,8 +14,9 @@ from deval.protocol import init_request_from_task, BtEvalResponse
 from deval.api.miner_docker_client import MinerDockerClient
 from deval.tasks.task import Task
 from deval.utils.logging import WandBLogger
+from deval.model.chain_metadata import ChainModelMetadataStore
 
-
+from deval.utils.constants import constants
 
 class Validator(BaseValidatorNeuron):
     """
@@ -28,9 +29,6 @@ class Validator(BaseValidatorNeuron):
         # load all of our environment variables for easy access
         _ = load_dotenv(find_dotenv())
 
-        # TODO: turn to config params
-        self.num_uids_total = 256
-        self.max_model_size_gbs = 18 # allows for 8B models
         self.miner_incentive_threshold = self.config.neuron.miner_incentive_threshold
         self.queried_uids = set()
 
@@ -57,6 +55,10 @@ class Validator(BaseValidatorNeuron):
             active_tasks,
             self.config)
 
+        self.metadata_store = ChainModelMetadataStore(
+            subtensor=self.subtensor, wallet=None, subnet_uid=constants.subnet_uid
+        )
+
         bt.logging.info("load_state()")
         self.load_state()
         self.weights = []
@@ -66,8 +68,8 @@ class Validator(BaseValidatorNeuron):
         forward_start_time = time.time()
 
         # init this rounds contest 
-        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=self.num_uids_total).to(self.device)
-        available_uids = get_candidate_uids(self, k = self.num_uids_total)
+        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=constants.num_uids_total).to(self.device)
+        available_uids = get_candidate_uids(self, k = constants.num_uids_total)
 
         if self.start_over:
             self.contest = DeValContest(
@@ -85,10 +87,10 @@ class Validator(BaseValidatorNeuron):
             # reset complete
             self.start_over = False
         else:
-            available_uids = get_candidate_uids(self, k = self.num_uids_total)
-            available_uids = [uid for uid in available_uids if uid not in self.queried_uids]
+            available_uids = get_candidate_uids(self, k = constants.num_uids_total)
+            available_uids = [uid_and_hotkey for uid_and_hotkey in available_uids if uid_and_hotkey not in self.queried_uids]
 
-        for uid in available_uids:
+        for uid, hotkey in available_uids:
             try:
                 # get the model metadata information from miner
                 bt.logging.info(f"Beginning step for uid: {uid}")
@@ -96,11 +98,12 @@ class Validator(BaseValidatorNeuron):
                 response_event = DendriteModelQueryEvent(responses)
                 #bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
-                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
+                chain_metadata = self.metadata_store.retrieve_model_metadata(hotkey)
+                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid, chain_metadata)
                 miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
                 is_valid = miner_state.should_run_evaluation(
-                    uid, self.max_model_size_gbs, forward_start_time, top_incentive_uids
+                    uid, constants.max_model_size_gbs, forward_start_time, top_incentive_uids
                 )
 
                 if is_valid:
@@ -114,14 +117,14 @@ class Validator(BaseValidatorNeuron):
 
                 # update contest
                 self.contest.update_model_state_with_rewards(miner_state) 
-                self.queried_uids.add(uid)
+                self.queried_uids.add((uid, hotkey))
 
                 if is_valid:
                     self.save_state()
                 del miner_state
 
             except Exception as e:
-                self.queried_uids.add(uid)
+                self.queried_uids.add((uid, hotkey))
                 bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}")
 
         

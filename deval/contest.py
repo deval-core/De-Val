@@ -67,7 +67,7 @@ class DeValContest:
                 return True
 
             if miner_state.block > duplicated_model_block:
-                print("Found a duplicate model and this has a commit date. This is an INVALID Model")
+                print("Found a duplicate model and this has a commit date later than the duplicate. This is an INVALID Model")
                 return False
 
             else: 

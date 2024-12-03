@@ -69,7 +69,7 @@ class ChainModelMetadataStore:
 def test_store_model_metadata():
     """Verifies that the ChainModelMetadataStore can store data on the chain."""
     model_url = "deval-core/base-eval-test"
-    hash = "fake_hash"
+    hash = "1ff795ff6a07e6a68085d206fb84417da2f083f68391c2843cd2b8ac6df8538f"
 
     # Use a different subnet that does not leverage chain storage to avoid conflicts.
     subtensor = bt.subtensor(network = 'test')
@@ -93,7 +93,6 @@ def test_store_model_metadata():
 def test_retrieve_model_metadata():
     """Verifies that the ChainModelMetadataStore can retrieve data from the chain."""
     model_url = "deval-core/base-eval-test"
-    hash = "fake_hash"
 
     # Use a different subnet that does not leverage chain storage to avoid conflicts.
     # TODO switch to a mocked version when it supports commits.
@@ -111,8 +110,8 @@ def test_retrieve_model_metadata():
     # Retrieve the metadata from the chain.
     model_metadata = metadata_store.retrieve_model_metadata(hotkey_address)
     print(model_metadata)
-    assert model_url == model_metadata['model_url']
-    assert model_metadata['model_hash'] is not None
+    assert model_url == model_metadata.model_url
+    assert model_metadata.model_hash is not None
 
 
 
@@ -121,5 +120,5 @@ if __name__ == "__main__":
     
     _ = load_dotenv(find_dotenv())
     # Can only commit data every ~20 minutes.
-    #test_store_model_metadata()
+    test_store_model_metadata()
     test_retrieve_model_metadata()

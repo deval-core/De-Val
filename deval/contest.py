@@ -126,7 +126,11 @@ class DeValContest:
         date_dict = {}
         for _, model_state in self.model_hashes.items():
             uid = model_state.uid
-            date_dict[uid] = model_state.block
+            try:
+                date_dict[uid] = model_state.block
+            except:
+                print("temporary error handling for new validators")
+                date_dict[uid] = 10000000000000000000
         return date_dict
 
     def _get_weights(

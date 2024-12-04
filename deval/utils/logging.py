@@ -132,7 +132,7 @@ class WandBLogger:
                 **agent.__state_dict__(),
                 **response.__state_dict__(),
                 **reward_dict[i],
-                #"model_repo": miner_state.get_model_url()
+                "model_repo": miner_state.get_model_url()
             }
         
             if not self.config.neuron.dont_save_events:

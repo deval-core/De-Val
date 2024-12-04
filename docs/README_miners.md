@@ -30,7 +30,7 @@
 
 5. **Model Duplication Checks**
    - **Base Model Usage**: We will no longer accept submissions that use the base model without any improvements. Only miners who have made improvements(fine-tuning) on the base models will earn rewards. Our base model is available here: [deval-core/base-eval](https://huggingface.co/deval-core/base-eval).
-   - **Uniqueness Requirement**: We will check for any duplicated models based on the model's hash and the upload date to huggingface.
+   - **Uniqueness Requirement**: We will check for any duplicated models based on the model's hash submitted on-chain, duplicate models will be checked for commit time on-chain and only the model commited at an earlier block gets evaluated.
 
 6. **Evaluation Process**
    - **Methodology**: We run **30 examples of each task** per iteration.
@@ -232,6 +232,9 @@ poetry run python3 scripts/submit.py \
     --pipeline_dir neurons/miners/model \
     --upload_pipeline \
     --upload_model \
+    --wallet_name your_coldkey_name \
+    --hotkey_name your_hotkey_name \
+    --test # Only use if you are submitting your model to testnet 
     --hf_token # can be skipped if you have it in your .env file
 ```
 *note: Do not obfuscate your code unless you are actually uploading a pipeline.*
@@ -241,6 +244,9 @@ poetry run python3 scripts/submit.py \
   - `--model_dir`: Path to your model directory.
   - `--repo_id`: Your Hugging Face repository ID.
   - `--pipeline_dir`: Path to your pipeline code.
+  - `--wallet_name`: Your coldkey name.  
+  - `--hotkey_name`: Your hotkey name.  
+  - `--test`: Add this flag for testnet submissions only. 
   - `--upload_pipeline`: Include this flag to upload the pipeline code.
   - `--upload_model`: Include this flag to upload the model.
   - `--hf_token`: Your Hugging Face token. (You can skip this if you set your HF token in `.env` with `HUGGINGFACE_TOKEN='Your_HF_Token'`)

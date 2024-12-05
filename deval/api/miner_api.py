@@ -5,7 +5,7 @@ from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APISt
 from deval.model.huggingface_model import HuggingFaceModel
 import sys
 import hashlib
-from deval.model.utils import get_model_hash
+from deval.model.utils import compute_model_hash
 
 app = FastAPI()
 
@@ -61,7 +61,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
 
 @app.get("/get_model_hash")
 async def get_model_hash()-> ModelHashResponse:
-    hash_value = get_model_hash(model_dir)
+    hash_value = compute_model_hash(model_dir)
     print(f"Hash of model: {hash_value}")
     return ModelHashResponse(hash =hash_value)
 

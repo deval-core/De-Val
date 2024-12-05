@@ -8,6 +8,11 @@ from deval.model.model_state import ModelState
 from deval.tasks.task import TasksEnum
 from deval.api.miner_docker_client import MinerDockerClient
 from deval.utils.logging import WandBLogger
+from deval.model.chain_metadata import ChainModelMetadataStore
+import bittensor as bt 
+
+
+
 
 
 # initialize
@@ -19,6 +24,11 @@ model_id = "base-eval"
 timeout = 600
 uid = 1
 max_model_size_gbs = 18
+
+# params for chain commit 
+model_url = "deval-core/base-eval-test"
+subtensor = bt.subtensor(network='test')
+hotkey = "5HGiNFJApXHkMV9RoWAVYhKopuXG7VpvirABf3EyKcn1kAkn"
 
 
 print("Initializing tasks and contest")
@@ -45,11 +55,15 @@ contest = DeValContest(
 
 miner_docker_client = MinerDockerClient()
 wandb_logger = WandBLogger(None, None, active_tasks, None, force_off=True)
+metadata_store = ChainModelMetadataStore(
+    subtensor=subtensor, wallet=None, subnet_uid=202
+)
 
 print("Generating the tasks")
 task_repo.generate_all_tasks(task_probabilities=task_sample_rate)
 
-miner_state = ModelState(repo_id, model_id, uid)
+chain_metadata = metadata_store.retrieve_model_metadata(hotkey)
+miner_state = ModelState(repo_id, model_id, uid, chain_metadata)
 
 print("Deciding if we should run evaluation ")
 is_valid = miner_state.should_run_evaluation(

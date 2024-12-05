@@ -3,7 +3,7 @@ from deval.model.huggingface_model import HuggingFaceModel
 import os
 import bittensor as bt
 from deval.model.chain_metadata import ChainModelMetadataStore
-from deval.model.utils import get_model_hash
+from deval.model.utils import compute_model_hash
 from deval.model.obfuscate import Obfuscator
 from huggingface_hub import HfApi
 
@@ -61,7 +61,7 @@ def submit_model(
     
     if upload_model:
         print("Compute Hash")
-        model_hash = get_model_hash(model_dir)
+        model_hash = compute_model_hash(model_dir)
 
         print("Generating on chain commit")
         if test_network:

@@ -1,7 +1,7 @@
 import hashlib
 import os
 
-def get_model_hash(model_dir: str):
+def compute_model_hash(model_dir: str):
     print("Computing Hash of model")
     sha256_hash = hashlib.sha256()
     safetensor_files =  [f for f in os.listdir(model_dir) if f.endswith('.safetensors')]

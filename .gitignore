@@ -171,4 +171,4 @@ scripts/exports/
 
 # ignore pyarmor updates
 neurons/miners/model/obfuscated/*
-neurons/miners/obfuscated_pipeline/*
+neurons/miners/obfuscated_pipeline/**

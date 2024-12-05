@@ -28,6 +28,7 @@ max_model_size_gbs = 18
 # params for chain commit 
 model_url = "deval-core/base-eval-test"
 subtensor = bt.subtensor(network='test')
+coldkey = "5E7b6f5ohdapBMpHTZ44L6N5qzJcCTroGVMPiHUA551x2Tvt"
 hotkey = "5HGiNFJApXHkMV9RoWAVYhKopuXG7VpvirABf3EyKcn1kAkn"
 
 
@@ -64,6 +65,7 @@ task_repo.generate_all_tasks(task_probabilities=task_sample_rate)
 
 chain_metadata = metadata_store.retrieve_model_metadata(hotkey)
 miner_state = ModelState(repo_id, model_id, uid, chain_metadata)
+miner_state.add_miner_coldkey(coldkey)
 
 print("Deciding if we should run evaluation ")
 is_valid = miner_state.should_run_evaluation(

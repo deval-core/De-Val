@@ -98,8 +98,7 @@ class Validator(BaseValidatorNeuron):
                 response_event = DendriteModelQueryEvent(responses)
                 bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
-                chain_metadata = self.metadata_store.retrieve_model_metadata(hotkey)
-                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid, chain_metadata)
+                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
                 miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
                 is_valid = miner_state.should_run_evaluation(
@@ -107,6 +106,9 @@ class Validator(BaseValidatorNeuron):
                 )
 
                 if is_valid:
+                    chain_metadata = self.metadata_store.retrieve_model_metadata(hotkey)
+                    miner_state.add_chain_metadata(chain_metadata)
+
                     miner_state = Validator.run_epoch(
                         self.contest,
                         miner_state, 

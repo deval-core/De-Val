@@ -11,7 +11,7 @@ from deval.model.chain_metadata import ChainModelMetadataParsed
 
 class ModelState:
 
-    def __init__(self, repo_id: str, model_id: str, uid: int, chain_metadata: ChainModelMetadataParsed | None):
+    def __init__(self, repo_id: str, model_id: str, uid: int):
         self.api = HfApi()
         self.fs = HfFileSystem()
 
@@ -25,24 +25,9 @@ class ModelState:
         except Exception as e:
             self.is_valid_repo = False
 
-        if chain_metadata is not None:
-            self.block = chain_metadata.block
-            self.chain_model_hash = chain_metadata.model_hash
-
-            # the on chain submission must match the miner's model URL
-            if chain_metadata.model_url != self.get_model_url():
-                bt.logging.info("Chain commit found, but model URL does not match miner")
-                self.is_valid_repo = False
-        else:
-            bt.logging.info("No Chain commit found")
-            self.is_valid_repo = False
-
-
         if self.is_valid_repo:
             self.last_commit_date: datetime = self.get_last_commit_date()
             self.last_safetensor_update: datetime = self.get_last_model_update_date()
-
-        # pull the last submission commit for this hotkey
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -157,6 +142,20 @@ class ModelState:
 
     def add_reward(self, task_name: str, reward: RewardResult):
         self.rewards[task_name] += reward.rewards
+
+    def add_chain_metadata(self, chain_metadata: ChainModelMetadataParsed | None) -> None:
+        if chain_metadata is not None:
+            self.block = chain_metadata.block
+            self.chain_model_hash = chain_metadata.model_hash
+
+            # the on chain submission must match the miner's model URL
+            if chain_metadata.model_url != self.get_model_url():
+                bt.logging.info("Chain commit found, but model URL does not match miner")
+                self.is_valid_repo = False
+        else:
+            bt.logging.info("No Chain commit found")
+            self.is_valid_repo = False
+
 
 
 

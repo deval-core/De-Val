@@ -20,7 +20,7 @@ _ = load_dotenv(find_dotenv())
 allowed_models = ["gpt-4o-mini"]
 
 repo_id = "deval-core"
-model_id = "base-eval"
+model_id = "base-eval-test"
 timeout = 600
 uid = 1
 max_model_size_gbs = 18
@@ -64,7 +64,7 @@ print("Generating the tasks")
 task_repo.generate_all_tasks(task_probabilities=task_sample_rate)
 
 chain_metadata = metadata_store.retrieve_model_metadata(hotkey)
-miner_state = ModelState(repo_id, model_id, uid, chain_metadata)
+miner_state = ModelState(repo_id, model_id, uid)
 miner_state.add_miner_coldkey(coldkey)
 
 print("Deciding if we should run evaluation ")
@@ -74,6 +74,9 @@ is_valid = miner_state.should_run_evaluation(
 
 if is_valid:
     print("Running evaluation and starting epoch")
+    chain_metadata = metadata_store.retrieve_model_metadata(hotkey)
+    miner_state.add_chain_metadata(chain_metadata)
+
     miner_state = Validator.run_epoch(
         contest,
         miner_state, 

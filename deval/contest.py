@@ -31,6 +31,10 @@ class DeValContest:
         if self.start_time_datetime < miner_state.get_last_commit_date():
             return False
 
+        if not miner_state.chain_model_hash or not miner_state.block:
+            print(f"Unable to get chain commit data including model hash: {miner_state.chain_model_hash} or block: {miner_state.block}")
+            return False
+
         if not model_hash or not model_coldkey:
             print("Unable to generate model hash or model coldkey, INVALID Model")
             return False

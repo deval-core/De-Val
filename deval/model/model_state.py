@@ -19,6 +19,10 @@ class ModelState:
         self.model_id = model_id 
         self.uid = uid
 
+        # defaults
+        self.block = None
+        self.chain_model_hash = None
+
         try:
             _ = self.api.model_info(self.get_model_url())
             self.is_valid_repo = True
@@ -147,10 +151,8 @@ class ModelState:
             # the on chain submission must match the miner's model URL
             if chain_metadata.model_url != self.get_model_url():
                 bt.logging.info("Chain commit found, but model URL does not match miner")
-                self.is_valid_repo = False
         else:
             bt.logging.info("No Chain commit found")
-            self.is_valid_repo = False
 
 
 

@@ -29,6 +29,7 @@ class DeValContest:
     def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date():
+            print(f"Miner's start date {miner_state.get_last_commit_date()} is before validators epoch start time {self.start_time_datetime}")
             return False
 
         if not miner_state.chain_model_hash or not miner_state.block:

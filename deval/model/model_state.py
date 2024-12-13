@@ -110,10 +110,6 @@ class ModelState:
         if not self.last_commit_date or not self.last_safetensor_update:
             bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
             return False
-        
-        if not self.chain_model_hash or not self.block:
-            bt.logging.info(f"Unable to get chain commit data including model hash: {self.chain_model_hash} or block: {self.block}")
-            return False
 
         if uid in top_incentive_uids:
             return True

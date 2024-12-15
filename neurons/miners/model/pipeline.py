@@ -2,7 +2,7 @@ from transformers import Pipeline, AutoTokenizer, AutoModelForCausalLM
 import torch
 import re
 from contextlib import nullcontext
-from neurons.miners.model.prompts import (
+from .prompts import (
     RELEVANCY_PROMPT, 
     HALLUCINATION_PROMPT, 
     HALLUCINATION_MISTAKES_PROMPT,

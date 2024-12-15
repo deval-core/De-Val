@@ -120,5 +120,5 @@ if __name__ == "__main__":
     
     _ = load_dotenv(find_dotenv())
     # Can only commit data every ~20 minutes.
-    test_store_model_metadata()
+    #test_store_model_metadata()
     test_retrieve_model_metadata()

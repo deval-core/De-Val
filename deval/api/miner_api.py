@@ -36,7 +36,7 @@ async def query_model(request: EvalRequest) -> EvalResponse:
     try:
         print(f"Completion: {completion}")
         score = completion.get("score_completion", None)
-        if not score:
+        if score is None:
             score = -1
 
         mistakes = completion.get("mistakes_completion", None)

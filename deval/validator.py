@@ -15,7 +15,7 @@ from deval.api.miner_docker_client import MinerDockerClient
 from deval.tasks.task import Task
 from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
-
+import traceback
 from deval.utils.constants import constants
 
 class Validator(BaseValidatorNeuron):
@@ -56,7 +56,7 @@ class Validator(BaseValidatorNeuron):
             self.config)
 
         self.metadata_store = ChainModelMetadataStore(
-            subtensor=self.subtensor, wallet=None, subnet_uid=constants.subnet_uid
+            subtensor=self.subtensor, wallet=None, subnet_uid=config.netuid
         )
 
         bt.logging.info("load_state()")
@@ -127,7 +127,7 @@ class Validator(BaseValidatorNeuron):
 
             except Exception as e:
                 self.queried_uids.add((uid, hotkey))
-                bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}")
+                bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}, traceback: {traceback.format_exc()}")
 
         
         self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)

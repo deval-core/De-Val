@@ -24,9 +24,7 @@ import logging
 from deval.task_repository import TASKS
 from deval.llms.config import SUPPORTED_MODELS
 
-from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
-
-logger = logging.getLogger(BITTENSOR_LOGGER_NAME)
+logger = logging.getLogger("deval")
 
 
 

@@ -10,11 +10,10 @@ import logging
 import deval
 from deval.protocol import BtEvalResponse
 from deval.rewards.reward import RewardResult
-from bittensor.btlogging.defines import BITTENSOR_LOGGER_NAME
 from deval.utils.config import config as get_config, add_args
 from deval.model.model_state import ModelState
 
-logger = logging.getLogger(BITTENSOR_LOGGER_NAME)
+logger = logging.getLogger("deval")
 
 
 @dataclass

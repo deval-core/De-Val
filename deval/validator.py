@@ -56,7 +56,7 @@ class Validator(BaseValidatorNeuron):
             self.config)
 
         self.metadata_store = ChainModelMetadataStore(
-            subtensor=self.subtensor, wallet=None, subnet_uid=config.netuid
+            subtensor=self.subtensor, wallet=None, subnet_uid=self.config.netuid
         )
 
         bt.logging.info("load_state()")

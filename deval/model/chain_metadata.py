@@ -18,7 +18,7 @@ class ChainModelMetadataStore:
         self,
         subtensor: bt.subtensor,
         wallet: Optional[bt.wallet] = None,
-        subnet_uid: int = constants.subnet_uid,
+        subnet_uid: int = 202,
     ):
         self.subtensor = subtensor
         self.wallet = (
@@ -46,7 +46,7 @@ class ChainModelMetadataStore:
 
     def retrieve_model_metadata(self, hotkey: str) -> ChainModelMetadataParsed:
         """Retrieves model metadata on this subnet for specific hotkey"""
-        metadata = bt.extrinsics.serving.get_metadata(self.subtensor, self.subnet_uid, hotkey)
+        metadata = bt.core.extrinsics.serving.get_metadata(self.subtensor, self.subnet_uid, hotkey)
 
         if not metadata:
             return None

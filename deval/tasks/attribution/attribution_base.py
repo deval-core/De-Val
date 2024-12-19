@@ -8,10 +8,10 @@ class AttributionBaseTask(Task):
     goal = "Estimates the number of correctly attributed action items in a response given a RAG context"
 
     reward_definition = [
-        dict(name="float_diff", weight=0.5, reference_type = RewardReferenceType.SCORE),
-        dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
+        dict(name="float_diff", weight=0.6, reference_type = RewardReferenceType.SCORE),
+        dict(name="exact_match", weight=0.4, reference_type = RewardReferenceType.MISTAKES),
     ]
     penalty_definition = [
-        dict(name="dist_penalty", weight=0.25, reference_type = RewardReferenceType.SCORE),
+        dict(name="dist_penalty", weight=0.35, reference_type = RewardReferenceType.SCORE),
         dict(name="exact_match", weight=0.5, reference_type = RewardReferenceType.MISTAKES),
     ]

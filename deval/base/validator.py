@@ -275,7 +275,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Set the weights on chain via our subtensor connection.
         num_attempts = 0
         result = False
-        while result is False and num_attempts < 3:
+        while result is False and num_attempts < 10:
             num_attempts += 1
             result, reason = self.subtensor.set_weights(
                 wallet=self.wallet,

@@ -12,10 +12,10 @@ class DistPenaltyRewardModel(BaseRewardModel):
     def __init__(self, **kwargs):
         super().__init__()
         self.categories = [
-            (0, .15),
-            (0.15, 0.3),
-            (0.3, 0.5),
-            (0.5, 1.0001),
+            (0, .1),
+            (0.1, 0.2),
+            (0.2, 0.4),
+            (0.4, 1.0001),
         ]
             
     def dist_score(self, reference: float, completion: float, classes: list[tuple]) -> float:

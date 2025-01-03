@@ -60,8 +60,8 @@ class Validator(BaseValidatorNeuron):
         )
 
         bt.logging.info("load_state()")
-        self.load_state()
         self.weights = []
+        self.load_state()
 
     async def forward(self):
         bt.logging.info("🚀 Starting forward loop...")
@@ -123,7 +123,9 @@ class Validator(BaseValidatorNeuron):
 
                 if is_valid:
                     self.save_state()
+                    self.sync()
                 del miner_state
+
 
             except Exception as e:
                 self.queried_uids.add((uid, hotkey))

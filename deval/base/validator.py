@@ -314,7 +314,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
-    def save_state(self):
+    def save_state(self, save_weights = False):
         """Saves the state of the validator to a file."""
         bt.logging.info("Saving validator state.")
 
@@ -331,6 +331,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 "start_over": self.start_over,
                 "queried_uids": self.queried_uids,
                 "hotkeys": self.hotkeys,
+                "past_weights": self.weights
             },
             os.path.join(save_path, "state.pt"),
         )
@@ -357,6 +358,7 @@ class BaseValidatorNeuron(BaseNeuron):
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
+        self.weights = state.get("past_weights", [])
 
         try:
 
@@ -379,7 +381,7 @@ class BaseValidatorNeuron(BaseNeuron):
             self.start_over = True
 
     def reset(self):
-        self.weights = None
+        self.weights = []
         self.task_repo = None
         self.queried_uids = set()
         

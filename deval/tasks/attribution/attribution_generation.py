@@ -91,7 +91,7 @@ class AttributionGenerationTask(AttributionBaseTask):
 
 
         num_pagraphs = random.randint(5, self.max_paragraphs)
-        num_action_groups = random.randint(3, num_pagraphs)
+        num_action_groups = random.randint(1, num_pagraphs)
         num_participants = random.randint(2, self.max_particpants)
         probability_true = random.random()
         system_prompt = ATTRIBUTION_SYSTEM_PROMPT
@@ -144,7 +144,7 @@ class AttributionGenerationTask(AttributionBaseTask):
         self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
-        subset_action_items = random.sample(responses, max(num_action_groups, 3)) # we must always have at least 3 action groups
+        subset_action_items = random.sample(responses, max(num_action_groups, 1)) # we must always have at least 1 action groups
         num_true = len([a_item for a_item in subset_action_items if a_item.true_or_false == True])
         self.reference = round(num_true / (len(subset_action_items) + 1e-10), 2) 
 

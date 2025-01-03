@@ -13,7 +13,7 @@ You are an expert critical reader, adept at pulling out the most salient and key
 """
 
 TOPIC_GEN_PROMPT="""\
-Your goal is to extract between 3 and 20 key topics from the provided context.  You must always provide at least 3 topics, \
+Your goal is to extract between 1 and 20 key topics from the provided context.  You must always provide at least 3 topics, \
 but should provide no more than 20.  These key topics should be should single line summaries of all of the key points for the provided article. \
 We will be generating actual summaries from these topics, so they should be unique from one another and can later be summarized with between 50 to 100 words. \
 It is important for these key topics to be comprehensive of all key topics in the article. 

@@ -85,7 +85,7 @@ class HallucinatioGenerationTask(HallucinationBaseTask):
         responses = []
 
         num_pagraphs = random.randint(5, self.max_paragraphs)
-        num_claims = random.randint(3, num_pagraphs)
+        num_claims = random.randint(1, num_pagraphs)
         probability_true = random.random()
         system_prompt = HALLUCINATION_SYSTEM_PROMPT
 
@@ -137,7 +137,7 @@ class HallucinatioGenerationTask(HallucinationBaseTask):
         self.rag_context = "".join([c + random.choice(self.joiners) for c in contexts])
 
         # reference and responses  
-        subset_claims = random.sample(responses, max(num_claims, 3)) # we must always have at least 3 claims
+        subset_claims = random.sample(responses, max(num_claims, 1)) # we must always have at least 1 claims
         num_true = len([claim for claim in subset_claims if claim.true_or_false == True])
         self.reference = round(num_true / (len(subset_claims) + 1e-10), 2) 
 

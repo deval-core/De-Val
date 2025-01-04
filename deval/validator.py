@@ -133,6 +133,7 @@ class Validator(BaseValidatorNeuron):
 
         
         self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
+        self.save_state(save_weights=True)
         self.sync()
         self.start_over = True
         self.reset()

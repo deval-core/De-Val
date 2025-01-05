@@ -406,7 +406,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
 
     def reset(self):
-        self.weights = []
+        # self.weights = [] # no longer reset weights 
         self.task_repo = None
         self.queried_uids = set()
         

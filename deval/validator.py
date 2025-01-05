@@ -131,7 +131,8 @@ class Validator(BaseValidatorNeuron):
                 self.queried_uids.add((uid, hotkey))
                 bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}, traceback: {traceback.format_exc()}")
 
-        
+        # ensure we reset weights before recalculating to prevent errors from persisting
+        self.weights = []
         self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
         self.save_state(save_weights=True)
         self.sync()

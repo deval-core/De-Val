@@ -121,9 +121,6 @@ class BaseNeuron(ABC):
             self.block - self.metagraph.last_update[self.uid]
         ) > self.config.neuron.epoch_length
 
-        print(f"block difference passed: {res}")
-        print(f"block: {self.block}, last update: {self.metagraph.last_update[self.uid]}, epoch length: {self.config.neuron.epoch_length}")
-
         if self.should_sync_metagraph():
             self.resync_metagraph()
 

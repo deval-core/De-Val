@@ -116,10 +116,14 @@ class ModelState:
             return False
 
         if uid in top_incentive_uids:
+            bt.logging.info(f"In top incentive IDs, continuing with evaluation")
             return True
 
         start_time_datetime = datetime.fromtimestamp(forward_start_time, tz=pytz.UTC)
-        if (start_time_datetime - timedelta(hours=48)) <= self.get_last_commit_date():
+        n_hours_ago = (start_time_datetime - timedelta(hours=48))
+        bt.logging.info(f"48 hours ago: {n_hours_ago} and last commit date: {self.get_last_commit_date()}")
+        if  n_hours_ago <= self.get_last_commit_date():
+            bt.logging.info("Model commit date within 48 hours, continuing with evaluation")
             return True
         
         bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")

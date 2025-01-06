@@ -33,7 +33,7 @@ WORKDIR /app
 COPY --chown=miner:miner . ./
 COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
 RUN pip install poetry
-RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main
+RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main -vvv --no-root
 
 
 # grant access only to working directory and temp directory

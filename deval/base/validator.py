@@ -275,7 +275,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Set the weights on chain via our subtensor connection.
         num_attempts = 0
         result = False
-        while result is False and num_attempts < 10:
+        while result is False and num_attempts < 3:
             num_attempts += 1
             result, reason = self.subtensor.set_weights(
                 wallet=self.wallet,
@@ -314,7 +314,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
-    def save_state(self):
+    def save_state(self, save_weights = False):
         """Saves the state of the validator to a file."""
         bt.logging.info("Saving validator state.")
 
@@ -334,6 +334,16 @@ class BaseValidatorNeuron(BaseNeuron):
             },
             os.path.join(save_path, "state.pt"),
         )
+
+        if save_weights:
+            torch.save(
+                {
+                    "past_weights": self.weights,
+                    "save_time": datetime.now()
+                },
+                os.path.join(save_path, "weights.pt"),
+            )
+
 
     def load_state(self):
         """Loads the state of the validator from a file."""
@@ -357,7 +367,9 @@ class BaseValidatorNeuron(BaseNeuron):
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
+        self.weights = state.get("past_weights", [])
 
+        # load historical contest and task repository
         try:
 
             with open(contest_path, "rb") as f: 
@@ -378,8 +390,23 @@ class BaseValidatorNeuron(BaseNeuron):
             bt.logging.warning(f"Unable to load the task repository or contest state, restarting contest: {e}")
             self.start_over = True
 
+        # try loading in historical weights
+        try:
+            weight_path = os.path.join(load_path, "weights.pt")
+            past_weights = torch.load(weight_path)
+            weight_save_time = past_weights.get("save_time")
+            if (datetime.now() - timedelta(hours=48)) <= weight_save_time:
+                self.weights = past_weights.get("past_weights", [])
+            else:
+                self.weights = []
+        
+        except Exception as e:
+            bt.logging.warning(f"Unable to load weights data with error: {e}")
+            self.weights = []
+
+
     def reset(self):
-        self.weights = None
+        # self.weights = [] # no longer reset weights 
         self.task_repo = None
         self.queried_uids = set()
         
@@ -388,6 +415,12 @@ class BaseValidatorNeuron(BaseNeuron):
         files = os.listdir(load_path)
         for f in files:
             file_path = os.path.join(load_path, f)
+
+            # we want to maintain weights data over epochs 
+            if "weights.pt" in f:
+                continue
+
+            # otherwise we delete all save files 
             if os.path.isfile(file_path):
                 os.remove(file_path)
 

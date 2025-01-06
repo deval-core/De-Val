@@ -60,8 +60,8 @@ class Validator(BaseValidatorNeuron):
         )
 
         bt.logging.info("load_state()")
-        self.load_state()
         self.weights = []
+        self.load_state()
 
     async def forward(self):
         bt.logging.info("🚀 Starting forward loop...")
@@ -123,14 +123,18 @@ class Validator(BaseValidatorNeuron):
 
                 if is_valid:
                     self.save_state()
+                    self.sync()
                 del miner_state
+
 
             except Exception as e:
                 self.queried_uids.add((uid, hotkey))
                 bt.logging.info(f"Error in forward pass for uid: {uid} skipping to next round. Exception: {e}, traceback: {traceback.format_exc()}")
 
-        
+        # ensure we reset weights before recalculating to prevent errors from persisting
+        self.weights = []
         self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
+        self.save_state(save_weights=True)
         self.sync()
         self.start_over = True
         self.reset()

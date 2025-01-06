@@ -70,7 +70,7 @@ class MinerDockerClient:
         # determines if container is already running. If it is then restarts it otherwise starts it
         self.restart_service(model_url)
         
-        max_wait_time = 800
+        max_wait_time = 500
         return self._poll_service_for_readiness(max_wait_time)
 
     def stop_service(self):

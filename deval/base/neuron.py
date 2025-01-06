@@ -117,6 +117,10 @@ class BaseNeuron(ABC):
         # Ensure miner or validator hotkey is still registered on the network.
         self.check_registered()
 
+        res = (
+            self.block - self.metagraph.last_update[self.uid]
+        ) > self.config.neuron.epoch_length
+
         if self.should_sync_metagraph():
             self.resync_metagraph()
 
@@ -160,7 +164,9 @@ class BaseNeuron(ABC):
         ):
             return False
 
-        return True
+        return (
+            self.block - self.metagraph.last_update[self.uid]
+        ) > self.config.neuron.epoch_length
 
     def save_state(self):
         pass

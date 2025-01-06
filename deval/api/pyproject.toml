@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "deval-api"
+name = "api"
 version = "0.1.0"
 description = "project to run the eval model api"
 authors = ["Your Name <you@example.com>"]

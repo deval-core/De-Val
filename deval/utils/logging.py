@@ -139,6 +139,10 @@ class WandBLogger:
 
             if self.config.wandb.off:
                 return
+            
+            # Check for field to omit on wandb logs to save space
+            for field in ["challenge", "challenge_prompt","query", "reference", "rag_context", "llm_response"]:
+                event.pop(field, None)
 
             if not getattr(self, "wandb", None):
                 self.init_wandb()

@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libblas-dev \
     gfortran \
     iptables \
+    libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 # Set a non-root user for security
@@ -33,14 +34,16 @@ WORKDIR /app
 
 COPY --chown=miner:miner . ./
 
-ENTRYPOINT ["deval/api/docker_init.sh"]
+# Copy the initialization script
+COPY deval/api/docker_init.sh /usr/local/bin/docker_init.sh
+RUN chmod +x /usr/local/bin/docker_init.sh
 
+# Install Python dependencies
 COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
 RUN pip install poetry
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main -vvv --no-root
 
-
-# grant access only to working directory and temp directory
+# Grant access only to working directory and temp directory
 RUN mkdir /app/logs
 RUN mkdir -p /tmp && chmod 1777 /tmp
 RUN mkdir -p /app/eval_llm
@@ -49,9 +52,14 @@ RUN chmod -R 777 /app
 ENV TMPDIR=/tmp
 ENV HF_HOME=/app/eval_llm/.cache/huggingface
 
+# Grant CAP_NET_ADMIN capability to the iptables binary
+RUN setcap cap_net_admin+ep /usr/sbin/iptables
 
-# switch to non-root user
+# Switch to non-root user
 USER miner
+
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/docker_init.sh"]
 
 # Start API
 EXPOSE 8000

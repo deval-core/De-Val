@@ -31,6 +31,9 @@ ENV PATH="/home/miner/.local/bin:${PATH}" \
 WORKDIR /app
 
 COPY --chown=miner:miner . ./
+
+ENTRYPOINT ["deval/api/docker_init.sh"]
+
 COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
 RUN pip install poetry
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main -vvv --no-root

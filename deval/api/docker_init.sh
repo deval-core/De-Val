@@ -1,19 +1,16 @@
 #!/bin/bash
 
-# Get the Hugging Face endpoint's IP address
-HUGGINGFACE_IP=$(getent ahosts https://huggingface.co | awk '{print $1}' | head -n 1)
+# Allow loopback traffic
+iptables -A OUTPUT -o lo -j ACCEPT
 
-# Allow local communication (e.g., 0.0.0.0:8000)
-iptables -A OUTPUT -p tcp --dport 8000 -j ACCEPT
+# Allow traffic to the Hugging Face endpoint (replace with actual IP/domain)
+iptables -A OUTPUT -p tcp -d https://huggingface.co --dport 443 -j ACCEPT
 
-# Allow traffic to Hugging Face endpoint
-iptables -A OUTPUT -d $HUGGINGFACE_IP -j ACCEPT
+# Allow traffic to the local API endpoint
+iptables -A OUTPUT -p tcp -d 0.0.0.0 --dport 8000 -j ACCEPT
 
-# Drop all other outbound traffic
-iptables -P OUTPUT DROP
+# Block all other outgoing traffic
+iptables -A OUTPUT -j DROP
 
-# Optional: Log dropped packets (for debugging purposes)
-iptables -A OUTPUT -j LOG --log-prefix "Blocked Outbound: " --log-level 4
-
-# Execute the main process
+# Execute the original command
 exec "$@"

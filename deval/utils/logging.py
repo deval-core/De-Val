@@ -134,16 +134,12 @@ class WandBLogger:
                 "model_repo": miner_state.get_model_url()
             }
         
-            if not self.config.neuron.dont_save_events:
-                logger.log(38, event)
+            #if not self.config.neuron.dont_save_events:
+            #    logger.log(38, event)
 
             if self.config.wandb.off:
                 return
-            
-            # Check for field to omit on wandb logs to save space
-            for field in ["challenge", "challenge_prompt","query", "reference", "rag_context", "llm_response"]:
-                event.pop(field, None)
-
+                  
             if not getattr(self, "wandb", None):
                 self.init_wandb()
 

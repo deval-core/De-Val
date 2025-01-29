@@ -20,7 +20,7 @@ class MinerDockerClient:
         num_checks = 50
         sleep_interval = int(max_wait_time/num_checks)
 
-        for _ in range(num_checks):
+        for i in range(num_checks):
             time.sleep(sleep_interval)
             try:
                 response = requests.get(f"{self.api_url}/health")
@@ -29,10 +29,12 @@ class MinerDockerClient:
                     return True
 
             except requests.ConnectionError as e:
-                bt.logging.warning(f"Unable to connect to miner api... {e}")
-                
-            
-        
+                # Only log a warning every 10th check (or any interval you want)
+                if i % 10 == 0:
+                    bt.logging.warning(f"Unable to connect to miner api (attempt {i+1}/{num_checks}): {e}")
+
+        # If all checks = no success:
+        bt.logging.error("Failed to connect to miner-api after all attempts.")
         return False
 
     def _is_container_running(self):

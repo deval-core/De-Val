@@ -52,14 +52,12 @@ RUN chmod -R 777 /app
 ENV TMPDIR=/tmp
 ENV HF_HOME=/app/eval_llm/.cache/huggingface
 
-# Grant CAP_NET_ADMIN capability to the iptables binary
-RUN setcap cap_net_admin+ep /usr/sbin/iptables
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/docker_init.sh"]
 
 # Switch to non-root user
 USER miner
 
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/docker_init.sh"]
 
 # Start API
 EXPOSE 8000

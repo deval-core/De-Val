@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gfortran \
     iptables \
     libcap2-bin \
+    gosu \
+    iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set a non-root user for security
@@ -54,9 +56,6 @@ ENV HF_HOME=/app/eval_llm/.cache/huggingface
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/docker_init.sh"]
-
-# Switch to non-root user
-USER miner
 
 
 # Start API

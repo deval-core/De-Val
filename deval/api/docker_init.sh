@@ -14,4 +14,4 @@ iptables -I OUTPUT -p tcp -d cdn-lfs-us-1.hf.co -m tcp --dport 443 -j ACCEPT
 iptables -I OUTPUT -p tcp -d cdn-lfs-eu-1.hf.co -m tcp --dport 443 -j ACCEPT
 iptables -I OUTPUT -p tcp -d cdn-lfs.hf.co -m tcp --dport 443 -j ACCEPT
 
-exec "$@"
+exec gosu miner "$@"

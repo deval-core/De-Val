@@ -11,6 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblapack-dev \
     libblas-dev \
     gfortran \
+    iptables \
+    libcap2-bin \
+    gosu \
+    iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set a non-root user for security
@@ -31,12 +35,17 @@ ENV PATH="/home/miner/.local/bin:${PATH}" \
 WORKDIR /app
 
 COPY --chown=miner:miner . ./
+
+# Copy the initialization script
+COPY deval/api/docker_init.sh /usr/local/bin/docker_init.sh
+RUN chmod +x /usr/local/bin/docker_init.sh
+
+# Install Python dependencies
 COPY --chown=miner:miner deval/api/pyproject.toml deval/api/poetry.lock ./
 RUN pip install poetry
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --only main -vvv --no-root
 
-
-# grant access only to working directory and temp directory
+# Grant access only to working directory and temp directory
 RUN mkdir /app/logs
 RUN mkdir -p /tmp && chmod 1777 /tmp
 RUN mkdir -p /app/eval_llm
@@ -45,9 +54,9 @@ RUN chmod -R 777 /app
 ENV TMPDIR=/tmp
 ENV HF_HOME=/app/eval_llm/.cache/huggingface
 
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/docker_init.sh"]
 
-# switch to non-root user
-USER miner
 
 # Start API
 EXPOSE 8000

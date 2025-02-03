@@ -134,12 +134,12 @@ class WandBLogger:
                 "model_repo": miner_state.get_model_url()
             }
         
-            if not self.config.neuron.dont_save_events:
-                logger.log(38, event)
+            #if not self.config.neuron.dont_save_events:
+            #    logger.log(38, event)
 
             if self.config.wandb.off:
                 return
-
+                  
             if not getattr(self, "wandb", None):
                 self.init_wandb()
 

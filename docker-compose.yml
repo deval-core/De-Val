@@ -10,13 +10,18 @@ services:
       - "8000:8000"
     environment:
       - MODEL_URL=${MODEL_URL}
-    user: "miner"
     security_opt:
-      - no-new-privileges  # Prevent privilege escalation
+      - no-new-privileges  
     cap_drop:
-      - ALL  # Drop all unnecessary capabilities
+      - ALL  
     cap_add:
-      - NET_BIND_SERVICE  # Allow binding to network services for internal comms
+      - NET_BIND_SERVICE  
+      - NET_ADMIN
+      - NET_RAW
+      - SETUID
+      - SETGID
+    networks:
+      - restricted_net
     deploy:
       resources:
         reservations:
@@ -24,3 +29,8 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
+
+networks:
+  restricted_net:
+    driver: bridge

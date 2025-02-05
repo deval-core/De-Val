@@ -61,6 +61,11 @@ class BaseValidatorNeuron(BaseNeuron):
             self.dendrite = bt.dendrite(wallet=self.wallet)
         bt.logging.info(f"Dendrite: {self.dendrite}")
 
+        if self.config.netuid == 15:
+            substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
+        elif self.config.netuid == 202:
+            substrate_url = "wss://test.finney.opentensor.ai:443"
+        self.substrate = SubstrateInterface(url=substrate_url)
 
         # Init sync with the network. Updates the metagraph.
         self.sync()
@@ -316,12 +321,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
-        if self.config.netuid == 15:
-            substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
-        elif self.config.netuid == 202:
-            substrate_url = "wss://test.finney.opentensor.ai:443"
-        self.substrate = SubstrateInterface(url=substrate_url)
-
+        
     def save_state(self, save_weights = False):
         """Saves the state of the validator to a file."""
         bt.logging.info("Saving validator state.")

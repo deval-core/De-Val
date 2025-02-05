@@ -98,11 +98,13 @@ class Validator(BaseValidatorNeuron):
                 response_event = DendriteModelQueryEvent(responses)
                 bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
-                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid, self.config.netuid)
+                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
                 miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
+
+                miner_reg_block = self.substrate.query('SubtensorModule', 'BlockAtRegistration', [self.config.netuid, uid])
                 is_valid = miner_state.should_run_evaluation(
-                    uid, constants.max_model_size_gbs, self.subtensor.block, top_incentive_uids
+                    uid, constants.max_model_size_gbs, self.subtensor.block, miner_reg_block, top_incentive_uids
                 )
 
                 if is_valid:

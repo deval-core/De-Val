@@ -65,6 +65,8 @@ class BaseValidatorNeuron(BaseNeuron):
             substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
         elif self.config.netuid == 202:
             substrate_url = "wss://test.finney.opentensor.ai:443"
+
+        print(f"SUBSTRATE URL: {substrate_url}")
         self.substrate = SubstrateInterface(url=substrate_url)
 
         # Init sync with the network. Updates the metagraph.

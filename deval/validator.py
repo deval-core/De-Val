@@ -67,6 +67,7 @@ class Validator(BaseValidatorNeuron):
 
         print(f"SUBSTRATE URL: {substrate_url}")
         self.substrate = SubstrateInterface(url=substrate_url)
+        print(f"SUBSTRATE RESULT: {self.substrate.query('SubtensorModule', 'BlockAtRegistration', [self.config.netuid, 1])}")
 
 
         bt.logging.info("load_state()")

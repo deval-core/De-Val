@@ -17,6 +17,7 @@ from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
 import traceback
 from deval.utils.constants import constants
+from substrateinterface import SubstrateInterface
 
 class Validator(BaseValidatorNeuron):
     """
@@ -58,6 +59,15 @@ class Validator(BaseValidatorNeuron):
         self.metadata_store = ChainModelMetadataStore(
             subtensor=self.subtensor, wallet=None, subnet_uid=self.config.netuid
         )
+
+        if self.config.netuid == 15:
+            substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
+        elif self.config.netuid == 202:
+            substrate_url = "wss://test.finney.opentensor.ai:443"
+
+        print(f"SUBSTRATE URL: {substrate_url}")
+        self.substrate = SubstrateInterface(url=substrate_url)
+
 
         bt.logging.info("load_state()")
         self.weights = []

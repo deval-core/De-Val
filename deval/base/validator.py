@@ -35,8 +35,6 @@ import pickle
 import os
 from datetime import datetime, timedelta
 
-from substrateinterface import SubstrateInterface
-
 
 class BaseValidatorNeuron(BaseNeuron):
     """
@@ -60,14 +58,6 @@ class BaseValidatorNeuron(BaseNeuron):
         else:
             self.dendrite = bt.dendrite(wallet=self.wallet)
         bt.logging.info(f"Dendrite: {self.dendrite}")
-
-        if self.config.netuid == 15:
-            substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
-        elif self.config.netuid == 202:
-            substrate_url = "wss://test.finney.opentensor.ai:443"
-
-        print(f"SUBSTRATE URL: {substrate_url}")
-        self.substrate = SubstrateInterface(url=substrate_url)
 
         # Init sync with the network. Updates the metagraph.
         self.sync()

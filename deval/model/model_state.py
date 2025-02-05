@@ -1,11 +1,10 @@
 from huggingface_hub import HfApi, HfFileSystem
-from datetime import datetime, timedelta
+from datetime import datetime
 import bittensor as bt
 import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
-import pytz
 from deval.model.chain_metadata import ChainModelMetadataParsed
 from substrateinterface import SubstrateInterface
 
@@ -108,7 +107,6 @@ class ModelState:
         uid: int, 
         max_model_size_gbs: int,
         current_block: int, 
-        miner_reg_block: int,
         top_incentive_uids: list[int]) -> bool:
         """
         if the last file submission is after forward start time then we skip. 

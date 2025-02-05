@@ -10,7 +10,7 @@ from deval.model.chain_metadata import ChainModelMetadataParsed
 
 class ModelState:
 
-    def __init__(self, repo_id: str, model_id: str, uid: int, netuid: int):
+    def __init__(self, repo_id: str, model_id: str, uid: int):
         self.api = HfApi()
         self.fs = HfFileSystem()
 

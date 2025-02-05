@@ -17,7 +17,6 @@ from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
 import traceback
 from deval.utils.constants import constants
-from substrateinterface import SubstrateInterface
 
 class Validator(BaseValidatorNeuron):
     """
@@ -60,16 +59,6 @@ class Validator(BaseValidatorNeuron):
             subtensor=self.subtensor, wallet=None, subnet_uid=self.config.netuid
         )
 
-        if self.config.netuid == 15:
-            substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
-        elif self.config.netuid == 202:
-            substrate_url = "wss://test.finney.opentensor.ai:443"
-
-        print(f"SUBSTRATE URL: {substrate_url}")
-        self.substrate = SubstrateInterface(url=substrate_url)
-        print(f"SUBSTRATE RESULT: {self.substrate.query('SubtensorModule', 'BlockAtRegistration', [self.config.netuid, 1])}")
-
-
         bt.logging.info("load_state()")
         self.weights = []
         self.load_state()
@@ -109,13 +98,11 @@ class Validator(BaseValidatorNeuron):
                 response_event = DendriteModelQueryEvent(responses)
                 bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}") 
 
-                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid)
+                miner_state = ModelState(response_event.repo_id, response_event.model_id, uid, self.config.netuid)
                 miner_state.add_miner_coldkey(self.get_uid_coldkey(uid))
 
-
-                miner_reg_block = self.substrate.query('SubtensorModule', 'BlockAtRegistration', [self.config.netuid, uid])
                 is_valid = miner_state.should_run_evaluation(
-                    uid, constants.max_model_size_gbs, self.subtensor.block, miner_reg_block, top_incentive_uids
+                    uid, constants.max_model_size_gbs, self.subtensor.block, top_incentive_uids
                 )
 
                 if is_valid:

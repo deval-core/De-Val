@@ -7,16 +7,23 @@ from deval.task_repository import TASKS
 import shutil
 import pytz
 from deval.model.chain_metadata import ChainModelMetadataParsed
+from substrateinterface import SubstrateInterface
 
 class ModelState:
 
-    def __init__(self, repo_id: str, model_id: str, uid: int):
+    def __init__(self, repo_id: str, model_id: str, uid: int, netuid: int):
         self.api = HfApi()
         self.fs = HfFileSystem()
 
         self.repo_id = repo_id
         self.model_id = model_id 
         self.uid = uid
+        self.netuid = netuid
+
+        if netuid == 15:
+            self.substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
+        elif netuid == 202:
+            self.substrate_url = "wss://test.finney.opentensor.ai:443"
 
         # defaults
         self.block = None
@@ -88,6 +95,13 @@ class ModelState:
 
         return sum(sizes)
 
+    def get_miner_registration_block(
+        self, 
+        uid: int,
+    ) -> int:
+
+        substrate = SubstrateInterface(url=self.substrate_url)
+        return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
 
     def should_run_evaluation(
         self, 
@@ -122,6 +136,7 @@ class ModelState:
         # if the miner was registered 48 hours before the last metadata sync 
         # 14400 blocks per 48 hours 
         n_hours_ago = 14400
+        miner_reg_block = self._get_miner_registration_block(uid)
         bt.logging.info(f"block at 48 hours ago: {(current_block - n_hours_ago)} and miner registration block: {miner_reg_block}")
         if  (current_block - n_hours_ago) <= miner_reg_block:
             bt.logging.info("Model commit date within 48 hours, continuing with evaluation")

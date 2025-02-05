@@ -95,7 +95,7 @@ class ModelState:
 
         return sum(sizes)
 
-    def get_miner_registration_block(
+    def _get_miner_registration_block(
         self, 
         uid: int,
     ) -> int:

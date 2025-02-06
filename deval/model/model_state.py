@@ -137,7 +137,7 @@ class ModelState:
         miner_reg_block = self._get_miner_registration_block(uid)
         bt.logging.info(f"block at 48 hours ago: {(current_block - n_hours_ago)} and miner registration block: {miner_reg_block}")
         if  (current_block - n_hours_ago) <= miner_reg_block:
-            bt.logging.info("Model commit date within 48 hours, continuing with evaluation")
+            bt.logging.info("Model registration date within 48 hours, continuing with evaluation")
             return True
         
         bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")

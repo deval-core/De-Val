@@ -5,7 +5,7 @@ from threading import Event, Thread
 import git
 import bittensor as bt
 
-UPDATE_RATE_MINUTES = 10
+UPDATE_RATE_MINUTES = 60
 
 
 class AutoUpdater:

@@ -101,7 +101,7 @@ class DeValContest:
             uid, score = contestant
 
 
-            if last_tier_score > score * getattr(constants, "tier_improvement_threshold", 1.05):
+            if last_tier_score > score * getattr(constants, "tier_improvement_threshold", 1.10):
                 # New tier
                 last_tier_score = score
                 tiers.append([])

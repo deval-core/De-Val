@@ -1,23 +1,28 @@
 from huggingface_hub import HfApi, HfFileSystem
-from datetime import datetime, timedelta
+from datetime import datetime
 import bittensor as bt
 import os
 from deval.rewards.reward import RewardResult
 from deval.task_repository import TASKS
 import shutil
-import pytz
 from deval.model.chain_metadata import ChainModelMetadataParsed
-
+from substrateinterface import SubstrateInterface
 
 class ModelState:
 
-    def __init__(self, repo_id: str, model_id: str, uid: int):
+    def __init__(self, repo_id: str, model_id: str, uid: int, netuid: int):
         self.api = HfApi()
         self.fs = HfFileSystem()
 
         self.repo_id = repo_id
         self.model_id = model_id 
         self.uid = uid
+        self.netuid = netuid
+
+        if netuid == 15:
+            self.substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
+        elif netuid == 202:
+            self.substrate_url = "wss://test.finney.opentensor.ai:443"
 
         # defaults
         self.block = None
@@ -89,12 +94,19 @@ class ModelState:
 
         return sum(sizes)
 
+    def _get_miner_registration_block(
+        self, 
+        uid: int,
+    ) -> int:
+
+        substrate = SubstrateInterface(url=self.substrate_url)
+        return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
 
     def should_run_evaluation(
         self, 
         uid: int, 
         max_model_size_gbs: int,
-        forward_start_time: int, 
+        current_block: int, 
         top_incentive_uids: list[int]) -> bool:
         """
         if the last file submission is after forward start time then we skip. 
@@ -119,11 +131,13 @@ class ModelState:
             bt.logging.info(f"In top incentive IDs, continuing with evaluation")
             return True
 
-        start_time_datetime = datetime.fromtimestamp(forward_start_time, tz=pytz.UTC)
-        n_hours_ago = (start_time_datetime - timedelta(hours=48))
-        bt.logging.info(f"48 hours ago: {n_hours_ago} and last commit date: {self.get_last_commit_date()}")
-        if  n_hours_ago <= self.get_last_commit_date():
-            bt.logging.info("Model commit date within 48 hours, continuing with evaluation")
+        # if the miner was registered 48 hours before the last metadata sync 
+        # 14400 blocks per 48 hours 
+        n_hours_ago = 14400
+        miner_reg_block = self._get_miner_registration_block(uid)
+        bt.logging.info(f"block at 48 hours ago: {(current_block - n_hours_ago)} and miner registration block: {miner_reg_block}")
+        if  (current_block - n_hours_ago) <= miner_reg_block:
+            bt.logging.info("Model registration date within 48 hours, continuing with evaluation")
             return True
         
         bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")

@@ -129,6 +129,10 @@ class ModelState:
             bt.logging.info("Model registration date within 48 hours, continuing with evaluation")
             should_evaluate = True
 
+        # we can avoid the rest if neither of these are true
+        if should_evaluate is not True:
+            return False
+
         if not self.is_valid_repo:
             bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
             should_evaluate = False        

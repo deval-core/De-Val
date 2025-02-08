@@ -109,7 +109,7 @@ def get_top_incentive_uids(
 
     # drop to top k and pull out only the uids
     sorted_incentive_by_uid = sorted_incentive_by_uid[:k]
-    uids = [uid for uid, _ in sorted_incentive_by_uid]
+    uids = [uid for uid, i in sorted_incentive_by_uid if i > 0]
     uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
 
     if len(uids) > 0:

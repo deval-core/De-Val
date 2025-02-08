@@ -84,7 +84,7 @@ class OpenAILLM(BaseLLM):
             tool_call = tool_calls[0]
             content = tool_call.function.arguments
         else:
-            bt.logging.info("No tool response found, returning content")
+            #bt.logging.info("No tool response found, returning content")
             content =  response.content
         
         return content

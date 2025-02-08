@@ -36,7 +36,6 @@ class ModelState:
 
         if self.is_valid_repo:
             self.last_commit_date: datetime = self.get_last_commit_date()
-            self.last_safetensor_update: datetime = self.get_last_model_update_date()
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -84,9 +83,9 @@ class ModelState:
         return last_modified_date
 
     def _get_repo_size(self) -> int:
-        safetensor_files = self.fs.glob(f"{self.get_model_url()}/**")
+        files = self.fs.glob(f"{self.get_model_url()}/**")
         sizes = []
-        for fi in safetensor_files:
+        for fi in files:
             file = self.fs.info(fi)
             sz_in_bytes = file['size']
             sz_in_gb = sz_in_bytes * 1e-9
@@ -115,21 +114,11 @@ class ModelState:
         - check if the miner is in the top incentive UIDs
         - last updated file is from the last 48 hours
         """
-        if not self.is_valid_repo:
-            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
-            return False
-
-        if self._get_repo_size() > max_model_size_gbs:
-            bt.logging.info(f"Model size is too large - skipping evaluation")
-            return False
-
-        if not self.last_commit_date or not self.last_safetensor_update:
-            bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
-            return False
+        should_evaluate = False
 
         if uid in top_incentive_uids:
             bt.logging.info(f"In top incentive IDs, continuing with evaluation")
-            return True
+            should_evaluate = True
 
         # if the miner was registered 48 hours before the last metadata sync 
         # 14400 blocks per 48 hours 
@@ -138,10 +127,25 @@ class ModelState:
         bt.logging.info(f"block at 48 hours ago: {(current_block - n_hours_ago)} and miner registration block: {miner_reg_block}")
         if  (current_block - n_hours_ago) <= miner_reg_block:
             bt.logging.info("Model registration date within 48 hours, continuing with evaluation")
-            return True
-        
-        bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")
-        return False
+            should_evaluate = True
+
+        # we can avoid the rest if neither of these are true
+        if should_evaluate is not True:
+            return False
+
+        if not self.is_valid_repo:
+            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
+            should_evaluate = False        
+
+        if not self.last_commit_date:
+            bt.logging.info(f"Unable to get last commit date: {self.last_commit_date}")
+            should_evaluate = False
+
+        if self._get_repo_size() > max_model_size_gbs:
+            bt.logging.info(f"Model size is too large - skipping evaluation")
+            should_evaluate = False
+
+        return should_evaluate
 
 
     def cleanup(self, model_dir: str):

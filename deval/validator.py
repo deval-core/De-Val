@@ -17,6 +17,7 @@ from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
 import traceback
 from deval.utils.constants import constants
+from deval.utils.misc import restart_current_process
 
 class Validator(BaseValidatorNeuron):
     """
@@ -72,6 +73,7 @@ class Validator(BaseValidatorNeuron):
         available_uids = get_candidate_uids(self, k = constants.num_uids_total)
 
         if self.start_over:
+            bt.logging.info("Starting from scratch")
             self.contest = DeValContest(
                 self.reward_pipeline, 
                 forward_start_time, 
@@ -138,6 +140,7 @@ class Validator(BaseValidatorNeuron):
         self.sync()
         self.start_over = True
         self.reset()
+        restart_current_process()
 
         
     @staticmethod

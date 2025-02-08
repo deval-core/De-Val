@@ -180,7 +180,7 @@ class Miner(BaseMinerNeuron):
             **extra_info,
         }
 
-        bt.logging.info("Logging event to wandb...", step_log)
+        #bt.logging.info("Logging event to wandb...", step_log)
         wandb.log(step_log)
 
     def log_status(self):

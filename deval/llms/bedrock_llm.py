@@ -72,10 +72,6 @@ class AWSBedrockLLM(BaseLLM):
         
         content = self.parse_response(output)
 
-        bt.logging.info(
-            f"{self.__class__.__name__} generated the following output:\n{content}"
-        )
-
         return content
     
     def parse_response(self, output) -> str:
@@ -98,7 +94,7 @@ class AWSBedrockLLM(BaseLLM):
             tool_call = tool_calls[0].get("toolUse").get("input")
             content = json.dumps(tool_call)
         else:
-            bt.logging.info("No tool response found, returning content")
+            #bt.logging.info("No tool response found, returning content")
             content =[r for r in response if "text" in r][0]['text']
 
         return content 
@@ -115,7 +111,7 @@ class AWSBedrockLLM(BaseLLM):
             text = tool_call.get("text")
             content = json.dumps(json.loads(text).get("arguments"))
         else:
-            bt.logging.info("No tool response found, returning content")
+            #bt.logging.info("No tool response found, returning content")
             content = [r for r in response if "text" in r][0]
             content =  content.get("text")
         

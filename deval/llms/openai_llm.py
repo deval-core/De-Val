@@ -69,10 +69,6 @@ class OpenAILLM(BaseLLM):
         
         content = self.parse_response(output)
 
-        bt.logging.debug(
-            f"{self.__class__.__name__} generated the following output:\n{content}"
-        )
-
         return content
     
     def parse_response(self, output) -> str:
@@ -84,7 +80,7 @@ class OpenAILLM(BaseLLM):
             tool_call = tool_calls[0]
             content = tool_call.function.arguments
         else:
-            bt.logging.info("No tool response found, returning content")
+            #bt.logging.info("No tool response found, returning content")
             content =  response.content
         
         return content

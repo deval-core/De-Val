@@ -121,8 +121,8 @@ class BtEvalResponse(BaseModel):
 
     def __state_dict__(self):
         return {
-            "miner_score": self.response.score,
-            "miner_mistakes": self.response.mistakes,
+            #"miner_score": self.response.score,
+            #"miner_mistakes": self.response.mistakes,
             "miner_response_time": self.response.response_time,
             "status_message": self.response.status_message,
             "uid": self.uid,

@@ -73,6 +73,7 @@ class Validator(BaseValidatorNeuron):
         available_uids = get_candidate_uids(self, k = constants.num_uids_total)
 
         if self.start_over:
+            bt.logging.info("Starting from scratch")
             self.contest = DeValContest(
                 self.reward_pipeline, 
                 forward_start_time, 

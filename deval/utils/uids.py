@@ -113,6 +113,7 @@ def get_top_incentive_uids(
     uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
 
     if len(uids) > 0:
+        bt.logging.info(f"Top Incentive UIDs: {uids}")
         return torch.tensor(uids)
     else:
         raise ValueError(f"No eligible uids were found. Cannot return {k} uids")

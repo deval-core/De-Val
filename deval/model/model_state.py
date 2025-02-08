@@ -145,7 +145,6 @@ class ModelState:
             bt.logging.info(f"Model size is too large - skipping evaluation")
             should_evaluate = False
 
-        bt.logging.info(f"Did not meet evaluation criteria - skipping evaluation")
         return should_evaluate
 
 

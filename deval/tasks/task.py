@@ -51,7 +51,7 @@ class Task(ABC):
             "goal": self.goal,
             "query": self.query,  # For now we just use the raw query but should add delimiters again
             "query_time": getattr(self, "query_time", 0),
-            "reference": self.reference,
+            #"reference": self.reference,
             "reference_time": getattr(self, "reference_time", 0),
             "topic": self.topic,
             "subtopic": self.subtopic,

@@ -58,9 +58,9 @@ class HumanAgent:
             "rag_context": self.rag_context,
             "query": self.query,
             "llm_response": self.llm_response,
-            "reference": self.reference,
-            "reference_mistakes": self.reference_mistakes,
-            "reference_true_values": self.reference_true_values,
+            #"reference": self.reference,
+            #"reference_mistakes": self.reference_mistakes,
+            #"reference_true_values": self.reference_true_values,
             **self.task.__state_dict__(full=full),
         }
 

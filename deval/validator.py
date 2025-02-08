@@ -17,6 +17,7 @@ from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
 import traceback
 from deval.utils.constants import constants
+from deval.utils.misc import restart_current_process
 
 class Validator(BaseValidatorNeuron):
     """
@@ -138,6 +139,7 @@ class Validator(BaseValidatorNeuron):
         self.sync()
         self.start_over = True
         self.reset()
+        restart_current_process()
 
         
     @staticmethod

@@ -1,9 +1,8 @@
-import os
-import signal
 import time
 from threading import Event, Thread
 import git
 import bittensor as bt
+from deval.utils.misc import restart_current_process
 
 UPDATE_RATE_MINUTES = 60
 
@@ -30,7 +29,7 @@ class AutoUpdater:
                     time.sleep(sleep_minutes * 60 - current_time.tm_sec)
             except Exception as e:
                 bt.logging.error(f"Error occurred while checking for updates, attempting to fix the issue by restarting", exc_info=e)
-                self._restart()
+                restart_current_process()
 
     def _check_for_updates(self):
         bt.logging.info("Checking for updates...")
@@ -43,22 +42,9 @@ class AutoUpdater:
 
         if current_version != new_version:
             bt.logging.info(f"New version detected: '{new_version}'. Restarting...")
-            self._restart()
+            restart_current_process()
         else:
             bt.logging.info("Already up to date.")
 
 
-    def _restart(self):
-        self._stop_flag.set()
-        time.sleep(5)
-        os.kill(os.getpid(), signal.SIGTERM)
-
-        bt.logging.info("Waiting for process to terminate...")
-        for _ in range(60):
-            time.sleep(1)
-            try:
-                os.kill(os.getpid(), 0)
-            except ProcessLookupError:
-                break
-
-        os.kill(os.getpid(), signal.SIGKILL)
+    

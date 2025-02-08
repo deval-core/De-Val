@@ -57,7 +57,7 @@ class HumanAgent:
             "tasks": self.tasks_challenge,
             "rag_context": self.rag_context,
             "query": self.query,
-            "llm_response": self.llm_response,
+            #"llm_response": self.llm_response,
             #"reference": self.reference,
             #"reference_mistakes": self.reference_mistakes,
             #"reference_true_values": self.reference_true_values,

@@ -29,6 +29,7 @@ class AutoUpdater:
                     time.sleep(sleep_minutes * 60 - current_time.tm_sec)
             except Exception as e:
                 bt.logging.error(f"Error occurred while checking for updates, attempting to fix the issue by restarting", exc_info=e)
+                self._stop_flag.set()
                 restart_current_process()
 
     def _check_for_updates(self):
@@ -42,6 +43,7 @@ class AutoUpdater:
 
         if current_version != new_version:
             bt.logging.info(f"New version detected: '{new_version}'. Restarting...")
+            self._stop_flag.set()
             restart_current_process()
         else:
             bt.logging.info("Already up to date.")

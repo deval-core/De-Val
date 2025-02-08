@@ -128,8 +128,7 @@ def serialize_exception_to_string(e):
     else:        
         return e
 
-def restart_current_process(self):
-    self._stop_flag.set()
+def restart_current_process():
     time.sleep(5)
     os.kill(os.getpid(), signal.SIGTERM)
 

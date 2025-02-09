@@ -26,7 +26,14 @@ class DeValContest:
             4 : 0.025
         }
 
-    def validate_model(self, miner_state: ModelState, model_hash: str | None, model_coldkey: str | None) -> bool:
+    def validate_model(
+        self, 
+        miner_state: ModelState, 
+        model_hash: str | None, 
+        model_coldkey: str | None, 
+        container_size: int,
+        max_model_size_in_gbs: int,
+    ) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date():
             print(f"Miner's start date {miner_state.get_last_commit_date()} is before validators epoch start time {self.start_time_datetime}")
@@ -46,6 +53,10 @@ class DeValContest:
 
         if miner_state.chain_model_hash != model_hash:
             print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
+            return False
+
+        if container_size > max_model_size_in_gbs:
+            print(f"Container too large at {container_size} GBs, failing")
             return False
 
         # compute the safetensors hash and check if duplicate. Zero out the duplicate based on last safetensors file update

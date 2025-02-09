@@ -139,8 +139,13 @@ class ModelState:
         if not self.last_commit_date or not self.last_safetensor_update:
             bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
             should_evaluate = False
+        
+        self.repo_size = self._get_repo_size()
+        if self.repo_size < 12:
+            bt.logging.info(f"Model size is too small - skipping evaluation")
+            should_evaluate = False
 
-        if self._get_repo_size() > max_model_size_gbs:
+        if self.repo_size > max_model_size_gbs:
             bt.logging.info(f"Model size is too large - skipping evaluation")
             should_evaluate = False
 

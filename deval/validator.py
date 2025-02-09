@@ -154,8 +154,9 @@ class Validator(BaseValidatorNeuron):
         valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
         model_hash = miner_docker_client.get_model_hash()
         model_coldkey = miner_docker_client.get_model_coldkey()
+        container_size = miner_docker_client.get_container_size()
         bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid} with coldkey: {model_coldkey}")
-        is_valid = contest.validate_model(miner_state, model_hash, model_coldkey)
+        is_valid = contest.validate_model(miner_state, model_hash, model_coldkey, container_size, constants.max_model_size_gbs,)
         if not is_valid:
             return miner_state
 

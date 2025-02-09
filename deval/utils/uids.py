@@ -98,6 +98,7 @@ def get_candidate_uids(self, k: int, exclude: List[int] = None) -> list[int]:
 
 
 def fetch_historical_incentive_uids(current_block, lookback = 14400, num_chunks = 25, netuid = 15):
+    # defaults allow for 25 chunked interval of incentive from past 48 hours
     substrate = SubstrateInterface(url=get_substrate_url(netuid))
     start_block = current_block - lookback
     batches= [int(start_block + x*(current_block-start_block)/num_chunks) for x in range(num_chunks)]

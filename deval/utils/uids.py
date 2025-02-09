@@ -115,7 +115,7 @@ def fetch_historical_incentive_uids(current_block, lookback = 14400, num_chunks 
           incentives = substrate.query(
               'SubtensorModule',
               'Incentive', 
-              [15],
+              [netuid],
               block_hash=block_hash
           )
           historical_incentives = historical_incentives + [i.value for i in incentives]

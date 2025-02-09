@@ -7,6 +7,7 @@ from deval.task_repository import TASKS
 import shutil
 from deval.model.chain_metadata import ChainModelMetadataParsed
 from substrateinterface import SubstrateInterface
+from deval.utils.misc import get_substrate_url
 
 class ModelState:
 
@@ -18,12 +19,9 @@ class ModelState:
         self.model_id = model_id 
         self.uid = uid
         self.netuid = netuid
+        self.substrate_url = get_substrate_url(netuid)
 
-        if netuid == 15:
-            self.substrate_url = "wss://entrypoint-finney.opentensor.ai:443"
-        elif netuid == 202:
-            self.substrate_url = "wss://test.finney.opentensor.ai:443"
-
+        
         # defaults
         self.block = None
         self.chain_model_hash = None

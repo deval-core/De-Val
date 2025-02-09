@@ -307,7 +307,7 @@ def add_validator_args(cls, parser):
         "--neuron.num_task_examples",
         type=int,
         help="The maximum number of each task to generate. This is reduced according to task_p",
-        default=40,
+        default=30,
     )
 
     parser.add_argument(

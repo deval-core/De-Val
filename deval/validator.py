@@ -69,7 +69,7 @@ class Validator(BaseValidatorNeuron):
         forward_start_time = time.time()
 
         # init this rounds contest 
-        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, num_uids=constants.num_uids_total).to(self.device)
+        top_incentive_uids = get_top_incentive_uids(self, k=self.miner_incentive_threshold, netuid=self.config.netuid).to(self.device)
         available_uids = get_candidate_uids(self, k = constants.num_uids_total)
 
         if self.start_over:

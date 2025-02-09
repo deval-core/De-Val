@@ -141,3 +141,10 @@ def restart_current_process():
             break
 
     os.kill(os.getpid(), signal.SIGKILL)
+
+
+def get_substrate_url(netuid: int):
+    if netuid == 15:
+        return "wss://entrypoint-finney.opentensor.ai:443"
+    elif netuid == 202:
+        return "wss://test.finney.opentensor.ai:443"

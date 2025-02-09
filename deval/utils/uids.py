@@ -2,6 +2,9 @@ import torch
 import random
 import bittensor as bt
 from typing import List
+from deval.utils.misc import get_substrate_url
+from substrateinterface import SubstrateInterface
+import numpy as np
 
 
 def check_uid_availability(
@@ -95,21 +98,38 @@ def get_candidate_uids(self, k: int, exclude: List[int] = None) -> list[int]:
         raise ValueError(f"No eligible uids were found. Cannot return {k} uids")
 
 
+def fetch_historical_incentive_uids(current_block, lookback = 14400, num_chunks = 25, netuid = 15):
+    # defaults allow for 25 chunked interval of incentive from past 48 hours
+    substrate = SubstrateInterface(url=get_substrate_url(netuid))
+    start_block = current_block - lookback
+    batches= [int(start_block + x*(current_block-start_block)/num_chunks) for x in range(num_chunks)]
+
+    historical_incentives = np.zeros_like(list(range(256)), dtype=int)
+
+    for block_number in batches:
+          block_hash = substrate.get_block_hash(block_number)
+
+          if block_hash is None:
+              continue  
+
+          incentives = substrate.query(
+              'SubtensorModule',
+              'Incentive', 
+              [netuid],
+              block_hash=block_hash
+          )
+          historical_incentives = historical_incentives + [i.value for i in incentives]
+    return historical_incentives
+
 
 def get_top_incentive_uids(
     self, 
     k: int,
-    num_uids: int = 256
+    netuid: int,
 ) -> torch.LongTensor:
-    # returns the top UIDs within the top_k threshold based on incentive 
-    incentive_values = getattr(self.metagraph, 'I')
 
-    incentive_by_uid = [(i,k)  for i, k in zip(range(num_uids), incentive_values)]
-    sorted_incentive_by_uid = sorted(incentive_by_uid, key=lambda tup: tup[1], reverse = True)
-
-    # drop to top k and pull out only the uids
-    sorted_incentive_by_uid = sorted_incentive_by_uid[:k]
-    uids = [uid for uid, i in sorted_incentive_by_uid if i > 0]
+    historical_incentives = fetch_historical_incentive_uids(self.metagraph.block, netuid=netuid)
+    uids = np.argsort(historical_incentives)[-k:][::-1].tolist() #pick top k 
     uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
 
     if len(uids) > 0:

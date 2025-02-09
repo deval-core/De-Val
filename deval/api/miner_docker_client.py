@@ -164,7 +164,7 @@ class MinerDockerClient:
     def get_container_size(self):
         try:
             result = subprocess.run(
-                ["docker", "inspect", self.service_name],
+                ["docker", "inspect", self.service_name, "--size"],
                 capture_output=True,
                 text=True,
                 check=True

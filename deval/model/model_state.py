@@ -34,6 +34,7 @@ class ModelState:
 
         if self.is_valid_repo:
             self.last_commit_date: datetime = self.get_last_commit_date()
+            self.last_safetensor_update: datetime = self.get_last_model_update_date()
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -135,8 +136,8 @@ class ModelState:
             bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
             should_evaluate = False        
 
-        if not self.last_commit_date:
-            bt.logging.info(f"Unable to get last commit date: {self.last_commit_date}")
+        if not self.last_commit_date or not self.last_safetensor_update:
+            bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
             should_evaluate = False
 
         if self._get_repo_size() > max_model_size_gbs:

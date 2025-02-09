@@ -6,6 +6,7 @@ import subprocess
 import bittensor as bt
 import os
 from requests.exceptions import Timeout
+import json
 
 class MinerDockerClient:
 
@@ -158,6 +159,27 @@ class MinerDockerClient:
 
         except Exception as e:
             bt.logging.error(f"Failed to get Coldkey: {e}")
+            return None
+
+    def get_container_size(self):
+        try:
+            result = subprocess.run(
+                ["docker", "inspect", self.service_name, "--size"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            container_info = json.loads(result.stdout)
+            size_rw = container_info[0].get("SizeRw", 0)
+            
+            return size_rw / (1024 ** 3)  # to GB
+        
+        except subprocess.CalledProcessError as e:
+            print(f"Error running docker inspect: {e}")
+            return None
+        except (json.JSONDecodeError, IndexError, KeyError) as e:
+            print(f"Error parsing docker inspect output: {e}")
             return None
 
         

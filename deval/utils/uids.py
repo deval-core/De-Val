@@ -4,6 +4,7 @@ import bittensor as bt
 from typing import List
 from deval.utils.misc import get_substrate_url
 from substrateinterface import SubstrateInterface
+import numpy as np
 
 
 def check_uid_availability(
@@ -103,7 +104,7 @@ def fetch_historical_incentive_uids(current_block, lookback = 14400, num_chunks 
     start_block = current_block - lookback
     batches= [int(start_block + x*(current_block-start_block)/num_chunks) for x in range(num_chunks)]
 
-    uids_with_hist_incentives = set()
+    historical_incentives = np.zeros_like(list(range(256)), dtype=int)
 
     for block_number in batches:
           block_hash = substrate.get_block_hash(block_number)
@@ -117,9 +118,8 @@ def fetch_historical_incentive_uids(current_block, lookback = 14400, num_chunks 
               [15],
               block_hash=block_hash
           )
-          uids = [i for i, incentive in enumerate(incentives) if incentive > 0]
-          uids_with_hist_incentives.update(uids)
-    return list(uids_with_hist_incentives)
+          historical_incentives = historical_incentives + [i.value for i in incentives]
+    return historical_incentives
 
 
 def get_top_incentive_uids(
@@ -128,7 +128,8 @@ def get_top_incentive_uids(
     netuid: int,
 ) -> torch.LongTensor:
 
-    uids = fetch_historical_incentive_uids(self.metagraph.block, netuid=netuid)
+    historical_incentives = fetch_historical_incentive_uids(self.metagraph.block, netuid=netuid)
+    uids = np.argsort(historical_incentives)[-k:][::-1] #pick top k 
     uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
 
     if len(uids) > 0:

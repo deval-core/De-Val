@@ -129,7 +129,7 @@ def get_top_incentive_uids(
 ) -> torch.LongTensor:
 
     historical_incentives = fetch_historical_incentive_uids(self.metagraph.block, netuid=netuid)
-    uids = np.argsort(historical_incentives)[-k:][::-1] #pick top k 
+    uids = np.argsort(historical_incentives)[-k:][::-1].tolist() #pick top k 
     uids = [uid for uid in uids if check_uid_availability(self.metagraph, uid, self.config.neuron.vpermit_tao_limit, [], [])]
 
     if len(uids) > 0:

@@ -449,7 +449,7 @@ class BaseValidatorNeuron(BaseNeuron):
         """Performs exponential moving average on the scores based on the rewards received from the miners."""
 
         tmp_scores = torch.zeros(
-            self.metagraph.n, dtype=torch.float32, device="cpu"
+            self.metagraph.n, dtype=torch.float32, device=self.device
         )
         denom = sum([num_task for _, num_task in task_probabilities])
 

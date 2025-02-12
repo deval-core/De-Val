@@ -211,6 +211,7 @@ class DeValContest:
             takes all the model rewards, ranks them
         """ 
         # rank our rewards and apply weights according to tiers
+        avg_rewards = [(i, value) for i, value in avg_rewards if value > 0]
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1], reverse=True)
         print(f"Generated Rewards: {ranked_rewards}")
 

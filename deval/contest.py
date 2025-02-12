@@ -205,21 +205,11 @@ class DeValContest:
 
     def rank_and_select_winners(
         self, 
-        task_probabilities: list[tuple[str, float]],
+        avg_rewards: list[tuple(int, float)],
     ) -> list[(int, float)]: # (uid, weight)
         """
             takes all the model rewards, ranks them
         """ 
-        avg_rewards = []
-        denom = sum([num_task for _, num_task in task_probabilities])
-        print(f"Denominator: {denom}")
-        for uid, scores in self.model_rewards.items():
-            print(f"UID: {uid} with scores: {scores}")
-            total_scores = [i for values in scores.values() for i in values]
-            avg_score = sum(total_scores) / denom
-            if avg_score > 0:
-                avg_rewards.append((uid, avg_score))
-
         # rank our rewards and apply weights according to tiers
         ranked_rewards = sorted(avg_rewards, key=lambda x: x[1], reverse=True)
         print(f"Generated Rewards: {ranked_rewards}")

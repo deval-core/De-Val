@@ -383,7 +383,9 @@ class BaseValidatorNeuron(BaseNeuron):
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
-        self.scores = state.get("scores", [])
+        tmp_scores = state.get("scores")
+        if tmp_scores is not None:
+            self.scores = tmp_scores
 
         # load historical contest and task repository
         try:

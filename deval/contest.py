@@ -205,7 +205,7 @@ class DeValContest:
 
     def rank_and_select_winners(
         self, 
-        avg_rewards: list[tuple(int, float)],
+        avg_rewards: list[(int, float)],
     ) -> list[(int, float)]: # (uid, weight)
         """
             takes all the model rewards, ranks them

@@ -39,8 +39,8 @@ class DeValContest:
             print(f"Miner's start date {miner_state.get_last_commit_date()} is before validators epoch start time {self.start_time_datetime}")
             return False
 
-        if not miner_state.chain_model_hash or not miner_state.block:
-            print(f"Unable to get chain commit data including model hash: {miner_state.chain_model_hash} or block: {miner_state.block}")
+        if  not miner_state.block: #not miner_state.chain_model_hash or
+            print(f"Unable to get chain commit data including block: {miner_state.block}")
             return False
 
         if not model_hash or not model_coldkey:
@@ -51,9 +51,9 @@ class DeValContest:
             print("Mismatch between the Miner's coldkey and the Model's Coldkey. INVALID Model")
             return False
 
-        if miner_state.chain_model_hash != model_hash:
-            print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
-            return False
+        #if miner_state.chain_model_hash != model_hash:
+        #    print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
+        #    return False
 
         if container_size > max_model_size_in_gbs:
             print(f"Container too large at {container_size} GBs, failing")

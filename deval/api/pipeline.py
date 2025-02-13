@@ -78,13 +78,15 @@ class DeValPipeline(Pipeline):
         query: str | None,
         llm_response: str,
     ):
+        task = tasks[0]
+        print(f"Starting task: {task}")
         # generate our prompts
         prompt = self._get_prompt(
-            task=tasks[0],
+            task=task,
         )
 
         # prep score evaluation 
-        prompt = prompt.format(rag_context = rag_context, query = query, llm_response = llm_response)
+        prompt = prompt.format(task = task, rag_context = rag_context, query = query, llm_response = llm_response)
         input_ids =self._gen_input_ids(prompt)
 
        

@@ -16,7 +16,7 @@ model_url = os.getenv("MODEL_URL", "")
 if model_url != "":
     model_dir = HuggingFaceModel.pull_model_and_files(model_url)
 
-    from model.pipeline import DeValPipeline
+    from .pipeline import DeValPipeline
     pipe = DeValPipeline("de_val", model_dir = model_dir)
     print("SUCCESFULLY LOADED PIPELINE")
 

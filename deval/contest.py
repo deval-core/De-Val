@@ -159,7 +159,7 @@ class DeValContest:
             return [1.0] * node_count
         
         def get_submit_date(uid):
-            return uid_submit_date.get(uid)
+            return uid_submit_date.get(uid, 10000000000000000000)
 
         ordered_tiers = [
             sorted(tier, key=get_submit_date) for tier in reward_tiers

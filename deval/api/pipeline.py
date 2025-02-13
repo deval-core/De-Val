@@ -125,10 +125,8 @@ class DeValPipeline(Pipeline):
         response = response.get('response')
 
         # decode and parse score
-        decoded = self.tokenizer.decode(response, skip_special_tokens=True)
-        completion = self._parse_score_response(decoded)
-        print(f"COMPLETION:{completion}")
-
+        completion = self.tokenizer.decode(response, skip_special_tokens=True)
+        
         output = json.loads(completion)
         print(f"OUTPUT: {output}")
 

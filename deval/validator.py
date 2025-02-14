@@ -140,7 +140,7 @@ class Validator(BaseValidatorNeuron):
         self.sync()
         self.start_over = True
         self.reset()
-        restart_current_process()
+        #restart_current_process()
 
         
     @staticmethod

@@ -128,6 +128,10 @@ class ModelState:
         """
         should_evaluate = False
 
+        if self.is_valid_repo is False:
+            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
+            return False 
+
         if uid in top_incentive_uids:
             bt.logging.info(f"In top incentive IDs, continuing with evaluation")
             should_evaluate = True
@@ -143,11 +147,7 @@ class ModelState:
 
         # we can avoid the rest if neither of these are true
         if should_evaluate is not True:
-            return False
-
-        if self.is_valid_repo is False:
-            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
-            return False        
+            return False       
 
         if not self.last_commit_date or not self.last_safetensor_update:
             bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")

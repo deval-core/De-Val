@@ -56,9 +56,10 @@ class ChainModelMetadataStore:
     def parse_chain_data(self, metadata) -> ChainModelMetadataParsed:
         # decode the encoded string
         try:
-            commitment = metadata["info"]["fields"][0]
-            hex_data = commitment[list(commitment.keys())[0]][2:]
-            chain_str = bytes.fromhex(hex_data).decode()
+            commitment = metadata["info"]["fields"][0][0]
+            raw_data = commitment[list(commitment.keys())[0]]
+            chain_str = bytes(raw_data[0]).decode()
+            print(chain_str)
 
             # format our output
             parsed_metadata = json.loads(chain_str)

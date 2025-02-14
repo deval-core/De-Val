@@ -19,6 +19,7 @@ class RelevanceRewardModel(BaseRewardModel):
         self.model = AnglE.from_pretrained(
             "WhereIsAI/UAE-Large-V1", pooling_strategy=pooling_strategy, device=device
         )
+        self.model.tokenizer._pad_token = self.model.tokenizer.pad_token
         if device.startswith("cuda"):
             # This line is necessary to pass the model to the device defined at its initialization
             self.model = self.model.cuda()

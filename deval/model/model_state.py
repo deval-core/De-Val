@@ -128,13 +128,13 @@ class ModelState:
         """
         should_evaluate = False
 
-        if self.is_valid_repo is False:
-            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
-            return False 
-
         if uid in top_incentive_uids:
             bt.logging.info(f"In top incentive IDs, continuing with evaluation")
             should_evaluate = True
+
+        if self.is_valid_repo is False:
+            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
+            return False 
 
         # if the miner was registered 48 hours before the last metadata sync 
         # 14400 blocks per 48 hours 

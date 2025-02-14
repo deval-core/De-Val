@@ -7,8 +7,8 @@ import json
 
 
 class ChainModelMetadataParsed(BaseModel):
-    model_url: str
-    model_hash: str
+    model_url: str | None
+    model_hash: str | None 
     block: int
 
 class ChainModelMetadataStore:
@@ -55,12 +55,16 @@ class ChainModelMetadataStore:
 
     def parse_chain_data(self, metadata) -> ChainModelMetadataParsed:
         # decode the encoded string
-        commitment = metadata["info"]["fields"][0]
-        hex_data = commitment[list(commitment.keys())[0]][2:]
-        chain_str = bytes.fromhex(hex_data).decode()
+        try:
+            commitment = metadata["info"]["fields"][0][0]
+            raw_data = commitment[list(commitment.keys())[0]]
+            chain_str = bytes(raw_data[0]).decode()
+            print(chain_str)
 
-        # format our output
-        parsed_metadata = json.loads(chain_str)
+            # format our output
+            parsed_metadata = json.loads(chain_str)
+        except:
+            parsed_metadata = {"model_url": None, "model_hash": None}
         parsed_metadata['block'] = metadata["block"]
         return ChainModelMetadataParsed(**parsed_metadata)
 

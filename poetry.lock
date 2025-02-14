@@ -4064,6 +4064,20 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
+name = "substrateinterface"
+version = "1.0.0"
+description = "Library for interfacing with a Substrate node"
+optional = false
+python-versions = ">=3.6, <4"
+files = [
+    {file = "substrateinterface-1.0.0-py3-none-any.whl", hash = "sha256:1998ddf51a2396aeedc0761e186bd23b252582ae85d437f83f12d1f898a3188c"},
+    {file = "substrateinterface-1.0.0.tar.gz", hash = "sha256:4a680528a7fcbea0632dfa2147a74029056c337466dd0803815955ece454634b"},
+]
+
+[package.extras]
+test = ["coverage", "pytest"]
+
+[[package]]
 name = "sympy"
 version = "1.12"
 description = "Computer algebra system (CAS) in Python"
@@ -4935,4 +4949,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "e9d8abbc7934ea2a1eae76e6b027df563b34a5074f4c5aa751d69852788793bf"
+content-hash = "5023f7650e7a3fb88f0c334281d7190a9a4dcd0b36e73e5016ac4e36ab55a3d0"

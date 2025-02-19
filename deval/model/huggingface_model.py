@@ -21,9 +21,9 @@ class HuggingFaceModel:
         return hf_token
 
     @staticmethod
-    def pull_model_and_files(model_url: str) -> str:
+    def pull_model_and_files(model_url: str, download_dir: str | None = None) -> str:
         hf_token = HuggingFaceModel.get_hf_token()
-        download_dir = f"/app/eval_llm"
+        download_dir = download_dir or "/app/eval_llm"
 
         print(f"Beggining the download of model data at {model_url}")
         local_dir = snapshot_download(

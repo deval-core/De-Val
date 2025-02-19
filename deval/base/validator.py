@@ -163,7 +163,8 @@ class BaseValidatorNeuron(BaseNeuron):
 
         # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:
-            self.axon.stop()
+            if hasattr(self, "axon"):
+                self.axon.stop()
             bt.logging.success("Validator killed by keyboard interrupt.")
             sys.exit()
 
@@ -414,12 +415,12 @@ class BaseValidatorNeuron(BaseNeuron):
                 self.weights = past_weights.get("past_weights", [])
             else:
                 self.weights = []
-            
-            # load scores 
+
+            # load scores
             tmp_scores = past_weights.get("scores")
             if tmp_scores is not None:
                 self.scores = tmp_scores
-        
+
         except Exception as e:
             bt.logging.warning(f"Unable to load weights data with error: {e}")
             self.weights = []
@@ -466,5 +467,5 @@ class BaseValidatorNeuron(BaseNeuron):
         self.scores = (self.scores - constants.alpha_decay).clamp(min=0)
         bt.logging.info(f"Updated moving avg scores: {self.scores}")
 
-        # return expected format for contest 
+        # return expected format for contest
         return [(i, score) for i, score in enumerate(self.scores.tolist())]

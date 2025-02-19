@@ -7,7 +7,7 @@ license = "mit"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
+python = ">=3.11,<3.13" # TODO: check if needed
 numpy = "^2.0.1"
 python-dotenv = "1.0.1"
 sympy = "1.12"
@@ -28,6 +28,7 @@ bittensor = "9.0.1"
 docker = "^7.1.0"
 gitpython = "^3.1.43"
 substrate-interface = "^1.7.11"
+compute-horde-sdk = {git = "https://github.com/backend-developers-ltd/compute-horde-sdk.git"} # TODO: PyPI
 
 
 [build-system]

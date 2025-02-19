@@ -171,7 +171,7 @@ class DeValContest:
 
         for tier in reversed(ordered_tiers):
             if last_tier:
-                modified_tiers.append([tier[0], *last_tier[1:]])
+                modified_tiers.append([*last_tier[1:], tier[0]])
             else:
                 modified_tiers.append([tier[0]])
 
@@ -179,11 +179,6 @@ class DeValContest:
 
         if len(last_tier) > 1:
             modified_tiers.append(last_tier[1:])
-
-        # reorder again after modification
-        modified_tiers = [
-            sorted(tier, key=get_submit_date) for tier in modified_tiers
-        ]
 
         print(f"Final Tiers: {modified_tiers}")
         

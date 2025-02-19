@@ -1,3 +1,4 @@
+import os
 import time
 import torch
 from angle_emb import AnglE
@@ -16,8 +17,9 @@ class RelevanceRewardModel(BaseRewardModel):
     def __init__(self, threshold=None, device=None, pooling_strategy="cls"):
         super().__init__()
         self.threshold = threshold
+        model_path = os.environ.get("ANGLE_MODEL_PATH", "WhereIsAI/UAE-Large-V1")
         self.model = AnglE.from_pretrained(
-            "WhereIsAI/UAE-Large-V1", pooling_strategy=pooling_strategy, device=device
+            model_path, pooling_strategy=pooling_strategy, device=device
         )
         self.model.tokenizer._pad_token = self.model.tokenizer.pad_token
         if device.startswith("cuda"):

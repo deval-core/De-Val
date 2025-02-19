@@ -10,11 +10,9 @@ import json
 
 class MinerDockerClient:
 
-    def __init__(self):
+    def __init__(self, api_url: str = "http://0.0.0.0:8000"):
         self.service_name = "miner-api"
-        self.host = f"http://0.0.0.0" 
-        self.port = 8000
-        self.api_url = f"{self.host}:{self.port}"
+        self.api_url = api_url
 
     def _poll_service_for_readiness(self, max_wait_time: int) -> bool:
         #TODO: check for errors to stop polling when we know we failed 
@@ -212,4 +210,3 @@ if __name__ == "__main__":
     docker_client.cleanup()
 
 
-    

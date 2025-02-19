@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from deval.tasks.task import TasksEnum, Task
 from deval.llms.openai_llm import OpenAILLM
 from deval.llms.bedrock_llm import AWSBedrockLLM
@@ -88,7 +90,7 @@ TASKS = {
 
 class TaskRepository:
 
-    def __init__(self, allowed_models: list[str] | None = None):
+    def __init__(self, allowed_models: list[str] | None = None, refresh_models_after_load: bool = True):
         self.tasks: dict[TasksEnum, list[Task]] = {} 
 
         # initialize available models 
@@ -97,6 +99,7 @@ class TaskRepository:
         if allowed_models is not None:
             self.supported_models = self.filter_to_allowed_models(allowed_models)
 
+        self.refresh_models_after_load = refresh_models_after_load
         self.available_models = self.get_available_models()
 
     def __getstate__(self):
@@ -106,7 +109,8 @@ class TaskRepository:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self.available_models = self.get_available_models()
+        if self.refresh_models_after_load:
+            self.available_models = self.get_available_models()
 
     def filter_to_allowed_models(self, allowed_models: list[str] | None) -> dict:
         filtered_dict = {}
@@ -187,9 +191,8 @@ class TaskRepository:
                     self.tasks[task_name].append(task)
                 except:
                     continue
-                    
 
-    def get_all_tasks(self) -> Task:
+    def get_all_tasks(self) -> Iterator[tuple[str, list[Task]]]:
         for task_name, tasks in self.tasks.items():
             yield task_name, tasks
 

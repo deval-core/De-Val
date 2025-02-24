@@ -366,13 +366,13 @@ scipy = "*"
 
 [[package]]
 name = "bittensor"
-version = "9.0.0"
+version = "9.0.1"
 description = "bittensor"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "bittensor-9.0.0-py3-none-any.whl", hash = "sha256:1f5e97d2333b46c535b03e780b7e3d58204e2ed116db6244227433449f6616cc"},
-    {file = "bittensor-9.0.0.tar.gz", hash = "sha256:64321a5f3acc07dbde41ecb81d753f05d0a8fcd19a22f35cb56e5af8e15e81aa"},
+    {file = "bittensor-9.0.1-py3-none-any.whl", hash = "sha256:e1682370debd9b95e185cee16af4669e6a56525e473227ebbc6d1906cfe931ce"},
+    {file = "bittensor-9.0.1.tar.gz", hash = "sha256:6d8845c55a6358f7341c47993933f2919b85a61c7189cac01fdf9d767c9be2fa"},
 ]
 
 [package.dependencies]
@@ -5253,4 +5253,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "b4adb1347f3c65338277d769181e622b63247c78697a799ea98bb37d677a1f84"
+content-hash = "654ac4055d6f44aac5c371c4688e5a1d069e83df2126040648b9ef11bec7902d"

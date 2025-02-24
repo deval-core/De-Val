@@ -152,7 +152,7 @@ class ModelState:
 
         # if the miner was registered 48 hours before the last metadata sync 
         # 14400 blocks per 48 hours 
-        n_hours_ago = 14400
+        n_hours_ago = 220000
         miner_reg_block = self._get_miner_registration_block(uid)
         bt.logging.info(f"block at 48 hours ago: {(current_block - n_hours_ago)} and miner registration block: {miner_reg_block}")
         if  (current_block - n_hours_ago) <= miner_reg_block:

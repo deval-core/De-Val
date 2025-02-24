@@ -8,6 +8,7 @@ import shutil
 from deval.model.chain_metadata import ChainModelMetadataParsed
 from substrateinterface import SubstrateInterface
 from deval.utils.misc import get_substrate_url
+import time
 
 class ModelState:
 
@@ -26,15 +27,27 @@ class ModelState:
         self.block = None
         self.chain_model_hash = None
 
-        try:
-            _ = self.api.model_info(self.get_model_url())
-            self.is_valid_repo = True
-        except Exception as e:
-            self.is_valid_repo = False
+        model_url = self.get_model_url()
+        for _ in range(3):
+            try:
+                if len(model_url) >= 3:
+                    _ = self.api.model_info(model_url)
+                    self.is_valid_repo = True
+                else:
+                    self.is_valid_repo = False
+            except Exception as e:
+                time.sleep(10)
+                bt.logging.info(f"unable to get model info {e}")
+                self.is_valid_repo = False
 
         if self.is_valid_repo:
-            self.last_commit_date: datetime = self.get_last_commit_date()
-            self.last_safetensor_update: datetime = self.get_last_model_update_date()
+            for _ in range(3):
+                try:
+                    self.last_commit_date: datetime = self.get_last_commit_date()
+                    self.last_safetensor_update: datetime = self.get_last_model_update_date()
+                except Exception as e:
+                    bt.logging.info(f"Unable to get commit or safetensor date {e}")
+                    time.sleep(10)
 
         # reward storage
         self.rewards = {task_name: [] for task_name in TASKS.keys()}
@@ -96,9 +109,23 @@ class ModelState:
         self, 
         uid: int,
     ) -> int:
+        i = 0 
+        backoff = 20
 
-        substrate = SubstrateInterface(url=self.substrate_url)
+        # add retry logic and sleep 
+        while i < 2:
+
+            try:
+                substrate = SubstrateInterface(url=self.substrate_url)
+                return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
+            except:
+                time.sleep(backoff)
+                backoff *= 1.5
+            
+            i += 1
+        
         return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
+
 
     def should_run_evaluation(
         self, 
@@ -119,6 +146,10 @@ class ModelState:
             bt.logging.info(f"In top incentive IDs, continuing with evaluation")
             should_evaluate = True
 
+        if self.is_valid_repo is False:
+            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
+            return False 
+
         # if the miner was registered 48 hours before the last metadata sync 
         # 14400 blocks per 48 hours 
         n_hours_ago = 14400
@@ -130,24 +161,20 @@ class ModelState:
 
         # we can avoid the rest if neither of these are true
         if should_evaluate is not True:
-            return False
-
-        if not self.is_valid_repo:
-            bt.logging.info(f"Unable to access repository or Submission was considered invalid - skipping evaluation")
-            should_evaluate = False        
+            return False       
 
         if not self.last_commit_date or not self.last_safetensor_update:
             bt.logging.info(f"Unable to get last commit date: {self.last_commit_date} or last safetensor update: {self.last_safetensor_update}")
-            should_evaluate = False
+            return False
         
         self.repo_size = self._get_repo_size()
         if self.repo_size < 12:
             bt.logging.info(f"Model size is too small - skipping evaluation")
-            should_evaluate = False
+            return False
 
         if self.repo_size > max_model_size_gbs:
             bt.logging.info(f"Model size is too large - skipping evaluation")
-            should_evaluate = False
+            return False
 
         return should_evaluate
 

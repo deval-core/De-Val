@@ -109,9 +109,23 @@ class ModelState:
         self, 
         uid: int,
     ) -> int:
+        i = 0 
+        backoff = 20
 
-        substrate = SubstrateInterface(url=self.substrate_url)
+        # add retry logic and sleep 
+        while i < 2:
+
+            try:
+                substrate = SubstrateInterface(url=self.substrate_url)
+                return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
+            except:
+                time.sleep(backoff)
+                backoff *= 1.5
+            
+            i += 1
+        
         return substrate.query('SubtensorModule', 'BlockAtRegistration', [self.netuid, uid])
+
 
     def should_run_evaluation(
         self, 

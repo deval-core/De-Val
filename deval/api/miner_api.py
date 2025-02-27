@@ -12,9 +12,15 @@ app = FastAPI()
 model_dir = "/app/eval_llm"
 sys.path.append(model_dir) # matches to the location of the mounted directory
 model_url = os.getenv("MODEL_URL", "")
+model_volume_dir = os.getenv("MODEL_VOLUME_DIR", "")
 
-if model_url != "":
-    model_dir = HuggingFaceModel.pull_model_and_files(model_url)
+if model_url != "" or model_volume_dir:
+    if model_url:
+        model_dir = HuggingFaceModel.pull_model_and_files(model_url)
+    else:
+        print("Loading model from volume dir")
+        model_dir = model_volume_dir
+        sys.path.append(model_dir)
 
     from model.pipeline import DeValPipeline
     pipe = DeValPipeline("de_val", model_dir = model_dir)

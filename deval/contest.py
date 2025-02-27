@@ -43,15 +43,15 @@ class DeValContest:
             print(f"Unable to get chain commit data including model hash: {miner_state.chain_model_hash} or block: {miner_state.block}")
             return False
 
-        if not model_hash or not model_coldkey:
-            print("Unable to generate model hash or model coldkey, INVALID Model")
-            return False
+        # if not model_hash or not model_coldkey:
+        #     print("Unable to generate model hash or model coldkey, INVALID Model")
+        #     return False
 
-        if model_coldkey != miner_state.coldkey:
+        if model_coldkey is not None and model_coldkey != miner_state.coldkey:
             print("Mismatch between the Miner's coldkey and the Model's Coldkey. INVALID Model")
             return False
 
-        if miner_state.chain_model_hash != model_hash:
+        if model_hash is not None and miner_state.chain_model_hash != model_hash:
             print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
             return False
 

@@ -445,19 +445,20 @@ class BaseValidatorNeuron(BaseNeuron):
     def get_uid_coldkey(self, uid: int) -> str:
         return self.metagraph.axons[uid].coldkey
 
-    def update_scores(self, model_rewards: dict[int, dict[str, list[float]]], task_probabilities: list[tuple[str, float]]):
+    def update_scores(self, model_rewards: dict[int, dict[str, list[float]]], denom: int):
         """Performs exponential moving average on the scores based on the rewards received from the miners."""
 
         tmp_scores = torch.zeros(
             self.metagraph.n, dtype=torch.float32, device=self.device
         )
-        denom = sum([num_task for _, num_task in task_probabilities])
 
         for uid, new_scores in model_rewards.items():
             total_scores = [i for values in new_scores.values() for i in values]
             avg_score = sum(total_scores) / denom
-            tmp_scores[uid] = avg_score
 
+            if avg_score == 0:
+                avg_score = self.scores[uid]
+            tmp_scores[uid] = avg_score
 
         self.scores = constants.alpha * tmp_scores + (1 - constants.alpha) * self.scores
         self.scores = (self.scores - constants.alpha_decay).clamp(min=0)

@@ -346,7 +346,6 @@ class BaseValidatorNeuron(BaseNeuron):
                 "start_over": self.start_over,
                 "queried_uids": self.queried_uids,
                 "hotkeys": self.hotkeys,
-                "scores": self.scores,
             },
             os.path.join(save_path, "state.pt"),
         )
@@ -355,7 +354,8 @@ class BaseValidatorNeuron(BaseNeuron):
             torch.save(
                 {
                     "past_weights": self.weights,
-                    "save_time": datetime.now()
+                    "save_time": datetime.now(),
+                    "scores": self.scores,
                 },
                 os.path.join(save_path, "weights.pt"),
             )
@@ -383,9 +383,6 @@ class BaseValidatorNeuron(BaseNeuron):
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
-        tmp_scores = state.get("scores")
-        if tmp_scores is not None:
-            self.scores = tmp_scores
 
         # load historical contest and task repository
         try:
@@ -413,10 +410,15 @@ class BaseValidatorNeuron(BaseNeuron):
             weight_path = os.path.join(load_path, "weights.pt")
             past_weights = torch.load(weight_path)
             weight_save_time = past_weights.get("save_time")
-            if (datetime.now() - timedelta(hours=48)) <= weight_save_time:
+            if (datetime.now() - timedelta(hours=72)) <= weight_save_time:
                 self.weights = past_weights.get("past_weights", [])
             else:
                 self.weights = []
+            
+            # load scores 
+            tmp_scores = past_weights.get("scores")
+            if tmp_scores is not None:
+                self.scores = tmp_scores
         
         except Exception as e:
             bt.logging.warning(f"Unable to load weights data with error: {e}")

@@ -34,6 +34,7 @@ from deval.utils.exceptions import MaxRetryError
 import pickle
 import os
 from datetime import datetime, timedelta
+from deval.utils.constants import constants
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -310,6 +311,20 @@ class BaseValidatorNeuron(BaseNeuron):
             "Metagraph updated, re-syncing hotkeys, dendrite pool and moving averages"
         )
 
+        # Zero out all hotkeys that have been replaced.
+        for uid, hotkey in enumerate(self.hotkeys):
+            if hotkey != self.metagraph.hotkeys[uid]:
+                self.scores[uid] = 0  # hotkey has been replaced
+
+        # Check to see if the metagraph has changed size.
+        # If so, we need to add new hotkeys and moving averages.
+        if len(self.hotkeys) < len(self.metagraph.hotkeys):
+            # Update the size of the moving average scores.
+            new_moving_average = torch.zeros((self.metagraph.n)).to(self.device)
+            min_len = min(len(self.hotkeys), len(self.scores))
+            new_moving_average[:min_len] = self.scores[:min_len]
+            self.scores = new_moving_average
+
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
@@ -339,7 +354,8 @@ class BaseValidatorNeuron(BaseNeuron):
             torch.save(
                 {
                     "past_weights": self.weights,
-                    "save_time": datetime.now()
+                    "save_time": datetime.now(),
+                    "scores": self.scores,
                 },
                 os.path.join(save_path, "weights.pt"),
             )
@@ -367,7 +383,6 @@ class BaseValidatorNeuron(BaseNeuron):
         self.start_over = state["start_over"]
         self.queried_uids = state["queried_uids"]
         self.hotkeys = state["hotkeys"]
-        self.weights = state.get("past_weights", [])
 
         # load historical contest and task repository
         try:
@@ -395,10 +410,15 @@ class BaseValidatorNeuron(BaseNeuron):
             weight_path = os.path.join(load_path, "weights.pt")
             past_weights = torch.load(weight_path)
             weight_save_time = past_weights.get("save_time")
-            if (datetime.now() - timedelta(hours=48)) <= weight_save_time:
+            if (datetime.now() - timedelta(hours=72)) <= weight_save_time:
                 self.weights = past_weights.get("past_weights", [])
             else:
                 self.weights = []
+            
+            # load scores 
+            tmp_scores = past_weights.get("scores")
+            if tmp_scores is not None:
+                self.scores = tmp_scores
         
         except Exception as e:
             bt.logging.warning(f"Unable to load weights data with error: {e}")
@@ -426,3 +446,25 @@ class BaseValidatorNeuron(BaseNeuron):
 
     def get_uid_coldkey(self, uid: int) -> str:
         return self.metagraph.axons[uid].coldkey
+
+    def update_scores(self, model_rewards: dict[int, dict[str, list[float]]], denom: int):
+        """Performs exponential moving average on the scores based on the rewards received from the miners."""
+
+        tmp_scores = torch.zeros(
+            self.metagraph.n, dtype=torch.float32, device=self.device
+        )
+
+        for uid, new_scores in model_rewards.items():
+            total_scores = [i for values in new_scores.values() for i in values]
+            avg_score = sum(total_scores) / denom
+
+            if avg_score == 0:
+                avg_score = self.scores[uid]
+            tmp_scores[uid] = avg_score
+
+        self.scores = constants.alpha * tmp_scores + (1 - constants.alpha) * self.scores
+        self.scores = (self.scores - constants.alpha_decay).clamp(min=0)
+        bt.logging.info(f"Updated moving avg scores: {self.scores}")
+
+        # return expected format for contest 
+        return [(i, score) for i, score in enumerate(self.scores.tolist())]

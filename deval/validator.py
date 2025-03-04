@@ -18,6 +18,7 @@ from deval.model.chain_metadata import ChainModelMetadataStore
 import traceback
 from deval.utils.constants import constants
 from deval.utils.misc import restart_current_process
+import torch
 
 class Validator(BaseValidatorNeuron):
     """
@@ -62,6 +63,9 @@ class Validator(BaseValidatorNeuron):
 
         bt.logging.info("load_state()")
         self.weights = []
+        self.scores = torch.zeros(
+            self.metagraph.n, dtype=torch.float32, device=self.device
+        )
         self.load_state()
 
     async def forward(self):
@@ -135,7 +139,11 @@ class Validator(BaseValidatorNeuron):
 
         # ensure we reset weights before recalculating to prevent errors from persisting
         self.weights = []
-        self.weights = self.contest.rank_and_select_winners(self.task_sample_rate)
+
+        # update scores for moving average and pass those to contest
+        denom = sum([len(tasks) for tasks in self.task_repo.tasks.values()])
+        formatted_scores = self.update_scores(self.contest.model_rewards, denom)
+        self.weights = self.contest.rank_and_select_winners(formatted_scores)
         self.save_state(save_weights=True)
         self.sync()
         self.start_over = True

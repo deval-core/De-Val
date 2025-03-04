@@ -102,7 +102,7 @@ class MinerDockerClient:
 
     def query_eval(self, request: EvalRequest, timeout: int) -> EvalResponse:
         """Invoke the API running in the nested Docker container with queries."""
-        bt.logging.info(f"Querying API on container {self.service_name}...")
+        #bt.logging.info(f"Querying API on container {self.service_name}...")
         try:
             response = requests.post(
                 f"{self.api_url}/eval_query",

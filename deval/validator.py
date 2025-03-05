@@ -1,6 +1,7 @@
 import bittensor as bt
 import time
 from deval.base.validator import BaseValidatorNeuron
+from deval.compute_horde_client import ComputeHordeClient
 from deval.rewards.reward import RewardResult
 from deval.rewards.pipeline import RewardPipeline
 from deval.task_repository import TaskRepository
@@ -61,6 +62,13 @@ class Validator(BaseValidatorNeuron):
             subtensor=self.subtensor, wallet=None, subnet_uid=self.config.netuid
         )
 
+        self.compute_horde_client = (
+            ComputeHordeClient(self.wallet.hotkey) if self.config.neuron.use_compute_horde else None
+        )
+        # TODO: Remove this when Compute Horde is ready.
+        if self.compute_horde_client is not None:
+            bt.logging.warning("Using compute horde client. This is not production-ready yet, use only for testing.")
+
         bt.logging.info("load_state()")
         self.weights = []
         self.scores = torch.zeros(
@@ -83,6 +91,7 @@ class Validator(BaseValidatorNeuron):
                 forward_start_time, 
                 self.config.neuron.timeout
             )
+
             self.task_repo = TaskRepository(allowed_models=self.allowed_models)
 
             # generate all tasks for miners to be evaluated on
@@ -115,13 +124,18 @@ class Validator(BaseValidatorNeuron):
                     chain_metadata = self.metadata_store.retrieve_model_metadata(hotkey)
                     miner_state.add_chain_metadata(chain_metadata)
 
-                    miner_state = Validator.run_epoch(
-                        self.contest,
-                        miner_state, 
-                        self.task_repo, 
-                        self.miner_docker_client,
-                        self.wandb_logger
-                    )
+                    if self.compute_horde_client is not None:
+                        miner_state = await self.run_epoch_on_compute_horde(miner_state)
+                    else:
+                        miner_state = Validator.run_epoch(
+                            self.contest,
+                            miner_state,
+                            self.task_repo,
+                            self.miner_docker_client,
+                            self.wandb_logger
+                        )
+
+                    bt.logging.info(f"Rewards for uid: {uid} are: {miner_state.rewards}")
 
                 # update contest
                 self.contest.update_model_state_with_rewards(miner_state) 
@@ -150,6 +164,20 @@ class Validator(BaseValidatorNeuron):
         self.reset()
         #restart_current_process()
 
+    async def run_epoch_on_compute_horde(self, miner_state: ModelState) -> ModelState:
+        # Local validation that does not require Docker container.
+        is_valid = self.contest.validate_model(miner_state, None, None, 0, constants.max_model_size_gbs + 2)
+        if not is_valid:
+            return miner_state
+
+        ch_miner_state = await self.compute_horde_client.run_epoch_on_compute_horde(
+            contest=self.contest,
+            miner_state=miner_state,
+            task_repo=self.task_repo,
+        )
+        miner_state.rewards = ch_miner_state.rewards
+        return miner_state
+
         
     @staticmethod
     def run_epoch(
@@ -162,7 +190,15 @@ class Validator(BaseValidatorNeuron):
         valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
         container_size = miner_docker_client.get_container_size()
         model_hash = miner_docker_client.get_model_hash()
+        if model_hash is None:
+            bt.logging.info(f"No model hash found for uid: {miner_state.uid}")
+            return miner_state
+
         model_coldkey = miner_docker_client.get_model_coldkey()
+        if model_coldkey is None:
+            bt.logging.info(f"No model coldkey found for uid: {miner_state.uid}")
+            return miner_state
+
         bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid} with coldkey: {model_coldkey}")
         is_valid = contest.validate_model(miner_state, model_hash, model_coldkey, container_size, constants.max_model_size_gbs+ 2)
         if not is_valid:
@@ -212,9 +248,9 @@ class Validator(BaseValidatorNeuron):
 
             if i % 10 == 0:
                 container_sz = docker_client.get_container_size()
-                if container_sz > constants.max_model_size_gbs + 2:
+                if container_sz is not None and container_sz > constants.max_model_size_gbs + 2:
                     break
-                if abs(curr_container_sz - container_sz) > 2:
+                if container_sz is not None and abs(curr_container_sz - container_sz) > 2:
                     break
 
             responses.append(bt_response)

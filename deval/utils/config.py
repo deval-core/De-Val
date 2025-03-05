@@ -410,6 +410,14 @@ def add_validator_args(cls, parser):
         help="Max time to wait for a forward call to complete in seconds.",
         default=64800,
     )
+    
+    parser.add_argument(
+        "--neuron.use_compute_horde",
+        action="store_true",
+        help="Enable the use of Compute Horde (default: False)",
+        default=False,
+    )
+
 
 
 def config(cls):

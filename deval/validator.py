@@ -148,7 +148,8 @@ class Validator(BaseValidatorNeuron):
             self.weights = self.contest.rank_and_select_winners(formatted_scores)
             self.save_state(save_weights=True)
         else:
-            bt.logging.info(f"ERROR with div by 0: Task Repo: {self.task_repo}, Model Rewards: {self.contest.model_rewards}")
+            num_tasks = [len(tasks) for tasks in self.task_repo.tasks.values()]
+            bt.logging.info(f"ERROR with div by 0: Task Repo num tasks: {self.task_repo.tasks.keys()}, task repo num tasks: {num_tasks}, Model Rewards: {self.contest.model_rewards}")
         self.sync()
         self.start_over = True
         self.reset()

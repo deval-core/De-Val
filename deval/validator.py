@@ -142,9 +142,13 @@ class Validator(BaseValidatorNeuron):
 
         # update scores for moving average and pass those to contest
         denom = sum([len(tasks) for tasks in self.task_repo.tasks.values()])
-        formatted_scores = self.update_scores(self.contest.model_rewards, denom)
-        self.weights = self.contest.rank_and_select_winners(formatted_scores)
-        self.save_state(save_weights=True)
+
+        if denom > 0:
+            formatted_scores = self.update_scores(self.contest.model_rewards, denom)
+            self.weights = self.contest.rank_and_select_winners(formatted_scores)
+            self.save_state(save_weights=True)
+        else:
+            bt.logging.info(f"ERROR with div by 0: Task Repo: {self.task_repo}, Model Rewards: {self.contest.model_rewards}")
         self.sync()
         self.start_over = True
         self.reset()

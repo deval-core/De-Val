@@ -1,32 +1,31 @@
+import sys
+import time
+
+import bittensor as bt
+from dotenv import load_dotenv, find_dotenv
+
 from deval.contest import DeValContest
 from deval.validator import Validator
-import time
 from deval.rewards.pipeline import RewardPipeline
 from deval.task_repository import TaskRepository
-from dotenv import load_dotenv, find_dotenv
 from deval.model.model_state import ModelState
 from deval.tasks.task import TasksEnum
 from deval.api.miner_docker_client import MinerDockerClient
 from deval.utils.logging import WandBLogger
 from deval.model.chain_metadata import ChainModelMetadataStore
-import bittensor as bt 
-
-
-
-
 
 # initialize
 _ = load_dotenv(find_dotenv())
 allowed_models = ["gpt-4o-mini"]
 
-repo_id = "deval-core"
-model_id = "base-eval-test"
+repo_id, model_id = (sys.argv[1] if len(sys.argv) >= 2 else "deval-core/base-eval-test").split("/")
 timeout = 600
 uid = 1
+netuid = 202
 max_model_size_gbs = 18
 
 # params for chain commit 
-model_url = "deval-core/base-eval-test"
+model_url = f"{repo_id}/{model_id}"
 subtensor = bt.subtensor(network='test')
 coldkey = "5E7b6f5ohdapBMpHTZ44L6N5qzJcCTroGVMPiHUA551x2Tvt"
 hotkey = "5HGiNFJApXHkMV9RoWAVYhKopuXG7VpvirABf3EyKcn1kAkn"
@@ -57,14 +56,14 @@ contest = DeValContest(
 miner_docker_client = MinerDockerClient()
 wandb_logger = WandBLogger(None, None, active_tasks, None, force_off=True)
 metadata_store = ChainModelMetadataStore(
-    subtensor=subtensor, wallet=None, subnet_uid=202
+    subtensor=subtensor, wallet=None, subnet_uid=netuid
 )
 
 print("Generating the tasks")
 task_repo.generate_all_tasks(task_probabilities=task_sample_rate)
 
 chain_metadata = metadata_store.retrieve_model_metadata(hotkey)
-miner_state = ModelState(repo_id, model_id, uid)
+miner_state = ModelState(repo_id, model_id, uid, netuid)
 miner_state.add_miner_coldkey(coldkey)
 
 print("Deciding if we should run evaluation ")

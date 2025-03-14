@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import bittensor as bt
 import time
 from deval.base.validator import BaseValidatorNeuron
@@ -138,7 +140,7 @@ class Validator(BaseValidatorNeuron):
                     bt.logging.info(f"Rewards for uid: {uid} are: {miner_state.rewards}")
 
                 # update contest
-                self.contest.update_model_state_with_rewards(miner_state) 
+                self.contest.update_model_state_with_rewards(miner_state)
                 self.queried_uids.add((uid, hotkey))
 
                 if is_valid:
@@ -156,9 +158,13 @@ class Validator(BaseValidatorNeuron):
 
         # update scores for moving average and pass those to contest
         denom = sum([len(tasks) for tasks in self.task_repo.tasks.values()])
-        formatted_scores = self.update_scores(self.contest.model_rewards, denom)
-        self.weights = self.contest.rank_and_select_winners(formatted_scores)
-        self.save_state(save_weights=True)
+
+        if denom > 0:
+            formatted_scores = self.update_scores(self.contest.model_rewards, denom)
+            self.weights = self.contest.rank_and_select_winners(formatted_scores)
+            self.save_state(save_weights=True)
+        else:
+            bt.logging.info(f"ERROR with div by 0: Task Repo: {self.task_repo}, Model Rewards: {self.contest.model_rewards}")
         self.sync()
         self.start_over = True
         self.reset()
@@ -166,16 +172,26 @@ class Validator(BaseValidatorNeuron):
 
     async def run_epoch_on_compute_horde(self, miner_state: ModelState) -> ModelState:
         # Local validation that does not require Docker container.
-        is_valid = self.contest.validate_model(miner_state, None, None, 0, constants.max_model_size_gbs + 2)
-        if not is_valid:
+        if not self.contest.validate_metadata(miner_state):
             return miner_state
 
-        ch_miner_state = await self.compute_horde_client.run_epoch_on_compute_horde(
-            contest=self.contest,
+        job_result = await self.compute_horde_client.run_epoch_on_compute_horde(
             miner_state=miner_state,
             task_repo=self.task_repo,
         )
-        miner_state.rewards = ch_miner_state.rewards
+
+        # Full validation after we have this data from the miner model.
+        is_valid = self.contest.validate_model(
+            miner_state=miner_state,
+            model_hash=job_result.model_hash,
+            model_coldkey=job_result.model_coldkey,
+            container_size=0,
+            max_model_size_in_gbs=constants.max_model_size_gbs + 1,
+        )
+        if not is_valid:
+            return miner_state
+
+        miner_state.rewards = deepcopy(job_result.model_state.rewards)
         return miner_state
 
         
@@ -190,15 +206,7 @@ class Validator(BaseValidatorNeuron):
         valid_connection = miner_docker_client.initialize_miner_api(miner_state.get_model_url())
         container_size = miner_docker_client.get_container_size()
         model_hash = miner_docker_client.get_model_hash()
-        if model_hash is None:
-            bt.logging.info(f"No model hash found for uid: {miner_state.uid}")
-            return miner_state
-
         model_coldkey = miner_docker_client.get_model_coldkey()
-        if model_coldkey is None:
-            bt.logging.info(f"No model coldkey found for uid: {miner_state.uid}")
-            return miner_state
-
         bt.logging.info(f"Recording model hash: {model_hash} for uid: {miner_state.uid} with coldkey: {model_coldkey}")
         is_valid = contest.validate_model(miner_state, model_hash, model_coldkey, container_size, constants.max_model_size_gbs+ 2)
         if not is_valid:

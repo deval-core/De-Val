@@ -4,8 +4,13 @@ import time
 from deval.api.models import EvalRequest, EvalResponse, ModelHashResponse, APIStatus, ModelColdkeyResponse
 from deval.model.huggingface_model import HuggingFaceModel
 import sys
-import hashlib
+
+from deval.deterministic import set_deterministic
 from deval.model.utils import compute_model_hash
+
+random_seed = os.getenv("RANDOM_SEED")
+if random_seed:
+    set_deterministic(int(random_seed))
 
 app = FastAPI()
 

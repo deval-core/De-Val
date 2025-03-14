@@ -877,7 +877,7 @@ files = [
 
 [[package]]
 name = "compute-horde-sdk"
-version = "0.1.dev27+g7a85d1d"
+version = "0.0.2"
 description = ""
 optional = false
 python-versions = "<3.13,>=3.11"
@@ -886,14 +886,16 @@ develop = false
 
 [package.dependencies]
 bittensor = ">=9.0.0,<9.1"
-httpx = ">=0.27.0"
+httpx = ">=0.26.0"
 pydantic = ">=2.10,<3"
+tenacity = ">=9.0.0,<10.0.0"
 
 [package.source]
 type = "git"
-url = "https://github.com/backend-developers-ltd/compute-horde-sdk.git"
+url = "https://github.com/backend-developers-ltd/ComputeHorde.git"
 reference = "HEAD"
-resolved_reference = "7a85d1d881e0b392b075ed96d03cd8462d64c1aa"
+resolved_reference = "86c6c149859597ed5512a9dcbcba16cf345c9e9d"
+subdirectory = "compute_horde_sdk"
 
 [[package]]
 name = "cryptography"
@@ -4376,6 +4378,21 @@ files = [
 mpmath = ">=0.19"
 
 [[package]]
+name = "tenacity"
+version = "9.0.0"
+description = "Retry code until it succeeds"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539"},
+    {file = "tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b"},
+]
+
+[package.extras]
+doc = ["reno", "sphinx"]
+test = ["pytest", "tornado (>=4.5)", "typeguard"]
+
+[[package]]
 name = "termcolor"
 version = "2.4.0"
 description = "ANSI color formatting for output in terminal"
@@ -5207,4 +5224,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "06e09b4570b8e37dd420f3909491a008f906afec620aface5168e0767bff5749"
+content-hash = "10d066260e348911f97e16c07cf7c880338b1e4a31031a3afb8add4913a65821"

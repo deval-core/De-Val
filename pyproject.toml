@@ -28,7 +28,7 @@ bittensor = "9.0.1"
 docker = "^7.1.0"
 gitpython = "^3.1.43"
 substrate-interface = "^1.7.11"
-compute-horde-sdk = {git = "https://github.com/backend-developers-ltd/compute-horde-sdk.git"} # TODO: PyPI
+compute-horde-sdk = {git = "https://github.com/backend-developers-ltd/ComputeHorde.git", subdirectory = "compute_horde_sdk"}
 
 
 [build-system]

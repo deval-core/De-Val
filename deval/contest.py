@@ -26,14 +26,7 @@ class DeValContest:
             4 : 0.025
         }
 
-    def validate_model(
-        self, 
-        miner_state: ModelState, 
-        model_hash: str | None, 
-        model_coldkey: str | None, 
-        container_size: int,
-        max_model_size_in_gbs: int,
-    ) -> bool:
+    def validate_metadata(self, miner_state: ModelState) -> bool:
         # ensure the last commit date is before forward start time
         if self.start_time_datetime < miner_state.get_last_commit_date():
             print(f"Miner's start date {miner_state.get_last_commit_date()} is before validators epoch start time {self.start_time_datetime}")
@@ -43,15 +36,28 @@ class DeValContest:
             print(f"Unable to get chain commit data including model hash: {miner_state.chain_model_hash} or block: {miner_state.block}")
             return False
 
-        # if not model_hash or not model_coldkey:
-        #     print("Unable to generate model hash or model coldkey, INVALID Model")
-        #     return False
+        return True
 
-        if model_coldkey is not None and model_coldkey != miner_state.coldkey:
+    def validate_model(
+        self, 
+        miner_state: ModelState, 
+        model_hash: str | None, 
+        model_coldkey: str | None, 
+        container_size: int,
+        max_model_size_in_gbs: int,
+    ) -> bool:
+        if not self.validate_metadata(miner_state):
+            return False
+
+        if not model_hash or not model_coldkey:
+            print("Unable to generate model hash or model coldkey, INVALID Model")
+            return False
+
+        if model_coldkey != miner_state.coldkey:
             print("Mismatch between the Miner's coldkey and the Model's Coldkey. INVALID Model")
             return False
 
-        if model_hash is not None and miner_state.chain_model_hash != model_hash:
+        if miner_state.chain_model_hash != model_hash:
             print("Mismatch between the model hash on the chain commit and the model hash on huggingface")
             return False
 

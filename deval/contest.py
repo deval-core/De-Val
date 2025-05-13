@@ -18,7 +18,6 @@ class DeValContest:
         self.reward_pipeline: RewardPipeline = reward_pipeline
         self.timeout: int = timeout
 
-        # insert
         self.tiers = {
             0 : 0.5,
             1 : 0.3,
